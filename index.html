@@ -298,7 +298,7 @@ function moisture(t,sw){
   return{dry,wet,label:dry>0?'Dry':wet>0?'Soggy':'Good'};
 }
 const heatCost=(h,out)=>(h.sw.heat===1?12+Math.max(0,60-out)*1.6:h.sw.heat===2?25+Math.max(0,70-out)*2.6:0)*h.heatMul*K;
-const weekCost=(h,out)=>heatCost(h,out)+((h.sw.cool?40:0)+(h.sw.bugs?20:0)+(h.main?30:25))*K;
+const weekCost=(h,out)=>heatCost(h,out)+((h.sw.cool?40:0)+(h.sw.bugs?8:0)+(h.main?15:12))*K;
 const estLoss=c=>S.lossHist[c]!=null?S.lossHist[c]:CROPS[c].loss;
 const cs=c=>S.crop[c]||(S.crop[c]={planted:0,lost:0,wasted:0,shipped:0});
 const houseOf=id=>S.houses.find(h=>h.id===id);
@@ -448,18 +448,18 @@ function dayTick(){
     S.batches.forEach(b=>{
       if(b.house!==h.id||(b.status!=='growing'&&b.status!=='ready'))return;
       const C=CROPS[b.crop],off=Math.max(0,C.lo-t,t-C.hi);
-      const mult=1+off*.12+m.dry*4+m.wet*3+Math.max(0,h.pest-15)/30,age=b.status==='ready'?w-b.readyWeek:0;
+      const mult=1+off*.06+m.dry*2.5+m.wet*2+Math.max(0,h.pest-20)/35,age=b.status==='ready'?w-b.readyWeek:0;
       const pw=Math.min(.6,(1-Math.pow(1-C.loss,1/C.grow))*mult+(age>0?AGELOSS*age*(1-.07*hort):0)),pd=1-Math.pow(1-pw,1/DAYS);
       let lost=0;for(let i=0;i<b.units;i++)if(rnd()<pd)lost++;
       b.units-=lost;b.lost+=lost;cs(b.crop).lost+=lost;
       if(b.status==='growing'&&b.plantedWeek!==w){
-        const rate=t<C.lo?Math.max(.4,1-(C.lo-t)*.04):t>C.hi?Math.max(.5,1-(t-C.hi)*.03):.95+.15*(t-C.lo)/(C.hi-C.lo);
+        const rate=t<C.lo?Math.max(.55,1-(C.lo-t)*.025):t>C.hi?Math.max(.5,1-(t-C.hi)*.03):.95+.15*(t-C.lo)/(C.hi-C.lo);
         b.progress+=rate/DAYS;
         if(b.progress>=C.grow-.25){b.status='ready';b.readyWeek=w;}
       }
       if(b.units<=0){b.status='done';b.endW=w;}
     });
-    const ht=heatCost(h,out)/DAYS,cl=(h.sw.cool?40:0)*K/DAYS,pe=(h.sw.bugs?20:0)*K/DAYS,ov=(h.main?30:25)*K/DAYS;
+    const ht=heatCost(h,out)/DAYS,cl=(h.sw.cool?40:0)*K/DAYS,pe=(h.sw.bugs?8:0)*K/DAYS,ov=(h.main?15:12)*K/DAYS;
     S.cost.heat+=ht;S.cost.cool+=cl;S.cost.pest+=pe;S.cost.overhead+=ov;S.cash-=ht+cl+pe+ov;
   });
   S.growers.forEach(g=>{if(g.from<=w&&w<=g.to){const c=gHours(g)*g.rate/DAYS;S.cost.labor+=c;S.cash-=c;}});
@@ -535,8 +535,8 @@ function freshGame(){
 function spray(h){
   if(S.phase!=='run')return;
   h.pest*=(.25+h.resist);h.resist=Math.min(.6,h.resist+.1);
-  S.cash-=75*K;S.cost.pest+=75*K;
-  S.log.unshift({w:S.week,t:`Sprayed the ${h.name.toLowerCase()} for pests (${fmt(75*K)}).`,k:'info'});
+  S.cash-=50*K;S.cost.pest+=50*K;
+  S.log.unshift({w:S.week,t:`Sprayed the ${h.name.toLowerCase()} for pests (${fmt(50*K)}).`,k:'info'});
   sprayFx=(performance.now());sprayHouse=h.id;dirty=true;
 }
 function build(lotKey){
@@ -1108,8 +1108,8 @@ function renderPanel(){
       <b class="sh">Climate</b>
       <div class="sw">${SW.filter(x=>x[0]!=='bugs').map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
       <b class="sh" style="margin-top:16px">Pest control</b>
-      <div class="sw"><div class="swr"><span>Beneficial insects (${fmt(20*K)}/wk)</span><div class="opts">${['Off','On'].map((o,i)=>`<button type="button" data-sw="bugs" data-v="${i}" class="${h.sw.bugs===i?'on':''}" aria-pressed="${h.sw.bugs===i}" ${run?'':'disabled'}>${o}</button>`).join('')}</div></div></div>
-      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(75*K)})</button> <span class="gcost">Works right away. Spray resistance ${Math.round(h.resist*100)}%</span></p>
+      <div class="sw"><div class="swr"><span>Beneficial insects (${fmt(8*K)}/wk)</span><div class="opts">${['Off','On'].map((o,i)=>`<button type="button" data-sw="bugs" data-v="${i}" class="${h.sw.bugs===i?'on':''}" aria-pressed="${h.sw.bugs===i}" ${run?'':'disabled'}>${o}</button>`).join('')}</div></div></div>
+      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(50*K)})</button> <span class="gcost">Works right away. Spray resistance ${Math.round(h.resist*100)}%</span></p>
       <p class="gcost" style="margin-top:12px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
     </div>
     <div>${forecastChart(h)}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
