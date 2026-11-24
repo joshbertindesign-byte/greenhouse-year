@@ -148,6 +148,9 @@ tr.off td{opacity:.45}
 .flegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--mute);margin:6px 0 10px}
 .flegend span{display:inline-flex;align-items:center;gap:5px}
 .flegend i{display:inline-block;width:14px;height:8px;border-radius:2px}
+.sprays{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.spr{display:flex;flex-direction:column;gap:4px}
+.spr .btn{padding:0 10px;font-size:14px;white-space:normal;line-height:1.2;min-height:48px}
 .warnlist{list-style:none;padding:0;margin:10px 0 0;font-size:14px}
 .warnlist li{padding:6px 0;border-top:1px solid var(--line);color:var(--terra)}
 .crewl{font-size:14px;margin:0 0 10px}
@@ -309,7 +312,7 @@ const live=o=>o.status==='open'||o.status==='shipped';
 const activeH=()=>S.houses.filter(h=>!h.building);
 function say(t,k){S.log.unshift({w:Math.min(S.week,WEEKS),t,k:k||'info'});if(S.log.length>200)S.log.length=200;toast(t,k);if(k==='alert'&&S.pauseAlert&&!S.paused){S.paused=true;hud();}}
 
-function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,resist:0,tin:null,moist:'Good',hist:[],tday:[],building:0};}
+function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,res:{a:0,b:0},tin:null,moist:'Good',hist:[],tday:[],building:0};}
 function newCustomer(name,score){
   const keys=Object.keys(CROPS),crops=[pick(keys)];
   if(rnd()<.6){const c2=pick(keys);if(!crops.includes(c2))crops.push(c2);}
@@ -444,7 +447,7 @@ function dayTick(){
     let P=h.pest;
     P+=((P*(t>75?.16:t>65?.11:.05)+.8+(h.sw.vent?1.5:0)+(h.sw.cool?2.5:0)+(w>=14&&w<=40?1:0)+h.pestIn)*(1-.05*hort)-.3*hort)/DAYS;
     if(h.sw.bugs)P-=(2+P*.18)/DAYS;
-    h.pest=clamp(P,0,100);h.resist=Math.max(0,h.resist-.004/DAYS);h.tin=t;h.moist=m.label;h.tday[d]=t;
+    h.pest=clamp(P,0,100);for(const k of ['a','b'])h.res[k]=Math.max(0,h.res[k]-RES_FADE/DAYS);h.tin=t;h.moist=m.label;h.tday[d]=t;
     S.batches.forEach(b=>{
       if(b.house!==h.id||(b.status!=='growing'&&b.status!=='ready'))return;
       const C=CROPS[b.crop],off=Math.max(0,C.lo-t,t-C.hi);
@@ -512,7 +515,7 @@ function nextYear(){
   S.customers.forEach(c=>{if(c.active&&c.score<25){c.active=false;gone.push(c.name);}});
   S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=true;S.orders=[];S.batches=[];S.log=[];
   S.lossHist=S.nextLoss||S.lossHist;
-  S.houses.forEach(h=>{h.hist=[];h.pest=Math.min(h.pest,20);h.tin=null;h.tday=[];});
+  S.houses.forEach(h=>{h.hist=[];h.pest=Math.min(h.pest,20);h.tin=null;h.tday=[];h.res.a*=.5;h.res.b*=.5;});
   const used=new Set(S.customers.map(c=>c.name)),free=NAMES.filter(n=>!used.has(n));
   const activeN=S.customers.filter(c=>c.active).length,joins=activeN<6?2:activeN<9?1:0,joined=[];
   for(let i=0;i<joins&&free.length;i++){const n=free.splice(Math.floor(rnd()*free.length),1)[0];S.customers.push(newCustomer(n,50));joined.push(n);}
@@ -532,11 +535,14 @@ function freshGame(){
   S.fc=rollFc(1);S.fcN=rollFc(2);
   buildMap();weekStart();
 }
-function spray(h){
+const RES_FADE=.025,RES_STEP=.12,RES_CAP=.5,SPRAYS={a:'Spray A (contact)',b:'Spray B (systemic)'};
+const sprayKill=r=>1-(.25+r);
+function spray(h,kind){
   if(S.phase!=='run')return;
-  h.pest*=(.25+h.resist);h.resist=Math.min(.6,h.resist+.1);
+  kind=kind||(h.res.a<=h.res.b?'a':'b');
+  h.pest*=(.25+h.res[kind]);h.res[kind]=Math.min(RES_CAP,h.res[kind]+RES_STEP);
   S.cash-=50*K;S.cost.pest+=50*K;
-  S.log.unshift({w:S.week,t:`Sprayed the ${h.name.toLowerCase()} for pests (${fmt(50*K)}).`,k:'info'});
+  S.log.unshift({w:S.week,t:`Sprayed the ${h.name.toLowerCase()} with ${SPRAYS[kind].toLowerCase()} (${fmt(50*K)}).`,k:'info'});
   sprayFx=(performance.now());sprayHouse=h.id;dirty=true;
 }
 function build(lotKey){
@@ -1109,12 +1115,13 @@ function renderPanel(){
       <div class="sw">${SW.filter(x=>x[0]!=='bugs').map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
       <b class="sh" style="margin-top:16px">Pest control</b>
       <div class="sw"><div class="swr"><span>Beneficial insects (${fmt(8*K)}/wk)</span><div class="opts">${['Off','On'].map((o,i)=>`<button type="button" data-sw="bugs" data-v="${i}" class="${h.sw.bugs===i?'on':''}" aria-pressed="${h.sw.bugs===i}" ${run?'':'disabled'}>${o}</button>`).join('')}</div></div></div>
-      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(50*K)})</button> <span class="gcost">Works right away. Spray resistance ${Math.round(h.resist*100)}%</span></p>
+      <p class="gcost" style="margin:8px 0">Sprays work right away. Each use builds resistance to that product, which fades over the months you don't use it. Alternate A and B to keep both working.${h.sw.bugs?'':' Beneficial insects keep pests down steadily, so you need far fewer sprays.'}</p>
+      <div class="sprays">${['a','b'].map(k=>{const r=h.res[k],kill=sprayKill(r);return`<div class="spr"><button class="btn red" type="button" data-spray="${k}" ${run?'':'disabled'}>${SPRAYS[k]} \u00b7 ${fmt(50*K)}</button><span class="gcost">Kills about ${Math.round(kill*100)}% now</span><i class="pm"><i style="width:${Math.round(r/RES_CAP*100)}%;background:${r>.3?'var(--terra)':r>.12?'var(--amber)':'var(--leaf)'}"></i></i><small class="gcost">Resistance ${Math.round(r/RES_CAP*100)}% of max</small></div>`;}).join('')}</div>
       <p class="gcost" style="margin-top:12px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
     </div>
     <div>${forecastChart(h)}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
   </div>`;
-  $('sprayBtn').onclick=()=>{spray(h);renderPanel();toast(`Sprayed the ${h.name.toLowerCase()}.`,'good');};
+  document.querySelectorAll('[data-spray]').forEach(b=>b.onclick=()=>{const k=b.dataset.spray,kill=sprayKill(h.res[k]);spray(h,k);renderPanel();const o=k==='a'?'b':'a',tip=h.res[k]>=.3&&h.res[o]<h.res[k]-.1?` ${SPRAYS[o]} would hit harder next time.`:'';toast(`${SPRAYS[k]} knocked out about ${Math.round(kill*100)}% of the pests in the ${h.name.toLowerCase()}.${tip}`,'good');});
 }
 function forecastChart(h){
   const fc=S.fc;if(!fc||S.phase!=='run')return'';
@@ -1234,7 +1241,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 function start(d){
-  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;buildMap();}
+  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;S.houses.forEach(h=>{if(!h.res)h.res={a:Math.min(RES_CAP,h.resist||0),b:0};});buildMap();}
   else freshGame();
   resize();zoom=clamp(VW/1150,.55,1);
   cam.x=wx(S.player.x,S.player.y);cam.y=wy(S.player.x,S.player.y,0)-40;
