@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Greenhouse Year</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday game: a cozy live greenhouse sim with real stakes
+   IDEA a nursery yard seen from above at an angle: office, glass houses, lots for sale, a loading dock
+   PICTURE the isometric yard itself, full screen, with your grower walking between stations
+   COLOUR seasonal grass and gravel, pale glass, terracotta pots, deep greenhouse green HUD, sun yellow for actions
+   TYPE Outfit display + Inter text
+   LAYOUT slim HUD bar on top, the yard fills the rest; menus open as sheets over the yard; bottom sheet on phone */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0f1913);--ink:light-dark(#14211a,#e4eee6);--mute:light-dark(#5b6a60,#9db0a3);--line:light-dark(#dfe6df,#26352c);--panel:light-dark(#f4f8f3,#15211a);--band:#143326;--leaf:light-dark(#2f7d3e,#62bd71);--terra:light-dark(#c4542a,#ec7d4e);--amber:light-dark(#a86e05,#e6ad3e);--sun:#e9b824;--sky:light-dark(#e7f1ea,#16241c)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--sun);outline-offset:2px}
+#app{height:100%;display:flex;flex-direction:column}
+.hud{flex:none;background:var(--band);color:#eef5ee;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:8px max(2vw,12px);z-index:10}
+.brand b{display:block;font:600 19px/1.05 Outfit,sans-serif;white-space:nowrap}
+.brand small{color:#a9c4b0;font-size:13px;white-space:nowrap}
+.date b{display:block;font:600 19px/1.1 Outfit,sans-serif;white-space:nowrap}
+.pips{display:flex;gap:3px;margin-top:4px}
+.pips i{width:16px;height:5px;border-radius:3px;background:#2c4d3c;overflow:hidden;display:block}
+.pips i b{display:block;height:100%;background:var(--sun)}
+.stats{display:flex;flex-wrap:wrap;gap:6px}
+.stat{background:#1e4634;border-radius:10px;padding:3px 10px}
+.stat span{display:block;font-size:12px;color:#a9c4b0;white-space:nowrap}
+.stat b{font:600 17px/1.15 Outfit,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat b.neg{color:#ff9d77}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-left:auto}
+.hb{min-height:40px;min-width:40px;padding:0 12px;border-radius:10px;border:1px solid #3d6650;background:transparent;color:#eef5ee;font-weight:600;font-size:14px}
+.hb.on,.hb.play{background:var(--sun);color:#1f1a05;border-color:var(--sun)}
+.seg2{display:inline-flex;border:1px solid #3d6650;border-radius:10px;overflow:hidden}
+.seg2 button{min-height:40px;min-width:40px;border:0;background:transparent;color:#cfe0d3;font-size:14px}
+.seg2 button.on{background:#2c4d3c;color:#fff}
+.fcchip{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;background:#24503b;color:#d8eadf}
+.fcchip.warn{background:#7a2e16;color:#ffd9c9}
+.stage{flex:1;position:relative;overflow:hidden;background:var(--sky)}
+canvas{display:block;touch-action:none;cursor:pointer}
+.toasts{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;z-index:15;pointer-events:none;width:min(92%,560px)}
+.toast{background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:8px 14px;font-size:14px;box-shadow:0 4px 0 rgba(0,0,0,.12);text-align:center}
+.toast.alert{border-color:var(--terra)}
+.toast.good{border-color:var(--leaf)}
+.holding{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:14;background:var(--bg);border:2px solid var(--sun);border-radius:16px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;width:min(94%,640px);box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.holding p{margin:0;font-size:14px;flex:1;min-width:14em}
+.alerts{position:absolute;left:12px;bottom:12px;z-index:12;display:flex;flex-direction:column;gap:6px;max-width:min(70%,340px)}
+.alerts button{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px;text-align:left;display:flex;gap:8px;align-items:center}
+.alerts button.alert{border-color:var(--terra)}
+.alerts i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:700;font-size:13px;color:#fff;flex:none}
+.zoom{position:absolute;right:12px;bottom:12px;z-index:12;display:flex;flex-direction:column;gap:6px}
+.zoom button{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-size:20px;font-weight:600}
+.modal{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(8,20,14,.32)}
+.sheet{background:var(--bg);border:2px solid var(--line);border-radius:18px;width:min(100%,900px);max-height:100%;overflow:auto;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+.shead{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;gap:10px;padding:14px 18px 8px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.shead h2{font:600 24px/1.1 Outfit,sans-serif;margin:0;flex:1}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;width:100%;padding-top:4px}
+.tabs button{min-height:38px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-weight:600;font-size:14px;position:relative}
+.tabs button.on{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.tabs button .n{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:10px;background:var(--terra);color:#fff;font-size:12px;margin-left:6px;padding:0 5px}
+.sbody{padding:16px 18px 20px}
+.btn{font-weight:600;min-height:44px;padding:0 18px;border-radius:12px;border:0;background:var(--sun);color:#1f1a05;white-space:nowrap;box-shadow:0 3px 0 #b48c10}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #b48c10}
+.btn.go{background:var(--leaf);color:#fff;box-shadow:0 3px 0 #1f5a2b}
+.btn.line{background:var(--bg);color:var(--ink);border:2px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.red{background:var(--terra);color:#fff;box-shadow:0 3px 0 #8a3417}
+.btn:disabled{opacity:.45;cursor:default}
+.mini{min-height:36px;padding:0 12px;border-radius:10px;border:2px solid var(--line);background:var(--bg);font-size:14px;font-weight:600;white-space:nowrap}
+.hint{color:var(--mute);margin:0 0 12px;font-size:15px}
+.chip{display:inline-block;font-size:13px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:color-mix(in srgb,var(--mute) 14%,transparent);color:var(--mute)}
+.chip.ok{color:var(--leaf);background:color-mix(in srgb,var(--leaf) 14%,transparent)}
+.chip.tight{color:var(--amber);background:color-mix(in srgb,var(--amber) 15%,transparent)}
+.chip.short{color:var(--terra);background:color-mix(in srgb,var(--terra) 13%,transparent)}
+.tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(15em,1fr));gap:12px}
+.ticket{border:2px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px;background:var(--bg);box-shadow:0 3px 0 var(--line);align-content:start}
+.tk1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cb{color:#fff;font-size:13px;font-weight:600;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.tkwk{font-size:14px;font-weight:600;white-space:nowrap}
+.tk2{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tk2 b{font:600 32px/1 Outfit,sans-serif}
+.tk2 span{color:var(--mute);font-size:14px}
+.tk3{font-size:14px;line-height:1.35}
+.tk3 small{display:block;color:var(--mute);font-size:13px}
+.tkb{display:flex;gap:8px}
+.tkb .btn,.tkb .mini{flex:1}
+.cfg{display:grid;gap:10px;background:var(--panel);border-radius:12px;padding:10px}
+.cfg label{font-size:13px;font-weight:600;color:var(--mute);display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+.opts{display:inline-flex;border:2px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+.opts button{min-height:36px;min-width:48px;padding:0 10px;border:0;background:transparent;font-size:14px;color:var(--mute);font-weight:600;white-space:nowrap}
+.opts button.on{background:var(--leaf);color:#fff}
+.opts button:disabled{cursor:default;opacity:.7}
+.cfg p{margin:0;font-size:13px;color:var(--mute)}
+.cfg p.wn{color:var(--terra)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:600;color:var(--mute);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:13px}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.off td{opacity:.45}
+.scroll{overflow-x:auto}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.sc{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sc i{display:inline-block;width:64px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.sc i i{display:block;height:100%}
+.up{color:var(--leaf)}.dn{color:var(--terra)}
+.empty{color:var(--mute);font-size:15px}
+.gcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(15em,1fr));gap:10px;margin:8px 0 16px}
+.gcard{background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.gcard.wide{grid-column:1/-1}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.gh b{font:600 18px/1.2 Outfit,sans-serif}
+.gh span{font-weight:600;white-space:nowrap}
+.gstats{display:grid;gap:4px}
+.gs{display:grid;grid-template-columns:8.5em minmax(0,1fr) 1.6em;gap:8px;align-items:center;font-size:13px;color:var(--mute)}
+.gs i{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.gs i i{height:100%;background:var(--leaf)}
+.gs b{color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.gback{font-size:13px;color:var(--leaf)}
+.gm td,.gm th{text-align:center}
+.gm td:first-child,.gm th:first-child{text-align:left}
+.gm input{width:22px;height:22px;accent-color:var(--leaf)}
+.grow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:end}
+.grow label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--mute)}
+.grow input{width:6.5em;font:16px Inter,sans-serif;min-height:40px;padding:0 8px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.gcost{font-size:14px;color:var(--mute);margin:0}
+.err{color:var(--terra);font-size:13px;margin:0}
+.sh{display:block;font-weight:600;margin:6px 0}
+.tasks{font-size:14px;color:var(--mute);margin:0 0 10px;padding-left:18px}
+.pnl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+.sw{display:grid;gap:8px}
+.swr{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px}
+.swr>span{font-size:14px;font-weight:600}
+.gauges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.gauge{background:var(--panel);border-radius:12px;padding:8px 10px}
+.gauge span{display:block;font-size:12px;color:var(--mute)}
+.gauge b{display:block;font:600 22px/1.15 Outfit,sans-serif;white-space:nowrap}
+.gauge.bad b{color:var(--terra)}
+.pm{display:block;height:6px;border-radius:3px;background:var(--line);margin-top:4px;overflow:hidden}
+.pm>i{display:block;height:100%}
+.fchart{position:relative;height:170px;border-radius:12px;background:var(--panel);overflow:hidden}
+.fchart svg{position:absolute;inset:0;width:100%;height:100%}
+.fy{position:absolute;left:6px;font-size:12px;color:var(--mute)}
+.fdays{display:grid;grid-template-columns:repeat(7,1fr);font-size:12px;color:var(--mute);text-align:center;margin-top:4px}
+.flegend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--mute);margin:6px 0 10px}
+.flegend span{display:inline-flex;align-items:center;gap:5px}
+.flegend i{display:inline-block;width:14px;height:8px;border-radius:2px}
+.warnlist{list-style:none;padding:0;margin:10px 0 0;font-size:14px}
+.warnlist li{padding:6px 0;border-top:1px solid var(--line);color:var(--terra)}
+.crewl{font-size:14px;margin:0 0 10px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(8em,1fr));gap:10px;margin:12px 0}
+.figs b{display:block;font:600 clamp(22px,3vw,32px)/1.1 Outfit,sans-serif;white-space:nowrap}
+.figs span{font-size:13px;color:var(--mute)}
+.rgrid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+.log{list-style:none;padding:0;margin:0;font-size:14px}
+.log li{padding:6px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:3.6em 1fr;gap:8px}
+.log li b{font-weight:500;color:var(--mute)}
+.log li.alert,.log li.warn{color:var(--terra)}
+.log li.good{color:var(--leaf)}
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(14em,1fr));gap:10px;margin:12px 0 16px;padding:0;list-style:none}
+.how li{background:var(--panel);border-radius:12px;padding:10px 12px;font-size:14px}
+.how b{display:block;font:600 16px/1.2 Outfit,sans-serif;margin-bottom:2px}
+@media(max-width:760px){.pnl,.rgrid{grid-template-columns:minmax(0,1fr)}.gauges{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.alerts{flex-direction:row;flex-wrap:wrap;max-width:70%}.alerts button{padding:6px}.alerts .at{display:none}.alerts i{width:26px;height:26px}.toast{font-size:13px;padding:6px 10px}.hud{gap:6px 10px;padding:6px 10px}.brand{display:none}.stat{padding:2px 8px}.stat b{font-size:15px}.date b{font-size:16px}.pips i{width:11px}.ctl{margin-left:0}.hb{min-height:38px}.modal{align-items:flex-end;padding:0}.sheet{border-radius:18px 18px 0 0;max-height:88%}.alerts{max-width:62%}.holding{bottom:10px;left:10px;transform:none;width:calc(100% - 76px)}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hud">
+    <div class="brand"><b>Greenhouse Year</b><small id="hYear">Year 1</small></div>
+    <div class="date"><b id="hDate">Week 1</b><div class="pips" id="pips"></div></div>
+    <span class="fcchip" id="hFc"></span>
+    <div class="stats">
+      <div class="stat"><span>Cash</span><b id="hCash">$0</b></div>
+      <div class="stat"><span>Year profit</span><b id="hProfit">$0</b></div>
+      <div class="stat"><span>Goodwill</span><b id="hGw">0</b></div>
+    </div>
+    <div class="ctl">
+      <button class="hb play" id="bPlay" type="button">Play</button>
+      <div class="seg2" id="speed"><button type="button" data-sp="1">1x</button><button type="button" data-sp="2">2x</button><button type="button" data-sp="4">4x</button></div>
+    </div>
+  </header>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Your nursery yard. Click or tap to walk."></canvas>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+    <div class="alerts" id="alerts"></div>
+    <div class="zoom"><button type="button" id="zIn" aria-label="Zoom in">+</button><button type="button" id="zOut" aria-label="Zoom out">&minus;</button></div>
+    <div class="holding" id="holding" hidden></div>
+    <div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="shead"><h2 id="mTitle"></h2><button class="mini" type="button" id="mClose">Close</button><nav class="tabs" id="mTabs"></nav></div><div class="sbody" id="mBody"></div></div></div>
+  </div>
+</div>
+<script>
+{
+/* ================= constants ================= */
+const K=3,VER=6,WEEKS=52,DAYS=7,AGE=.12,AGELOSS=.03,HOUSE_COST=9000,BUILD_WEEKS=2,FPC=2,WEEK_SEC=15;
+const CROPS={
+  petunia:{name:'Petunia',grow:8,loss:.08,lo:58,hi:80,cost:30,price:180,season:[10,20],shelf:3,color:'#b8417f'},
+  geranium:{name:'Geranium',grow:12,loss:.10,lo:55,hi:78,cost:42,price:255,season:[14,22],shelf:4,color:'#cf3d32'},
+  begonia:{name:'Begonia',grow:10,loss:.09,lo:62,hi:82,cost:36,price:216,season:[14,24],shelf:3,color:'#d9772f'},
+  pothos:{name:'Pothos',grow:14,loss:.05,lo:65,hi:88,cost:48,price:285,season:[18,50],shelf:6,color:'#2f8a45'},
+  mum:{name:'Mum',grow:11,loss:.10,lo:58,hi:78,cost:39,price:234,season:[34,42],shelf:2,color:'#c99a12'},
+  poinsettia:{name:'Poinsettia',grow:16,loss:.12,lo:65,hi:80,cost:60,price:390,season:[46,50],shelf:2,color:'#a3223b'}
+};
+const NAMES=['Hillside Garden Center','Cedar Creek Nursery','Prairie Bloom Market','Mesquite Feed & Garden','Lakeview Florist','Red Dirt Landscaping','Sunrise Grocery','Caprock Home & Garden','Old Mill Farm Stand','Bluebonnet Greenery','Windmill Hardware','Clear Fork Florist','Big Sky Plant Co.','Pecan Street Market'];
+const MAIN={name:'Main house',dT:0,gain:1,heatMul:1,pestIn:0,desc:'Your original house. No surprises.'};
+const TRAITS=[
+  {name:'North house',dT:-3,gain:1,heatMul:1.15,pestIn:0,desc:'Shaded by the windbreak: runs about 3°F cooler and costs more to heat.'},
+  {name:'Low house',dT:0,gain:1,heatMul:1,pestIn:1.5,desc:'Sits low by the ditch, so more pests drift in.'},
+  {name:'Old glass house',dT:0,gain:1.3,heatMul:1.3,pestIn:0,desc:'Older glazing: hotter in the sun and costlier to heat.'},
+  {name:'Gutter house',dT:1.5,gain:1,heatMul:.9,pestIn:.5,desc:'Built tight to the main house: a little warmer and cheaper to heat.'}
+];
+const MONTHL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SW=[['heat','Heater',['Off','Low','High']],['vent','Roof vents',['Closed','Open']],['cool','Fans + wet wall',['Off','On']],['shade','Shade cloth',['Off','On']],['water','Irrigation',['Low','Normal','High']],['bugs','Beneficial insects',['Off','On']]];
+const TASKS=[['mgmt','Greenhouse management','Greenhouse'],['crop','Crop management','Crops'],['maint','Maintenance','Maintenance']];
+const THOURS={mgmt:1,crop:2,maint:1},TSTAT={mgmt:'exp',crop:'hort',maint:'eth'};
+const STATS=[['exp','Experience'],['eth','Work ethic'],['hort','Hort knowledge']];
+const GNAMES=['Alex','Sam','Jordan','Casey','Riley','Morgan','Jamie','Avery','Taylor','Quinn','Drew','Robin','Reese','Skyler','Emerson','Rowan'];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString('en-US');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fl=n=>n===1?'flat':'flats';
+const qual=a=>a<=0?1:Math.max(.4,1-AGE*a);
+const keep=h=>{let k=1;for(let a=1;a<=h;a++)k*=1-AGELOSS*a;return k;};
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let S;
+
+/* ================= world ================= */
+const MW=32,MH=24,T={GRASS:0,PATH:1,ROAD:2,FLOOR:3,BENCH:4,WALL:5,DOOR:6,OFFICE:7,TREE:8,LOT:9};
+const LOTS=[{key:'main',x:5,y:2,w:13,h:9,door:'s'},{key:'a',x:20,y:2,w:11,h:9,door:'s'},{key:'b',x:5,y:13,w:11,h:9,door:'n'}];
+const OFFICE={x:1,y:17,w:3,h:3,st:{x:4,y:18}};
+const TREES=[[0,7],[0,9],[2,4],[1,1],[3,2],[2,14],[0,21],[17,15],[17,19],[23,15],[27,17],[30,14],[26,19],[13,0],[8,0],[30,0],[0,15]];
+const GEO={};
+LOTS.forEach(L=>{
+  const dx=L.x+Math.floor(L.w/2),s=L.door==='s';
+  const door={x:dx,y:s?L.y+L.h-1:L.y},appr={x:dx,y:s?L.y+L.h:L.y-1};
+  const pst={x:L.x+1,y:s?L.y+L.h-2:L.y+1},pwall={x:L.x,y:s?L.y+L.h-2:L.y+1};
+  const rows=[L.y+2,L.y+4,L.y+6],cells=[];
+  rows.forEach((ry,r)=>{for(let x=L.x+2;x<=L.x+L.w-2;x++)cells.push({x,y:ry,r});});
+  GEO[L.key]={...L,door,appr,pst,pwall,rows,cells,cap:cells.length*FPC};
+});
+let MAP=[];
+function buildMap(){
+  MAP=[...Array(MH)].map(()=>Array(MW).fill(T.GRASS));
+  const set=(x,y,t)=>{if(x>=0&&y>=0&&x<MW&&y<MH)MAP[y][x]=t;};
+  for(let x=1;x<MW;x++){set(x,11,T.PATH);set(x,12,T.PATH);}
+  for(let y=13;y<=18;y++)set(4,y,T.PATH);
+  for(let y=13;y<=21;y++)set(19,y,T.PATH);
+  for(let x=0;x<MW;x++){set(x,22,T.ROAD);set(x,23,T.ROAD);}
+  for(let x=18;x<=22;x++)set(x,21,T.PATH);
+  for(let y=OFFICE.y;y<OFFICE.y+OFFICE.h;y++)for(let x=OFFICE.x;x<OFFICE.x+OFFICE.w;x++)set(x,y,T.OFFICE);
+  TREES.forEach(([x,y])=>{if(MAP[y][x]===T.GRASS)set(x,y,T.TREE);});
+  LOTS.forEach(L=>{
+    const g=GEO[L.key],h=S.houses.find(z=>z.lot===L.key),up=h&&!h.building;
+    for(let y=L.y;y<L.y+L.h;y++)for(let x=L.x;x<L.x+L.w;x++){
+      if(!up){set(x,y,T.LOT);continue;}
+      set(x,y,x===L.x||y===L.y||x===L.x+L.w-1||y===L.y+L.h-1?T.WALL:T.FLOOR);
+    }
+    if(up){set(g.door.x,g.door.y,T.DOOR);g.cells.forEach(c=>set(c.x,c.y,T.BENCH));}
+  });
+}
+const tileAt=(x,y)=>x>=0&&y>=0&&x<MW&&y<MH?MAP[y][x]:-1;
+const walk=(x,y)=>[T.GRASS,T.PATH,T.ROAD,T.FLOOR,T.DOOR,T.LOT].includes(tileAt(x,y));
+function findPath(sx,sy,tx,ty){
+  if(!walk(tx,ty))return null;
+  if(sx===tx&&sy===ty)return[];
+  const prev=new Map(),key=(x,y)=>y*MW+x,q=[[sx,sy]];prev.set(key(sx,sy),null);
+  while(q.length){
+    const [x,y]=q.shift();
+    if(x===tx&&y===ty){const out=[];let k=key(x,y);while(k!=null&&k!==key(sx,sy)){out.unshift([k%MW,Math.floor(k/MW)]);k=prev.get(k);}return out;}
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(!prev.has(k)&&walk(nx,ny)){prev.set(k,key(x,y));q.push([nx,ny]);}}
+  }
+  return null;
+}
+function houseAtTile(x,y){return S.houses.find(h=>{const g=GEO[h.lot];return x>=g.x&&x<g.x+g.w&&y>=g.y&&y<g.y+g.h;});}
+function lotAtTile(x,y){return LOTS.find(L=>x>=L.x&&x<L.x+L.w&&y>=L.y&&y<L.y+L.h);}
+
+/* ================= model ================= */
+function rnd(){S.rs=(S.rs+0x6D2B79F5)|0;let t=S.rs;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;}
+const ri=(a,b)=>a+Math.floor(rnd()*(b-a+1));
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const monthIdx=w=>Math.min(11,Math.floor((w-1)/WEEKS*12));
+const outsideBase=w=>64-20*Math.cos(2*Math.PI*(w-3)/52);
+function climate(w,out,sw,h){
+  let gain=(17-7*Math.cos(2*Math.PI*w/52))*h.gain;if(sw.shade)gain*=.5;
+  let t=out+gain+[0,10,20][sw.heat]+h.dT;
+  if(sw.vent)t=out+(t-out)*.45;
+  if(sw.cool)t=out-9+(t-out)*.3;
+  return t;
+}
+function moisture(t,sw){
+  const demand=clamp(.55+(t-60)/45,.45,1.5)*(sw.shade?.85:1),ratio=[.7,1,1.3][sw.water]/demand;
+  const dry=Math.max(0,.85-ratio),wet=Math.max(0,ratio-1.3);
+  return{dry,wet,label:dry>0?'Dry':wet>0?'Soggy':'Good'};
+}
+const heatCost=(h,out)=>(h.sw.heat===1?12+Math.max(0,60-out)*1.6:h.sw.heat===2?25+Math.max(0,70-out)*2.6:0)*h.heatMul*K;
+const weekCost=(h,out)=>heatCost(h,out)+((h.sw.cool?40:0)+(h.sw.bugs?20:0)+(h.main?30:25))*K;
+const estLoss=c=>S.lossHist[c]!=null?S.lossHist[c]:CROPS[c].loss;
+const cs=c=>S.crop[c]||(S.crop[c]={planted:0,lost:0,wasted:0,shipped:0});
+const houseOf=id=>S.houses.find(h=>h.id===id);
+const cust=id=>S.customers.find(c=>c.id===id);
+const order=id=>S.orders.find(o=>o.id===id);
+const dueW=o=>o.ship+o.delay;
+const live=o=>o.status==='open'||o.status==='shipped';
+const activeH=()=>S.houses.filter(h=>!h.building);
+function say(t,k){S.log.unshift({w:Math.min(S.week,WEEKS),t,k:k||'info'});if(S.log.length>200)S.log.length=200;toast(t,k);if(k==='alert'&&S.pauseAlert&&!S.paused){S.paused=true;hud();}}
+
+function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,resist:0,tin:null,moist:'Good',hist:[],tday:[],building:0};}
+function newCustomer(name,score){
+  const keys=Object.keys(CROPS),crops=[pick(keys)];
+  if(rnd()<.6){const c2=pick(keys);if(!crops.includes(c2))crops.push(c2);}
+  return{id:S.nid++,name,score,start:score,crops,base:ri(6,10),active:true};
+}
+function resetYearStats(){S.cost={plants:0,heat:0,cool:0,pest:0,overhead:0,build:0,labor:0};S.rev=0;S.aging=0;S.crop={};S.startCash=S.cash;}
+function jitNeed(list){
+  const need=Array(WEEKS+2).fill(0);
+  list.forEach(o=>{const C=CROPS[o.crop];for(let w=Math.max(1,o.ship-C.grow);w<=Math.min(WEEKS,o.ship);w++)need[w]+=o.qty/(1-estLoss(o.crop));});
+  return need;
+}
+function genOffers(){
+  const cap=activeH().reduce((a,h)=>a+h.cap,0);
+  for(let tries=0;tries<200;tries++){
+    const list=[];
+    S.customers.filter(c=>c.active).forEach(c=>{
+      const n=c.score>=80?3:c.score>=60?2:c.score>=40?(rnd()<.5?2:1):1;
+      for(let i=0;i<n;i++){
+        const crop=pick(c.crops),C=CROPS[crop];
+        list.push({crop,ship:ri(Math.max(C.season[0],C.grow+3),C.season[1]),qty:Math.max(3,Math.round(c.base*(.7+c.score/100*.6)*(.8+rnd()*.4))),price:Math.round(C.price*(.9+rnd()*.25)),custId:c.id,cust:c.name});
+      }
+    });
+    if(S.year===1&&tries<199&&Math.max(...jitNeed(list))>cap*.85)continue;
+    list.sort((a,b)=>a.ship-b.ship);
+    S.orders=list.map(o=>({...o,id:S.nid++,delay:0,status:'offer',filled:0,value:1}));
+    return;
+  }
+}
+function rollFc(w){
+  if(w>WEEKS)return null;
+  const base=outsideBase(w);let ev=null;
+  if((w<10||w>46)&&rnd()<.09)ev='cold';else if(w>=24&&w<=36&&rnd()<.09)ev='heat';
+  const noise=(rnd()-.5)*8,out=base+noise+(ev==='cold'?-16:ev==='heat'?9:0);
+  const fOut=base+noise+(rnd()-.5)*5,seasonal=(w<10||w>46)||(w>=24&&w<=36);
+  const warn=ev?rnd()<.7:seasonal&&rnd()<.06;
+  const days=[...Array(DAYS)].map(()=>(rnd()-.5)*6);
+  return{w,out,ev,fOut,warn,warnKind:ev||((w<10||w>46)?'cold':'heat'),days};
+}
+function genPool(prev){
+  const pool=[],used=new Set();
+  (prev||[]).forEach(g=>{if(pool.length<2&&rnd()<.7){pool.push({id:S.nid++,name:g.name,exp:Math.min(10,g.exp+1),eth:g.eth,hort:g.hort,rate:g.rate+1,back:true});used.add(g.name);}});
+  while(pool.length<4){
+    const name=pick(GNAMES.filter(n=>!used.has(n)));used.add(name);
+    const st=[ri(1,7),ri(1,7),ri(1,7)];st[ri(0,2)]=ri(6,10);
+    const [exp,eth,hort]=st;
+    pool.push({id:S.nid++,name,exp,eth,hort,rate:Math.max(7,Math.round(6+(exp+eth+hort)*.4+ri(-2,2)))});
+  }
+  S.pool=pool;
+}
+const gHours=g=>Object.values(g.assign).reduce((t,a)=>t+TASKS.reduce((x,[k])=>x+(a&&a[k]?THOURS[k]:0),0),0);
+const onTask=(hid,task,w)=>S.growers.filter(g=>g.from<=w&&w<=g.to&&g.assign[hid]&&g.assign[hid][task]);
+const skill=(hid,task,w)=>onTask(hid,task,w).reduce((m,g)=>Math.max(m,g[TSTAT[task]]),0);
+const crewName=(hid,task,w)=>{const l=onTask(hid,task,w).sort((a,b)=>b[TSTAT[task]]-a[TSTAT[task]]);return l.length?l[0].name:'';};
+const houseCrops=(h,w)=>[...new Set(S.batches.filter(b=>b.house===h.id&&(b.status==='growing'||b.status==='ready'||(b.status==='planned'&&b.start<=w))).map(b=>b.crop))];
+function comfort(crops){if(!crops.length)return null;let lo=Math.max(...crops.map(c=>CROPS[c].lo)),hi=Math.min(...crops.map(c=>CROPS[c].hi));if(lo>hi){const m=(lo+hi)/2;lo=m;hi=m;}return{lo,hi};}
+function bestSettings(h,w,out){
+  const cf=comfort(houseCrops(h,w));let best=h.sw,bs=1e9;
+  for(let heat=0;heat<3;heat++)for(let vent=0;vent<2;vent++)for(let cool=0;cool<2;cool++)for(let shade=0;shade<2;shade++)for(let water=0;water<3;water++){
+    const sw={heat,vent,cool,shade,water,bugs:h.sw.bugs},t=climate(w,out,sw,h),m=moisture(t,sw);
+    const off=cf?Math.max(0,cf.lo+1-t,t-cf.hi+1):0;
+    const sc=off*40+(m.dry+m.wet)*300+(heatCost({...h,sw},out)/K+(cool?40:0))*(cf?.3:1)+(vent?4:0)+(cool?8:0);
+    if(sc<bs){bs=sc;best=sw;}
+  }
+  return best;
+}
+function growerSet(){
+  const w=S.week;if(S.phase!=='run'||!S.fc)return;
+  activeH().forEach(h=>{
+    const e=skill(h.id,'mgmt',w);if(!e)return;
+    let out=S.fc.fOut;if(S.fc.warn&&e>=6)out+=S.fc.warnKind==='cold'?-8:4;
+    out+=(rnd()-.5)*2*(10-e)*1.5;
+    h.sw=bestSettings(h,w,out);
+  });
+}
+function bump(cid,d){const c=cust(cid);if(c)c.score=clamp(c.score+d,0,100);}
+function readyAt(b){
+  const C=CROPS[b.crop];
+  if(b.status==='planned')return Math.max(b.start,S.week)+C.grow;
+  if(b.status==='growing'){const rem=C.grow-.25-b.progress;if(b.plantedWeek===S.week)return S.week+Math.max(1,Math.ceil(rem));return S.week+Math.max(0,Math.ceil(rem-(DAYS-S.day)/DAYS));}
+  return b.readyWeek;
+}
+function projUnits(b){
+  const L=estLoss(b.crop),C=CROPS[b.crop];
+  if(b.status==='planned')return b.qty*(1-L);
+  if(b.status==='ready')return b.units;
+  if(b.status==='growing')return b.units*(1-L*clamp((C.grow-b.progress)/C.grow,0,1));
+  return 0;
+}
+function plotSpan(b){
+  const o=b.orderId!=null?order(b.orderId):null,open=o&&o.status==='open',C=CROPS[b.crop];
+  if(b.status==='done')return null;
+  if(b.status==='planned'){const r=b.start+C.grow;return[b.start,open?Math.max(dueW(o),r):r+C.shelf];}
+  const r=readyAt(b);return[S.week,open?Math.max(dueW(o),r):r+C.shelf];
+}
+function cellBooked(hid,idx,a,z,ignore){
+  return S.batches.find(b=>b.id!==ignore&&b.house===hid&&b.status!=='done'&&b.cells.includes(idx)&&(()=>{const sp=plotSpan(b);return sp&&sp[0]<=z&&a<=sp[1];})());
+}
+const cellNow=(hid,idx)=>S.batches.find(b=>b.house===hid&&(b.status==='growing'||b.status==='ready')&&b.cells.includes(idx));
+
+function weekStart(){
+  const w=S.week;
+  S.houses.forEach(h=>{h.tday=[];});S.outDays=[];
+  const ex=S.orders.filter(o=>o.status==='offer'&&w>o.ship-CROPS[o.crop].grow);
+  ex.forEach(o=>{o.status='declined';o.expired=true;bump(o.custId,-2);});
+  if(ex.length)say(ex.length===1?`${ex[0].cust}'s ${CROPS[ex[0].crop].name.toLowerCase()} offer expired: too late to pot it now. Goodwill \u22122.`:`${ex.length} offers expired because it's too late to pot them: ${ex.map(o=>CROPS[o.crop].name.toLowerCase()+' for '+o.cust).join(', ')}. Goodwill \u22122 each.`,'warn');
+  if(S.fc&&S.fc.ev==='cold')say(S.fc.warn?'The cold front arrived as forecast.':'Surprise cold snap: temps are plunging this week.','alert');
+  if(S.fc&&S.fc.ev==='heat')say(S.fc.warn?'The forecast heat wave arrived.':'Surprise heat wave rolling through.','alert');
+  if(rnd()<.05&&activeH().length){const h=pick(activeH());h.pest=Math.min(100,h.pest+18);say(`Thrips blew into the ${h.name.toLowerCase()} from the field next door.`,'alert');}
+  S.houses.forEach(h=>{if(h.building>0){h.building--;if(!h.building){buildMap();say(`The ${h.name.toLowerCase()} is finished. ${h.desc}`,'good');}}});
+  S.batches.filter(b=>b.status==='planned'&&b.start<=w).forEach(b=>{
+    const C=CROPS[b.crop],h=houseOf(b.house);
+    if(b.start+C.grow>WEEKS+2){b.status='done';b.cancelled=true;return;}
+    const busy=b.cells.some(i=>cellNow(b.house,i));
+    if(busy){if(!b.blocked)say(`Can't pot ${b.qty} ${C.name.toLowerCase()} in the ${h.name.toLowerCase()}: old plants still sit on those benches. Toss them or wait.`,'alert');b.blocked=true;return;}
+    b.blocked=false;
+    Object.assign(b,{status:'growing',units:b.qty,planted:b.qty,progress:0,lost:0,shipped:0,plantedWeek:w});
+    const c=b.qty*C.cost;S.cash-=c;S.cost.plants+=c;cs(b.crop).planted+=b.qty;
+  });
+  growerSet();
+}
+function dayTick(){
+  const w=S.week,d=S.day,fc=S.fc,out=fc.out+fc.days[d];
+  S.outDays[d]=out;
+  activeH().forEach(h=>{
+    let t=climate(w,out,h.sw,h);
+    const eth=skill(h.id,'maint',w),hort=skill(h.id,'crop',w),dev=Math.abs(out-fc.fOut)-5;
+    if(eth&&dev>0){
+      const cf=comfort(houseCrops(h,w)),target=cf?(cf.lo+cf.hi)/2:70,corr=Math.min(Math.abs(t-target),eth/10*(dev+4));
+      if(corr>=1){t+=Math.sign(target-t)*corr;if(h.mlog!==w){h.mlog=w;say(`${crewName(h.id,'maint',w)}'s maintenance held the ${h.name.toLowerCase()} closer to target as the weather broke from the forecast.`,'good');}}
+    }
+    const m=moisture(t,h.sw);
+    let P=h.pest;
+    P+=((P*(t>75?.16:t>65?.11:.05)+.8+(h.sw.vent?1.5:0)+(h.sw.cool?2.5:0)+(w>=14&&w<=40?1:0)+h.pestIn)*(1-.05*hort)-.3*hort)/DAYS;
+    if(h.sw.bugs)P-=(2+P*.18)/DAYS;
+    h.pest=clamp(P,0,100);h.resist=Math.max(0,h.resist-.004/DAYS);h.tin=t;h.moist=m.label;h.tday[d]=t;
+    S.batches.forEach(b=>{
+      if(b.house!==h.id||(b.status!=='growing'&&b.status!=='ready'))return;
+      const C=CROPS[b.crop],off=Math.max(0,C.lo-t,t-C.hi);
+      const mult=1+off*.12+m.dry*4+m.wet*3+Math.max(0,h.pest-15)/30,age=b.status==='ready'?w-b.readyWeek:0;
+      const pw=Math.min(.6,(1-Math.pow(1-C.loss,1/C.grow))*mult+(age>0?AGELOSS*age*(1-.07*hort):0)),pd=1-Math.pow(1-pw,1/DAYS);
+      let lost=0;for(let i=0;i<b.units;i++)if(rnd()<pd)lost++;
+      b.units-=lost;b.lost+=lost;cs(b.crop).lost+=lost;
+      if(b.status==='growing'&&b.plantedWeek!==w){
+        const rate=t<C.lo?Math.max(.4,1-(C.lo-t)*.04):t>C.hi?Math.max(.5,1-(t-C.hi)*.03):.95+.15*(t-C.lo)/(C.hi-C.lo);
+        b.progress+=rate/DAYS;
+        if(b.progress>=C.grow-.25){b.status='ready';b.readyWeek=w;}
+      }
+      if(b.units<=0){b.status='done';b.endW=w;}
+    });
+    const ht=heatCost(h,out)/DAYS,cl=(h.sw.cool?40:0)*K/DAYS,pe=(h.sw.bugs?20:0)*K/DAYS,ov=(h.main?30:25)*K/DAYS;
+    S.cost.heat+=ht;S.cost.cool+=cl;S.cost.pest+=pe;S.cost.overhead+=ov;S.cash-=ht+cl+pe+ov;
+  });
+  S.growers.forEach(g=>{if(g.from<=w&&w<=g.to){const c=gHours(g)*g.rate/DAYS;S.cost.labor+=c;S.cash-=c;}});
+  S.day++;
+  if(S.day>=DAYS)weekEnd();
+  dirty=true;
+}
+function weekEnd(){
+  const w=S.week;
+  S.orders.forEach(o=>{
+    if(o.status!=='open'||dueW(o)!==w)return;
+    const C=CROPS[o.crop];
+    if(o.delay===0&&rnd()<.12){o.delay=rnd()<.4?2:1;say(`${o.cust}'s truck is running late. ${C.name} pickup moved to week ${dueW(o)}.`,'alert');return;}
+    let need=o.qty,r=0;
+    S.batches.filter(b=>b.status==='ready'&&b.crop===o.crop&&(b.orderId===o.id||!(order(b.orderId)&&order(b.orderId).status==='open'))).sort((a,b)=>(b.orderId===o.id)-(a.orderId===o.id)||a.readyWeek-b.readyWeek)
+      .forEach(b=>{const take=Math.min(need,b.units);if(!take)return;r+=take*o.price*qual(w-b.readyWeek);b.units-=take;b.shipped+=take;need-=take;if(b.units<=0){b.status='done';b.endW=w;}});
+    o.filled=o.qty-need;o.status='shipped';
+    const full=o.filled*o.price;o.value=full?r/full:1;
+    S.aging+=full-r;S.cash+=r;S.rev+=r;cs(o.crop).shipped+=o.filled;
+    const f=o.filled/o.qty;let d=f>=1?(o.value>=.95?8:5):-Math.round((1-f)*30);
+    if(o.filled&&o.value<.9)d-=Math.round((1-o.value)*15);
+    bump(o.custId,d);
+    const v=Math.round(o.value*100),vt=o.filled&&v<100?` at ${v}% value`:'',gw=` Goodwill ${d>0?'+':''}${d}.`;
+    if(need>0)say(`Shipped ${o.filled} of ${o.qty} ${C.name.toLowerCase()} to ${o.cust}${vt} (+${fmt(r)}). Short ${need}.${gw}`,'alert');
+    else say(`Shipped ${o.qty} ${C.name.toLowerCase()} to ${o.cust}${vt} (+${fmt(r)}).${gw}`,v<100?'warn':'good');
+    truckLeave(r);
+  });
+  S.batches.forEach(b=>{
+    if(b.status==='ready'&&w-b.readyWeek>=CROPS[b.crop].shelf){
+      if(b.units>0){cs(b.crop).wasted+=b.units;b.wasted=b.units;say(`${b.units} ${CROPS[b.crop].name.toLowerCase()} ${fl(b.units)} got too big to sell and ${b.units===1?'was':'were'} tossed.`,'warn');}
+      b.units=0;b.status='done';b.endW=w;
+    }
+  });
+  S.week++;S.day=0;
+  if(S.week>WEEKS){endYear();return;}
+  S.fc=S.fcN;S.fcN=rollFc(S.week+1);
+  weekStart();
+}
+function endYear(){
+  S.phase='done';S.paused=true;S.week=WEEKS;S.day=DAYS;
+  const lh={...S.lossHist};
+  Object.entries(S.crop).forEach(([c,v])=>{if(v.planted>=4)lh[c]=Math.round(v.lost/v.planted*100)/100;});
+  S.nextLoss=lh;
+  S.customers.filter(c=>c.active).forEach(c=>{if(!S.orders.some(o=>o.custId===c.id&&o.status==='shipped'))bump(c.id,-3);});
+  S.log.unshift({w:WEEKS,t:'The year is closed.',k:'good'});
+  openReport();
+}
+function nextYear(){
+  const gone=[];
+  S.customers.forEach(c=>{if(c.active&&c.score<25){c.active=false;gone.push(c.name);}});
+  S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=true;S.orders=[];S.batches=[];S.log=[];
+  S.lossHist=S.nextLoss||S.lossHist;
+  S.houses.forEach(h=>{h.hist=[];h.pest=Math.min(h.pest,20);h.tin=null;h.tday=[];});
+  const used=new Set(S.customers.map(c=>c.name)),free=NAMES.filter(n=>!used.has(n));
+  const activeN=S.customers.filter(c=>c.active).length,joins=activeN<6?2:activeN<9?1:0,joined=[];
+  for(let i=0;i<joins&&free.length;i++){const n=free.splice(Math.floor(rnd()*free.length),1)[0];S.customers.push(newCustomer(n,50));joined.push(n);}
+  S.customers.forEach(c=>c.start=c.score);
+  resetYearStats();genOffers();genPool(S.growers);S.growers=[];draft=null;
+  S.fc=rollFc(1);S.fcN=rollFc(2);weekStart();
+  gone.forEach(n=>say(`${n} took their business elsewhere.`,'warn'));
+  joined.forEach(n=>say(`New customer: ${n} heard about you.`,'good'));
+}
+function freshGame(){
+  S={v:VER,rs:(Date.now()%2147483647)|0,year:1,week:1,day:0,clock:0,phase:'run',paused:true,speed:1,cash:9000,startCash:9000,
+    houses:[],customers:[],orders:[],batches:[],pool:[],growers:[],fc:null,fcN:null,outDays:[],log:[],cost:{},rev:0,aging:0,crop:{},lossHist:{},pauseAlert:true,nid:1,player:{x:4.5,y:17.5},welcomed:false};
+  S.houses.push(newHouse(MAIN,'main',true));
+  const names=NAMES.slice().sort(()=>rnd()-.5);
+  for(let i=0;i<7;i++)S.customers.push(newCustomer(names[i],ri(55,68)));
+  resetYearStats();genOffers();genPool();
+  S.fc=rollFc(1);S.fcN=rollFc(2);
+  buildMap();weekStart();
+}
+function spray(h){
+  if(S.phase!=='run')return;
+  h.pest*=(.25+h.resist);h.resist=Math.min(.6,h.resist+.1);
+  S.cash-=75*K;S.cost.pest+=75*K;
+  S.log.unshift({w:S.week,t:`Sprayed the ${h.name.toLowerCase()} for pests (${fmt(75*K)}).`,k:'info'});
+  sprayFx=(performance.now());sprayHouse=h.id;dirty=true;
+}
+function build(lotKey){
+  if(S.cash<HOUSE_COST){toast(`You need ${fmt(HOUSE_COST)} in cash to build.`,'alert');return false;}
+  const usedT=new Set(S.houses.map(h=>h.name)),t=pick(TRAITS.filter(x=>!usedT.has(x.name)));
+  const h=newHouse(t,lotKey,false);h.building=BUILD_WEEKS;S.houses.push(h);
+  S.cash-=HOUSE_COST;S.cost.build+=HOUSE_COST;buildMap();
+  say(`Building the ${h.name.toLowerCase()}: ready in ${BUILD_WEEKS} weeks.`,'good');
+  return true;
+}
+
+/* ================= plots ================= */
+function plotPlan(o,buf,early){
+  const C=CROPS[o.crop],L=estLoss(o.crop),flats=Math.ceil(o.qty/(1-L)*(1+buf/100));
+  const start=Math.max(S.week+1,o.ship-C.grow-early),ready=start+C.grow;
+  return{flats,cells:Math.ceil(flats/FPC),start,ready,end:Math.max(o.ship,ready),late:Math.max(0,ready-o.ship),cost:flats*C.cost,rev:o.qty*o.price};
+}
+function plotCellsFrom(h,idx,n){const g=GEO[h.lot];if(idx+n>g.cells.length)return null;return[...Array(n)].map((_,i)=>idx+i);}
+function plotFit(h,idx,p){
+  const cells=plotCellsFrom(h,idx,p.cells);
+  if(!cells)return{ok:false,cells:[...Array(GEO[h.lot].cells.length-idx)].map((_,i)=>idx+i),why:'Not enough bench spots past this point.'};
+  const bad=cells.filter(i=>cellBooked(h.id,i,p.start,p.end,-1));
+  return{ok:!bad.length,cells,bad,why:bad.length?`${bad.length} of these spots are booked during weeks ${p.start}–${p.end}.`:''};
+}
+function placePlot(h,idx){
+  const o=order(hold.orderId),p=hold.plan,fit=plotFit(h,idx,p);
+  if(!fit.ok){toast(fit.why,'alert');return;}
+  S.batches.push({id:S.nid++,crop:o.crop,qty:p.flats,start:p.start,house:h.id,cells:fit.cells,orderId:o.id,status:'planned'});
+  const was=o.status;o.status='open';
+  say(`${was==='offer'?'Accepted':'Re-planned'}: ${o.qty} ${CROPS[o.crop].name.toLowerCase()} for ${o.cust}. Potting week ${p.start} in the ${h.name.toLowerCase()}.`,'good');
+  popFx(h,fit.cells);
+  hold=null;renderHold();endFraming();dirty=true;
+}
+
+/* ================= rendering ================= */
+const cv=$('cv'),cx=cv.getContext('2d');
+let VW=0,VH=0,DPR=1,zoom=1,cam={x:0,y:0},camFollow=true,dirty=true,camTarget=null,zoomGoal=null,zoomBefore=null;
+const TW=64,TH=32;
+function resize(){const r=$('stage').getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);VW=r.width;VH=r.height;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px';dirty=true;}
+const ro=new ResizeObserver(resize);ro.observe($('stage'));
+const wx=(x,y)=>(x-y)*TW/2,wy=(x,y,z)=>(x+y)*TH/2-(z||0);
+function P(x,y,z){return[(wx(x,y)-cam.x)*zoom+VW/2,(wy(x,y,z)-cam.y)*zoom+VH/2];}
+function toTile(mx,my,z){const X=(mx-VW/2)/zoom+cam.x,Y=(my-VH/2)/zoom+cam.y+(z||0);const a=Y/(TH/2),b=X/(TW/2);return[Math.floor((a+b)/2),Math.floor((a-b)/2)];}
+function poly(pts,fill,stroke,lw){cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();if(fill){cx.fillStyle=fill;cx.fill();}if(stroke){cx.strokeStyle=stroke;cx.lineWidth=(lw||1)*zoom;cx.stroke();}}
+function line(a,b,col,lw){cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(b[0],b[1]);cx.strokeStyle=col;cx.lineWidth=(lw||1)*zoom;cx.stroke();}
+function box(x,y,z,w,d,h,c,alpha){
+  if(alpha!=null)cx.globalAlpha=alpha;
+  poly([P(x,y+d,z+h),P(x+w,y+d,z+h),P(x+w,y+d,z),P(x,y+d,z)],c[1]);
+  poly([P(x+w,y,z+h),P(x+w,y+d,z+h),P(x+w,y+d,z),P(x+w,y,z)],c[2]);
+  poly([P(x,y,z+h),P(x+w,y,z+h),P(x+w,y+d,z+h),P(x,y+d,z+h)],c[0]);
+  cx.globalAlpha=1;
+}
+const SEAS=[['#9fb58c','#98ae85'],['#86c063','#80b95d'],['#78b44f','#72ad4a'],['#b3ae63','#aaa55c']];
+const season=w=>{const m=monthIdx(w);return m===11||m<2?0:m<5?1:m<8?2:3;};
+const hsh=(x,y)=>((x*73856093)^(y*19349663))>>>0;
+function tileColor(t,x,y){
+  const s=SEAS[season(Math.min(S.week,WEEKS))];
+  switch(t){case T.GRASS:case T.TREE:return s[hsh(x,y)%2];case T.PATH:return hsh(x,y)%3?'#d9cba6':'#d2c39d';case T.ROAD:return '#5f6466';case T.FLOOR:case T.DOOR:case T.WALL:case T.BENCH:return '#cdd5d1';case T.OFFICE:return '#bfae8c';case T.LOT:return hsh(x,y)%2?'#c8bc9e':'#c2b697';}
+  return '#999';
+}
+function drawGround(){
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const p=P(x,y,0);if(p[0]<-TW*zoom||p[0]>VW+TW*zoom||p[1]<-TH*2*zoom||p[1]>VH+TH*zoom)continue;
+    const t=MAP[y][x];
+    poly([P(x,y),P(x+1,y),P(x+1,y+1),P(x,y+1)],tileColor(t,x,y));
+    if(t===T.ROAD&&y===22&&x%2===0)line(P(x+.2,y+1),P(x+.7,y+1),'#e9dd9a',2);
+  }
+}
+let hover=null,hoverTile=null;
+function drawablesList(now){
+  const L=[];
+  L.push({d:OFFICE.x+OFFICE.y+OFFICE.w+OFFICE.h-1,f:drawOffice});
+  TREES.forEach(([x,y])=>{if(MAP[y][x]===T.TREE)L.push({d:x+y+1,f:()=>drawTree(x,y)});});
+  LOTS.forEach(Lt=>{
+    const h=S.houses.find(z=>z.lot===Lt.key),g=GEO[Lt.key];
+    if(!h){L.push({d:g.door.x+g.door.y,f:()=>drawSign(g)});return;}
+    if(h.building){L.push({d:g.x+g.y+g.w+g.h,f:()=>drawScaffold(g,h)});return;}
+    L.push({d:g.x+g.y-1,f:()=>drawHouseBack(g,h,now)});
+    g.cells.forEach((c,i)=>L.push({d:c.x+c.y+.5,f:()=>drawCell(h,g,c,i,now)}));
+    L.push({d:g.pwall.x+g.pwall.y+.6,f:()=>drawPanel(g,h,now)});
+    L.push({d:g.x+g.w+g.y+g.h,f:()=>drawHouseFront(g,h,now)});
+  });
+  L.push({d:S.player.x+S.player.y,f:()=>drawPerson(S.player.x,S.player.y,'#2f7d3e','#e2c26a',now,moving)});
+  npcs.forEach(n=>L.push({d:n.x+n.y,f:()=>{drawPerson(n.x,n.y,'#3d6fa0','#d7e2e8',now,n.moving);label(P(n.x,n.y,58),n.name,'#3d6fa0');}}));
+  const tr=truckPos(now);if(tr)L.push({d:tr.x+22.5,f:()=>drawTruck(tr.x,22.1)});
+  return L.sort((a,b)=>a.d-b.d);
+}
+function drawOffice(){
+  const {x,y,w,h}=OFFICE;
+  box(x,y,0,w,h,52,['#efe3c8','#e3d1ad','#cdb68b']);
+  poly([P(x-.15,y-.15,52),P(x+w+.15,y-.15,52),P(x+w+.15,y+h+.15,52),P(x-.15,y+h+.15,52)],'#a5462d');
+  box(x+.25,y+.25,52,w-.5,h-.5,14,['#b9553a','#9c412a','#86361f']);
+  poly([P(x+w,y+1.1,0),P(x+w,y+1.9,0),P(x+w,y+1.9,32),P(x+w,y+1.1,32)],'#7a5a3a');
+  const glow=S.orders.some(o=>o.status==='offer');
+  poly([P(x+w,y+2.2,18),P(x+w,y+2.8,18),P(x+w,y+2.8,34),P(x+w,y+2.2,34)],glow?'#ffe9a0':'#bfe3f2','#7a6a52');
+  poly([P(x+.6,y+h,18),P(x+1.6,y+h,18),P(x+1.6,y+h,34),P(x+.6,y+h,34)],'#bfe3f2','#7a6a52');
+}
+function drawTree(x,y){
+  const se=season(Math.min(S.week,WEEKS)),leaf=['#6f8f64','#4f9a46','#3f8f3c','#c08a3a'][se],dark=['#5c7a52','#3f7d39','#327531','#a07030'][se];
+  box(x+.45,y+.45,0,.12,.12,22,['#7a5a3a','#6a4c30','#5a3f28']);
+  const c=P(x+.5,y+.5,44);cx.fillStyle=dark;cx.beginPath();cx.ellipse(c[0],c[1]+4*zoom,22*zoom,18*zoom,0,0,7);cx.fill();
+  cx.fillStyle=leaf;cx.beginPath();cx.ellipse(c[0]-3*zoom,c[1]-2*zoom,18*zoom,15*zoom,0,0,7);cx.fill();
+}
+function drawSign(g){
+  const x=g.door.x+.5,y=g.door.y+.5;
+  box(x-.04,y-.04,0,.08,.08,30,['#7a5a3a','#6a4c30','#5a3f28']);
+  poly([P(x-.45,y,28),P(x+.45,y,28),P(x+.45,y,46),P(x-.45,y,46)],'#f4ecd8','#7a5a3a');
+  const c=P(x,y,37);label([c[0],c[1]-34*zoom],`For sale: ${fmt(HOUSE_COST)}`,'#a86e05');
+}
+function drawScaffold(g,h){
+  const H=58;
+  for(let x=g.x;x<=g.x+g.w;x+=2)for(const y of [g.y,g.y+g.h]){line(P(x,y,0),P(x,y,H),'#8a6a48',2);}
+  for(let y=g.y;y<=g.y+g.h;y+=2)for(const x of [g.x,g.x+g.w]){line(P(x,y,0),P(x,y,H),'#8a6a48',2);}
+  line(P(g.x,g.y,H),P(g.x+g.w,g.y,H),'#8a6a48',2);line(P(g.x,g.y+g.h,H),P(g.x+g.w,g.y+g.h,H),'#8a6a48',2);
+  line(P(g.x,g.y,H),P(g.x,g.y+g.h,H),'#8a6a48',2);line(P(g.x+g.w,g.y,H),P(g.x+g.w,g.y+g.h,H),'#8a6a48',2);
+  const c=P(g.x+g.w/2,g.y+g.h/2,70);label(c,`Building ${h.name.toLowerCase()}: ${h.building} wk left`,'#a86e05');
+}
+const WH=56,RH=38;
+function hoop(g,x){const pts=[];for(let i=0;i<=10;i++){const t=i/10,y=g.y+t*g.h,z=WH+Math.sin(t*Math.PI)*RH;pts.push(P(x,y,z));}return pts;}
+function drawHouseBack(g,h,now){
+  const glass='rgba(214,236,244,.5)',frame='#86a9b6';
+  poly([P(g.x,g.y,0),P(g.x+g.w,g.y,0),P(g.x+g.w,g.y,WH),P(g.x,g.y,WH)],glass);
+  poly([P(g.x,g.y,0),P(g.x,g.y+g.h,0),P(g.x,g.y+g.h,WH),P(g.x,g.y,WH)],'rgba(204,230,240,.55)');
+  for(let x=g.x;x<=g.x+g.w;x++)line(P(x,g.y,0),P(x,g.y,WH),frame,1.2);
+  for(let y=g.y;y<=g.y+g.h;y++)line(P(g.x,y,0),P(g.x,y,WH),frame,1.2);
+  const risk=houseWarn(h).find(x=>x.k==='cold'||x.k==='hot');
+  if(risk){const a=.12+.08*Math.sin(now/300);poly([P(g.x+1,g.y+1),P(g.x+g.w-1,g.y+1),P(g.x+g.w-1,g.y+g.h-1),P(g.x+1,g.y+g.h-1)],risk.k==='cold'?`rgba(70,140,230,${a})`:`rgba(230,80,40,${a})`);}
+  if(h.sw.cool){poly([P(g.x,g.y+1.2,4),P(g.x,g.y+g.h-1.2,4),P(g.x,g.y+g.h-1.2,40),P(g.x,g.y+1.2,40)],'rgba(110,180,220,.75)','#5b9cc0');}
+  if(h.sw.heat){const hx=g.x+g.w-2,hy=g.y+1;box(hx+.2,hy+.2,0,.6,.5,22,['#a44a3a','#8c3b2f','#74302a']);const glow=h.sw.heat===2?'#ff8a3d':'#f2a65a';const c=P(hx+.5,hy+.7,14);cx.fillStyle=glow;cx.fillRect(c[0]-6*zoom,c[1]-3*zoom,12*zoom,6*zoom);
+    for(let k=0;k<h.sw.heat+1;k++){const q=P(hx+.3+k*.2,hy+.45,30+((now/12+k*9)%14));cx.fillStyle=glow+'99';cx.beginPath();cx.arc(q[0],q[1],2.2*zoom,0,7);cx.fill();}}
+}
+function drawHouseFront(g,h,now){
+  const frame='#7c9fad';
+  line(P(g.x,g.y+g.h,0),P(g.x+g.w,g.y+g.h,0),frame,2);line(P(g.x+g.w,g.y,0),P(g.x+g.w,g.y+g.h,0),frame,2);
+  poly([P(g.x,g.y+g.h,0),P(g.x+g.w,g.y+g.h,0),P(g.x+g.w,g.y+g.h,10),P(g.x,g.y+g.h,10)],'rgba(170,195,200,.55)');
+  poly([P(g.x+g.w,g.y,0),P(g.x+g.w,g.y+g.h,0),P(g.x+g.w,g.y+g.h,10),P(g.x+g.w,g.y,10)],'rgba(160,185,190,.55)');
+  for(let x=g.x;x<=g.x+g.w;x+=1)line(P(x,g.y+g.h,0),P(x,g.y+g.h,WH),'rgba(124,159,173,.55)',1);
+  for(let y=g.y;y<=g.y+g.h;y+=1)line(P(g.x+g.w,y,0),P(g.x+g.w,y,WH),'rgba(124,159,173,.55)',1);
+  line(P(g.x,g.y+g.h,WH),P(g.x+g.w,g.y+g.h,WH),frame,2);line(P(g.x+g.w,g.y,WH),P(g.x+g.w,g.y+g.h,WH),frame,2);
+  const roofFill=h.sw.shade?'rgba(28,78,48,.42)':'rgba(225,242,248,.16)';
+  for(let x=g.x;x<g.x+g.w;x++){const a=hoop(g,x),b=hoop(g,x+1);for(let i=0;i<10;i++)poly([a[i],b[i],b[i+1],a[i+1]],roofFill);}
+  for(let x=g.x;x<=g.x+g.w;x+=1){const pts=hoop(g,x);cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.strokeStyle=x%3===g.x%3?'#7c9fad':'rgba(124,159,173,.45)';cx.lineWidth=(x%3===g.x%3?2:1)*zoom;cx.stroke();}
+  line(P(g.x,g.y+g.h/2,WH+RH),P(g.x+g.w,g.y+g.h/2,WH+RH),'#6f93a1',2);
+  if(h.sw.vent){for(let x=g.x+1;x<g.x+g.w-1;x+=3)poly([P(x,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.9,WH+RH+12),P(x,g.y+g.h/2-.9,WH+RH+12)],'rgba(228,244,250,.9)','#6f93a1');}
+  if(h.sw.cool){const c=P(g.x+g.w,g.y+g.h/2,28),r=9*zoom,a=now/90;cx.fillStyle='#55646a';cx.beginPath();cx.arc(c[0],c[1],r+3*zoom,0,7);cx.fill();cx.strokeStyle='#dfe8ec';cx.lineWidth=2.5*zoom;for(let k=0;k<3;k++){cx.beginPath();cx.moveTo(c[0],c[1]);cx.lineTo(c[0]+Math.cos(a+k*2.1)*r,c[1]+Math.sin(a+k*2.1)*r);cx.stroke();}}
+  const n=Math.round(h.pest/6);let sd=h.id*97+13;
+  for(let k=0;k<n;k++){sd=(sd*16807)%2147483647;const fx=g.x+1+(sd%1000)/1000*(g.w-2);sd=(sd*16807)%2147483647;const fy=g.y+.5+(sd%1000)/1000*(g.h-1);const q=P(fx,fy,62+((sd>>3)%30)+Math.sin(now/240+k)*3);cx.fillStyle='#3e3322';cx.beginPath();cx.ellipse(q[0],q[1],3*zoom,2.2*zoom,0,0,7);cx.fill();}
+  if(sprayFx&&sprayHouse===h.id){const t=(now-sprayFx)/1200;if(t<1){for(let k=0;k<24;k++){const fx=g.x+1+((k*37)%100)/100*(g.w-2),fy=g.y+1+((k*53)%100)/100*(g.h-2),q=P(fx,fy,20+t*50);cx.fillStyle=`rgba(255,255,255,${.7*(1-t)})`;cx.beginPath();cx.arc(q[0],q[1],(4+t*10)*zoom,0,7);cx.fill();}}else sprayFx=0;}
+  const c=P(g.appr.x+.5,g.appr.y+.5,0);label([c[0],c[1]+14*zoom],h.name,'#14211a');
+}
+function drawPanel(g,h,now){
+  const x=g.pwall.x+.8,y=g.pwall.y+.25,warn=houseWarn(h).length;
+  box(x,y,18,.18,.5,26,['#3b4a44','#2c3833','#24302b']);
+  const a=P(x+.18,y+.1,24),b=P(x+.18,y+.42,24),c2=P(x+.18,y+.42,38),d=P(x+.18,y+.1,38);
+  poly([a,b,c2,d],warn?(Math.sin(now/200)>0?'#ff7a4a':'#a33'):'#7fd08a');
+}
+function cellOf(h,i){return GEO[h.lot].cells[i];}
+function drawCell(h,g,c,i,now){
+  box(c.x+.06,c.y+.12,0,.88,.76,14,['#b58f61','#9b7a52','#86683f']);
+  const b=cellNow(h.id,i);
+  const pl=S.batches.find(z=>z.house===h.id&&z.status==='planned'&&z.cells.includes(i));
+  let tint=null;
+  if(hold&&hover&&hover.h===h.id&&hover.cells.includes(i))tint=hover.ok?'rgba(80,200,90,.7)':'rgba(230,70,50,.7)';
+  else if(selPlot&&S.batches.find(z=>z.id===selPlot&&z.house===h.id&&z.cells.includes(i)))tint='rgba(233,184,36,.65)';
+  else if(hold){const bk=cellBooked(h.id,i,hold.plan.start,hold.plan.end,-1);tint=bk?'rgba(70,70,70,.5)':`rgba(110,235,120,${.45+.15*Math.sin(now/260)})`;}
+  if(!b&&pl){const C=CROPS[pl.crop];tint=tint||(pl.blocked?'rgba(230,70,50,.45)':C.color+'55');
+    const q=P(c.x+.5,c.y+.5,14);line(q,[q[0],q[1]-14*zoom],'#6a4c30',1.5);poly([[q[0],q[1]-14*zoom],[q[0]+8*zoom,q[1]-11*zoom],[q[0],q[1]-8*zoom]],C.color);}
+  if(tint)poly([P(c.x+.06,c.y+.12,14),P(c.x+.94,c.y+.12,14),P(c.x+.94,c.y+.88,14),P(c.x+.06,c.y+.88,14)],tint);
+  if(!b)return;
+  const k=b.cells.indexOf(i),units=clamp(b.units-k*FPC,0,FPC),C=CROPS[b.crop];
+  const g01=b.status==='ready'?1:clamp(b.progress/C.grow,0,1),age=b.status==='ready'?Math.min(S.week,WEEKS)-b.readyWeek:0;
+  for(let u=0;u<units;u++){
+    const px=c.x+(u?.7:.3),py=c.y+.5;
+    box(px-.11,py-.11,14,.22,.22,7,['#d77a4c','#c8693f','#a9552f']);
+    const r=(2+g01*7)*zoom,q=P(px,py,21+r/zoom*.8);
+    let col=g01<.5?'#6aa84f':C.color;if(age>0)col=mix(C.color,'#a89a55',Math.min(.85,age/C.shelf));
+    cx.fillStyle=g01<1?'#4f8f3e':mixD(col);cx.beginPath();cx.ellipse(q[0],q[1]+r*.35,r*1.05,r*.65,0,0,7);cx.fill();
+    cx.fillStyle=col;cx.beginPath();cx.arc(q[0],q[1]-r*.1,r*(g01<.5?.6:.8),0,7);cx.fill();
+    if(b.status==='ready'&&age<=0){cx.fillStyle='rgba(255,255,255,.55)';cx.beginPath();cx.arc(q[0]-r*.25,q[1]-r*.35,r*.25,0,7);cx.fill();}
+  }
+}
+function mix(a,b,t){const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);const r=Math.round(((pa>>16)&255)*(1-t)+((pb>>16)&255)*t),g=Math.round(((pa>>8)&255)*(1-t)+((pb>>8)&255)*t),bl=Math.round((pa&255)*(1-t)+(pb&255)*t);return'#'+((1<<24)|(r<<16)|(g<<8)|bl).toString(16).slice(1);}
+const mixD=c=>mix(c,'#2c4a2a',.35);
+function drawPerson(x,y,shirt,hat,now,mv){
+  const p=P(x,y,0),bob=mv?Math.sin(now/90)*1.5:0,z=zoom;
+  cx.fillStyle='rgba(20,40,20,.25)';cx.beginPath();cx.ellipse(p[0],p[1],11*z,5*z,0,0,7);cx.fill();
+  const lx=mv?Math.sin(now/90)*3:0;
+  cx.strokeStyle='#33413a';cx.lineWidth=4*z;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(p[0]-3*z,p[1]-14*z);cx.lineTo(p[0]-3*z+lx*z,p[1]-2*z);cx.moveTo(p[0]+3*z,p[1]-14*z);cx.lineTo(p[0]+3*z-lx*z,p[1]-2*z);cx.stroke();
+  cx.fillStyle=shirt;roundRect(p[0]-8*z,p[1]-34*z+bob*z,16*z,22*z,6*z);cx.fill();
+  cx.fillStyle='rgba(255,255,255,.18)';roundRect(p[0]-5*z,p[1]-28*z+bob*z,10*z,14*z,3*z);cx.fill();
+  cx.fillStyle='#e6c3a0';cx.beginPath();cx.arc(p[0],p[1]-40*z+bob*z,6.5*z,0,7);cx.fill();
+  cx.fillStyle=hat;cx.beginPath();cx.ellipse(p[0],p[1]-43*z+bob*z,12*z,4*z,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(p[0],p[1]-46*z+bob*z,6.5*z,4.5*z,0,0,7);cx.fill();
+  cx.lineCap='butt';
+}
+function roundRect(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function label(p,t,col){
+  cx.font=`600 12px Inter,system-ui,sans-serif`;const w=cx.measureText(t).width+14;
+  cx.fillStyle='rgba(255,255,255,.92)';roundRect(p[0]-w/2,p[1]-10,w,20,10);cx.fill();
+  cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+.5);
+}
+let trucks=[];
+function truckLeave(r){trucks.push({t0:performance.now(),mode:'leave',r});}
+function truckPos(now){
+  trucks=trucks.filter(t=>now-t.t0<3200);
+  const lt=trucks.find(t=>t.mode==='leave');
+  if(lt){const t=(now-lt.t0)/3200;return{x:20-t*t*24};}
+  const due=S.phase==='run'&&S.orders.some(o=>o.status==='open'&&dueW(o)===S.week);
+  if(due&&S.day>=4){const t=Math.min(1,(S.day-4+S.clock/(WEEK_SEC/DAYS))/1.2);return{x:20+(1-t)*14};}
+  return null;
+}
+function drawTruck(x,y){
+  box(x,y,0,1.9,.8,34,['#f4f1e8','#e2ddcf','#cfc8b6']);
+  box(x+1.95,y+.05,0,.8,.7,26,['#d8643a','#c4542a','#a6461f']);
+  poly([P(x+2.75,y+.15,12),P(x+2.75,y+.65,12),P(x+2.75,y+.65,22),P(x+2.75,y+.15,22)],'#bfe3f2');
+  for(const wx_ of [x+.4,x+2.2]){const q=P(wx_,y+.8,4);cx.fillStyle='#26302b';cx.beginPath();cx.ellipse(q[0],q[1],6*zoom,4*zoom,0,0,7);cx.fill();}
+}
+let bubbles=[];
+function drawBubbles(now){
+  bubbles=[];
+  const put=(p,kinds,act)=>{kinds.forEach((k,i)=>{const x=p[0]+(i-(kinds.length-1)/2)*34,y=p[1]+Math.sin(now/300+i)*3;bubble(x,y,k);bubbles.push({x,y,r:16,act});});};
+  if(S.orders.some(o=>o.status==='offer')&&S.phase==='run')put(P(OFFICE.x+1.5,OFFICE.y+1.5,110),['offer'],()=>goComputer('offers'));
+  activeH().forEach(h=>{const g=GEO[h.lot],ks=[...new Set(houseWarn(h).map(x=>x.k))];if(ks.length)put(P(g.x+g.w/2,g.y+g.h/2,WH+RH+44),ks,()=>goPanel(h));});
+}
+const BCOL={cold:'#3d7fd6',hot:'#d8502a',water:'#2f9bd0',bug:'#6b5530',age:'#c99a12',block:'#c4542a',offer:'#e9b824'};
+function bubble(x,y,k){
+  const r=15;cx.fillStyle='#fff';cx.strokeStyle=BCOL[k];cx.lineWidth=3;cx.beginPath();cx.arc(x,y,r,0,7);cx.fill();cx.stroke();
+  cx.beginPath();cx.moveTo(x-5,y+r-2);cx.lineTo(x,y+r+7);cx.lineTo(x+5,y+r-2);cx.fill();
+  cx.strokeStyle=BCOL[k];cx.fillStyle=BCOL[k];cx.lineWidth=2.4;cx.lineCap='round';
+  if(k==='cold'){for(let a=0;a<3;a++){const c=Math.cos(a*Math.PI/3),s=Math.sin(a*Math.PI/3);cx.beginPath();cx.moveTo(x-c*8,y-s*8);cx.lineTo(x+c*8,y+s*8);cx.stroke();}}
+  else if(k==='hot'){cx.beginPath();cx.arc(x,y,5,0,7);cx.fill();for(let a=0;a<8;a++){const c=Math.cos(a*Math.PI/4),s=Math.sin(a*Math.PI/4);cx.beginPath();cx.moveTo(x+c*7.5,y+s*7.5);cx.lineTo(x+c*10,y+s*10);cx.stroke();}}
+  else if(k==='water'){cx.beginPath();cx.moveTo(x,y-9);cx.quadraticCurveTo(x+8,y+2,x,y+7);cx.quadraticCurveTo(x-8,y+2,x,y-9);cx.fill();}
+  else if(k==='bug'){cx.beginPath();cx.ellipse(x,y+1,5,7,0,0,7);cx.fill();cx.beginPath();cx.arc(x,y-7,3.5,0,7);cx.fill();for(const s of [-1,1]){cx.beginPath();cx.moveTo(x+s*4,y-1);cx.lineTo(x+s*9,y-4);cx.moveTo(x+s*4,y+4);cx.lineTo(x+s*9,y+7);cx.stroke();}}
+  else if(k==='age'){cx.beginPath();cx.moveTo(x-6,y-8);cx.lineTo(x+6,y-8);cx.lineTo(x-6,y+8);cx.lineTo(x+6,y+8);cx.closePath();cx.stroke();cx.beginPath();cx.moveTo(x-3,y+6);cx.lineTo(x+3,y+6);cx.lineTo(x,y+1);cx.fill();}
+  else{cx.font='800 18px Inter,sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText('!',x,y+1);}
+  cx.lineCap='butt';
+}
+function drawPreviewPath(){
+  if(!path.length)return;cx.fillStyle='rgba(233,184,36,.85)';
+  path.forEach(([x,y],i)=>{const q=P(x+.5,y+.5,0);cx.beginPath();cx.arc(q[0],q[1],(i===path.length-1?5:3)*zoom,0,7);cx.fill();});
+}
+let fx=[];
+function popFx(h,cells){const now=performance.now();cells.forEach((i,k)=>{const c=cellOf(h,i);fx.push({x:c.x+.5,y:c.y+.5,t0:now+k*40});});}
+function drawFx(now){fx=fx.filter(f=>now-f.t0<700);fx.forEach(f=>{const t=(now-f.t0)/700;if(t<0)return;const q=P(f.x,f.y,16+t*30);cx.strokeStyle=`rgba(233,184,36,${1-t})`;cx.lineWidth=3;cx.beginPath();cx.arc(q[0],q[1],(6+t*18)*zoom,0,7);cx.stroke();});}
+let sprayFx=0,sprayHouse=null;
+function draw(now){
+  cx.setTransform(DPR,0,0,DPR,0,0);
+  cx.fillStyle=mix(SEAS[season(Math.min(S.week,WEEKS))][0],'#2f4a2a',.3);cx.fillRect(0,0,VW,VH);
+  drawGround();drawPreviewPath();
+  drawablesList(now).forEach(o=>o.f());
+  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);label([og[0],og[1]+14*zoom],'Office computer','#14211a');
+  const dk=P(20.5,21.5,0);label([dk[0],dk[1]+12*zoom],'Loading dock','#14211a');
+  drawFx(now);drawBubbles(now);
+}
+
+/* ================= player, NPCs, camera ================= */
+let path=[],pending=null,moving=false;
+function walkTo(tx,ty,then){
+  const sx=Math.floor(S.player.x),sy=Math.floor(S.player.y),p=findPath(sx,sy,tx,ty);
+  if(p==null){toast(`Can't get there from here.`,'alert');return;}
+  path=p;pending=then||null;camFollow=true;if(!p.length&&then){pending=null;then();}
+}
+function movePlayer(dt){
+  moving=false;if(!path.length)return;
+  let rem=dt*4.4;
+  while(rem>0&&path.length){
+    const [tx,ty]=path[0],gx=tx+.5,gy=ty+.5,dx=gx-S.player.x,dy=gy-S.player.y,dist=Math.hypot(dx,dy);
+    if(dist<=rem){S.player.x=gx;S.player.y=gy;rem-=dist;path.shift();}else{S.player.x+=dx/dist*rem;S.player.y+=dy/dist*rem;rem=0;}
+  }
+  moving=true;
+  if(!path.length&&pending){const f=pending;pending=null;f();}
+}
+let npcs=[];
+function syncNPCs(){
+  const w=Math.min(S.week,WEEKS),act=S.phase==='run'?S.growers.filter(g=>g.from<=w&&w<=g.to&&gHours(g)>0):[];
+  npcs=npcs.filter(n=>act.some(g=>g.id===n.id));
+  act.forEach(g=>{if(!npcs.some(n=>n.id===g.id))npcs.push({id:g.id,name:g.name,x:OFFICE.st.x+.5,y:OFFICE.st.y+.5,path:[],wait:0,moving:false});});
+}
+function moveNPCs(dt){
+  npcs.forEach(n=>{
+    n.moving=false;
+    if(!n.path.length){n.wait-=dt;if(n.wait>0)return;
+      const g=S.growers.find(x=>x.id===n.id);if(!g)return;
+      const hs=Object.keys(g.assign).map(Number).map(houseOf).filter(h=>h&&!h.building&&TASKS.some(([k])=>g.assign[h.id][k]));
+      if(!hs.length)return;const h=hs[Math.floor(Math.random()*hs.length)],G=GEO[h.lot];
+      const aisles=[];for(let y=G.y+1;y<G.y+G.h-1;y++)for(let x=G.x+1;x<G.x+G.w-1;x++)if(MAP[y][x]===T.FLOOR)aisles.push([x,y]);
+      const t=aisles[Math.floor(Math.random()*aisles.length)];const p=findPath(Math.floor(n.x),Math.floor(n.y),t[0],t[1]);n.path=p||[];n.wait=1+Math.random()*3;return;}
+    let rem=dt*2.6;
+    while(rem>0&&n.path.length){const [tx,ty]=n.path[0],gx=tx+.5,gy=ty+.5,dx=gx-n.x,dy=gy-n.y,d=Math.hypot(dx,dy);if(d<=rem){n.x=gx;n.y=gy;rem-=d;n.path.shift();}else{n.x+=dx/d*rem;n.y+=dy/d*rem;rem=0;}}
+    n.moving=true;
+  });
+}
+function updateCam(dt){
+  const k=Math.min(1,dt*4.5);
+  if(camTarget){cam.x+=(camTarget.x-cam.x)*k;cam.y+=(camTarget.y-cam.y)*k;zoom+=(camTarget.z-zoom)*k;return;}
+  if(zoomGoal!=null){zoom+=(zoomGoal-zoom)*k;if(Math.abs(zoomGoal-zoom)<.004){zoom=zoomGoal;zoomGoal=null;}}
+  if(!camFollow)return;
+  const tx=wx(S.player.x,S.player.y),ty=wy(S.player.x,S.player.y,0)-40;
+  cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;
+}
+function frameHouses(){
+  const hs=activeH();if(!hs.length)return;
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  hs.forEach(h=>{const g=GEO[h.lot];[[g.x,g.y],[g.x+g.w,g.y],[g.x,g.y+g.h],[g.x+g.w,g.y+g.h]].forEach(([x,y])=>{const X=wx(x,y);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,wy(x,y,WH+RH));y1=Math.max(y1,wy(x,y,0));});});
+  const band=VW<600?170:120,availH=Math.max(160,VH-band-30),z=clamp(Math.min((VW-40)/(x1-x0),availH/(y1-y0)),.4,1.3);
+  if(zoomBefore==null)zoomBefore=zoom;
+  camTarget={x:(x0+x1)/2,y:(y0+y1)/2+band/2/z,z};camFollow=false;
+}
+function endFraming(){camTarget=null;camFollow=true;if(zoomBefore!=null){zoomGoal=zoomBefore;zoomBefore=null;}}
+
+/* ================= warnings ================= */
+function houseWarn(h){
+  if(!h||h.building||S.phase!=='run')return[];
+  const w=S.week,fc=S.fc,out=[],cf=comfort(houseCrops(h,w));
+  if(fc&&cf){
+    const lo=climate(w,fc.fOut-5,h.sw,h),hi=climate(w,fc.fOut+5,h.sw,h);
+    if(lo<cf.lo-1)out.push({k:'cold',t:`${h.name}: could drop to ${Math.round(lo)}°F this week; crops need ${Math.round(cf.lo)}°F or warmer.`});
+    if(hi>cf.hi+1)out.push({k:'hot',t:`${h.name}: could reach ${Math.round(hi)}°F this week; crops want ${Math.round(cf.hi)}°F or cooler.`});
+    if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),h.sw,h);if(sh<cf.lo||sh>cf.hi)out.push({k:fc.warnKind==='cold'?'cold':'hot',t:`${h.name}: if the ${fc.warnKind==='cold'?'cold front':'heat wave'} hits, it could reach ${Math.round(sh)}°F.`});}
+    if(h.tin!=null&&(h.tin<cf.lo||h.tin>cf.hi))out.push({k:h.tin<cf.lo?'cold':'hot',t:`${h.name} is ${Math.round(h.tin)}°F right now, outside what its crops like.`});
+    const m=moisture(climate(w,fc.fOut,h.sw,h),h.sw);if(m.label!=='Good')out.push({k:'water',t:`${h.name}: watering looks ${m.label.toLowerCase()} at these settings.`});
+  }
+  if(h.pest>=35)out.push({k:'bug',t:`${h.name}: pest pressure is ${h.pest>=60?'severe':'high'}.`});
+  const aged=S.batches.filter(b=>b.house===h.id&&b.status==='ready'&&w-b.readyWeek>=1);
+  if(aged.length)out.push({k:'age',t:`${h.name}: ${aged.reduce((a,b)=>a+b.units,0)} flats are past prime and losing value.`});
+  if(S.batches.some(b=>b.house===h.id&&b.blocked))out.push({k:'block',t:`${h.name}: a plot can't be potted because old plants are in the way.`});
+  return out;
+}
+
+/* ================= input ================= */
+let hold=null,selPlot=null,drag=null;
+function benchAt(mx,my){
+  const [x,y]=toTile(mx,my,14);
+  if(tileAt(x,y)===T.BENCH){const h=houseAtTile(x,y);if(h){const i=GEO[h.lot].cells.findIndex(c=>c.x===x&&c.y===y);if(i>=0)return{h,i};}}
+  return null;
+}
+function hoverUpdate(mx,my){
+  const b=benchAt(mx,my);
+  if(hold&&b){const f=plotFit(b.h,b.i,hold.plan);hover={h:b.h.id,cells:f.cells,ok:f.ok};}else hover=null;
+  const [x,y]=toTile(mx,my,0);hoverTile=[x,y];
+}
+function clickAt(mx,my){
+  for(const bb of bubbles)if(Math.hypot(mx-bb.x,my-bb.y)<=bb.r+4){bb.act();return;}
+  const b=benchAt(mx,my);
+  if(hold){
+    if(!b){toast('Click a bench inside a greenhouse to place this plot.','info');return;}
+    const f=plotFit(b.h,b.i,hold.plan);
+    if(!f.ok){hover={h:b.h.id,cells:f.cells,ok:false};toast(f.why,'alert');return;}
+    const c=cellOf(b.h,b.i),ay=MAP[c.y+1]&&MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1;
+    const inside=houseAtTile(Math.floor(S.player.x),Math.floor(S.player.y))===b.h;
+    if(inside)placePlot(b.h,b.i);else walkTo(c.x,ay,()=>{if(hold)placePlot(b.h,b.i);});
+    return;
+  }
+  if(b){const pb=cellNow(b.h.id,b.i)||S.batches.find(z=>z.house===b.h.id&&z.status==='planned'&&z.cells.includes(b.i));
+    if(pb){selPlot=pb.id;openPlot(pb);return;}
+    const c=cellOf(b.h,b.i);walkTo(c.x,MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1);return;}
+  const [x,y]=toTile(mx,my,0),t=tileAt(x,y);
+  if(t===T.OFFICE||(x===OFFICE.st.x&&y===OFFICE.st.y)){goComputer();return;}
+  const h=houseAtTile(x,y);
+  if(h&&!h.building){const g=GEO[h.lot];
+    if((x===g.pwall.x&&y===g.pwall.y)||(x===g.pst.x&&y===g.pst.y)){goPanel(h);return;}
+    if(t===T.WALL){walkTo(g.door.x,g.door.y);return;}}
+  const lot=lotAtTile(x,y);
+  if(lot&&(!h||h.building)){goLot(lot);return;}
+  if(walk(x,y))walkTo(x,y);
+}
+function goComputer(tab){walkTo(OFFICE.st.x,OFFICE.st.y,()=>openComputer(tab));}
+function goPanel(h){const g=GEO[h.lot];walkTo(g.pst.x,g.pst.y,()=>openPanel(h));}
+function goLot(L){const g=GEO[L.key];walkTo(g.appr.x,g.appr.y,()=>openLot(L));}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false};});
+cv.addEventListener('pointermove',e=>{
+  const r=cv.getBoundingClientRect();hoverUpdate(e.clientX-r.left,e.clientY-r.top);
+  if(drag&&e.buttons){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.moved=true;if(drag.moved){camFollow=false;if(camTarget){camTarget=null;zoomBefore=null;}cam.x=drag.cx-dx/zoom;cam.y=drag.cy-dy/zoom;}}
+});
+cv.addEventListener('pointerup',e=>{const r=cv.getBoundingClientRect();if(drag&&!drag.moved){hoverUpdate(e.clientX-r.left,e.clientY-r.top);clickAt(e.clientX-r.left,e.clientY-r.top);}drag=null;});
+cv.addEventListener('wheel',e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.1:.9));},{passive:false});
+function setZoom(z){if(camTarget){camTarget=null;zoomBefore=null;}zoomGoal=null;zoom=clamp(z,.4,1.6);}
+$('zIn').addEventListener('click',()=>setZoom(zoom*1.15));
+$('zOut').addEventListener('click',()=>setZoom(zoom/1.15));
+window.addEventListener('keydown',e=>{
+  if(e.target.closest&&e.target.closest('input,select,textarea'))return;
+  if(e.key===' '){e.preventDefault();togglePlay();}
+  else if(e.key==='Escape'){if(!$('modal').hidden)closeModal();else if(hold){hold=null;renderHold();endFraming();}}
+  else if(['1','2','4'].includes(e.key)){S.speed=+e.key;hud();}
+});
+
+/* ================= HUD, toasts ================= */
+function hud(){
+  const w=Math.min(S.week,WEEKS),pr=S.cash-S.startCash;
+  $('hYear').textContent=`Year ${S.year}`;
+  $('hDate').textContent=S.phase==='done'?`Year ${S.year} done`:`Week ${w} · ${MONTHL[monthIdx(w)]}`;
+  $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
+  $('hProfit').textContent=fmt(pr);$('hProfit').classList.toggle('neg',pr<0);
+  const a=S.customers.filter(c=>c.active);$('hGw').textContent=a.length?Math.round(a.reduce((t,c)=>t+c.score,0)/a.length):0;
+  const fc=S.fc,fn=S.fcN;
+  const fcText=S.phase!=='run'||!fc?'':fc.warn?`${fc.warnKind==='cold'?'Cold front':'Heat wave'} possible this week`:fn&&fn.warn?`Next week: ${fn.warnKind==='cold'?'cold front':'heat wave'} possible`:`This week ${Math.round(fc.fOut-5)}–${Math.round(fc.fOut+5)}°F`;
+  $('hFc').textContent=fcText;$('hFc').hidden=!fcText;$('hFc').classList.toggle('warn',!!(fc&&(fc.warn||(fn&&fn.warn))));
+  $('bPlay').textContent=S.paused?'Play':'Pause';$('bPlay').classList.toggle('play',S.paused);$('bPlay').disabled=S.phase==='done';
+  document.querySelectorAll('#speed button').forEach(b=>b.classList.toggle('on',+b.dataset.sp===S.speed));
+  renderAlerts();
+}
+function pips(){
+  const f=S.phase==='done'?1:(S.day+S.clock/(WEEK_SEC/DAYS))/DAYS;
+  const el=$('pips');if(!el.children.length)el.innerHTML='<i><b></b></i>'.repeat(DAYS);
+  [...el.children].forEach((c,i)=>{c.firstChild.style.width=clamp(f*DAYS-i,0,1)*100+'%';});
+}
+function togglePlay(){if(S.phase==='done')return;S.paused=!S.paused;if(!S.paused)S.welcomed=true;hud();}
+$('bPlay').addEventListener('click',togglePlay);
+$('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.speed=+b.dataset.sp;hud();}});
+function toast(t,k){
+  const el=document.createElement('div');el.className='toast '+(k||'');el.textContent=t;
+  const box=$('toasts');box.prepend(el);while(box.children.length>(VW<600?2:3))box.lastChild.remove();
+  if(!still)el.animate([{opacity:0,transform:'translateY(-16px) scale(.9)'},{opacity:1,transform:'none'}],{duration:260,easing:'cubic-bezier(.2,1.4,.4,1)'});
+  setTimeout(()=>{const a=el.animate([{opacity:1},{opacity:0,transform:'translateY(-10px)'}],{duration:still?1:300});a.onfinish=()=>el.remove();},k==='alert'?6500:4200);
+}
+let alertsKey='';
+function renderAlerts(){
+  const list=[];activeH().forEach(h=>houseWarn(h).forEach(x=>list.push({...x,h})));
+  const key=list.map(x=>x.k+x.h.id).join(',');if(key===alertsKey)return;alertsKey=key;
+  $('alerts').innerHTML=list.slice(0,VW<600?5:3).map((x,i)=>`<button type="button" data-al="${i}" title="${esc(x.t)}" aria-label="${esc(x.t)}" class="${['cold','hot','bug','block'].includes(x.k)?'alert':''}"><i style="background:${BCOL[x.k]}">!</i><span class="at">${esc(x.t)}</span></button>`).join('');
+  $('alerts').onclick=e=>{const b=e.target.closest('[data-al]');if(b)goPanel(list[+b.dataset.al].h);};
+}
+
+/* ================= modals ================= */
+let mKind=null,mTab=null,mHouse=null,mPlot=null;
+function openModal(kind,title){mKind=kind;$('mTitle').textContent=title;$('modal').hidden=false;}
+function closeModal(){$('modal').hidden=true;mKind=null;selPlot=null;}
+$('mClose').addEventListener('click',closeModal);
+$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal();});
+function tabs(list){$('mTabs').innerHTML=list.map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${k===mTab?'on':''}">${l}${n?`<span class="n">${n}</span>`:''}</button>`).join('');}
+function refreshModal(){if($('modal').hidden)return;if(mKind==='computer')renderComputer();else if(mKind==='panel')renderPanel();else if(mKind==='plot')renderPlot();}
+
+/* ---- computer ---- */
+let cfg={};
+function openComputer(tab){mTab=tab||(S.orders.some(o=>o.status==='offer')?'offers':'orders');openModal('computer','Office computer');renderComputer();}
+function renderComputer(){
+  const nOff=S.orders.filter(o=>o.status==='offer').length,nNeed=S.orders.filter(o=>o.status==='open'&&!S.batches.some(b=>b.orderId===o.id&&b.status!=='done')).length;
+  tabs([['offers','Offers',nOff],['orders','Orders',nNeed],['customers','Customers'],['crew','Crew'],['books','Books']]);
+  const B=$('mBody');
+  if(mTab==='offers')B.innerHTML=offersHTML();
+  else if(mTab==='orders')B.innerHTML=ordersHTML();
+  else if(mTab==='customers')B.innerHTML=customersHTML();
+  else if(mTab==='crew'){B.innerHTML=`<ul class="tasks"><li><b>Greenhouse management</b> runs on experience: they set the house's switches each week, and the most experienced read the forecast perfectly.</li><li><b>Crop management</b> runs on horticultural knowledge: lower pest pressure and fewer losses on crops waiting past prime.</li><li><b>Maintenance</b> runs on work ethic: when the weather breaks out of the forecast range, the house holds closer to good temperatures.</li></ul><div id="growers"></div>`;renderGrowers();}
+  else B.innerHTML=booksHTML();
+}
+function cfgOf(o){return cfg[o.id]||(cfg[o.id]={buf:10,early:0});}
+function offersHTML(){
+  const os=S.orders.filter(o=>o.status==='offer').sort((a,b)=>a.ship-b.ship);
+  if(!os.length)return`<p class="empty">No open offers right now. New customers send offers at the start of each year.</p>`;
+  return`<p class="hint">Pick an offer and plan its plot, then place it on a greenhouse bench. Placing the plot accepts the order. Declining costs a little goodwill; offers expire once it's too late to pot them.</p><div class="tickets">${os.map(o=>{
+    const C=CROPS[o.crop],c=cust(o.custId),k=cfgOf(o),p=plotPlan(o,k.buf,k.early),exp=o.ship-C.grow-1;
+    return`<div class="ticket" data-o="${o.id}"><div class="tk1"><span class="cb" style="background:${C.color}">${C.name}</span><span class="tkwk">Pickup wk ${o.ship}</span></div>
+      <div class="tk2"><b>${o.qty}</b><span>flats at $${o.price} · ${fmt(o.qty*o.price)}</span></div>
+      <div class="tk3">${esc(o.cust)}<small>goodwill ${Math.round(c?c.score:0)} · offer expires after week ${exp}</small></div>
+      <div class="cfg">
+        <label>Extra flats for losses<span class="opts">${[0,10,20].map(v=>`<button type="button" data-buf="${o.id}|${v}" class="${k.buf===v?'on':''}">${v}%</button>`).join('')}</span></label>
+        <label>Pot early<span class="opts">${[0,1,2].map(v=>`<button type="button" data-early="${o.id}|${v}" class="${k.early===v?'on':''}">${v?v+' wk':'No'}</button>`).join('')}</span></label>
+        <p>${p.flats} flats on ${p.cells} bench spots · pot week ${p.start}, ready week ${p.ready} · plants ${fmt(p.cost)}</p>
+        ${p.late?`<p class="wn">Ready ${p.late} week${p.late>1?'s':''} after pickup: this order would ship short.</p>`:''}
+        ${k.early?`<p>Ready ${k.early} wk before pickup: safer against delays, but plants lose value while they wait.</p>`:''}
+      </div>
+      <div class="tkb"><button class="btn" type="button" data-take="${o.id}">Plan plot</button><button class="mini" type="button" data-decline="${o.id}">Decline</button></div></div>`;}).join('')}</div>`;
+}
+function ordersHTML(){
+  const os=S.orders.filter(live).sort((a,b)=>dueW(a)-dueW(b));
+  if(!os.length)return`<p class="empty">No accepted orders yet. Plan a plot from the Offers tab.</p>`;
+  return`<div class="scroll"><table><thead><tr><th>Customer</th><th>Crop</th><th class="n">Flats</th><th class="n">Pickup</th><th>Plot</th><th>Status</th><th></th></tr></thead><tbody>${os.map(o=>{
+    const C=CROPS[o.crop],b=S.batches.find(z=>z.orderId===o.id&&z.status!=='done'),h=b&&houseOf(b.house);
+    let st,k;
+    if(o.status==='shipped'){st=`Shipped ${o.filled}/${o.qty}${o.filled&&o.value<.995?` at ${Math.round(o.value*100)}%`:''}`;k=o.filled>=o.qty?'ok':'short';}
+    else if(!b){st='Needs a plot';k='short';}
+    else{const e=projUnits(b),r=readyAt(b);st=b.status==='planned'?`Pots wk ${b.start}${b.blocked?', blocked':''}`:b.status==='growing'?`Growing, ready ~wk ${r}`:`Ready, ${b.units} flats`;k=b.blocked||r>dueW(o)?'short':e>=o.qty-.01?'ok':'tight';}
+    return`<tr><td>${esc(o.cust)}</td><td><i class="dot" style="background:${C.color}"></i>${C.name}</td><td class="n">${o.qty}</td><td class="n">wk ${dueW(o)}${o.delay?' (late)':''}</td><td>${h?esc(h.name):'—'}</td><td><span class="chip ${k}">${st}</span></td><td>${o.status==='open'&&!b?`<button class="mini" type="button" data-take="${o.id}">Place plot</button>`:''}</td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function outlook(s){return s>=80?['Growing with you','ok']:s>=60?['Steady','ok']:s>=40?['Cooling','tight']:s>=25?['At risk','short']:['Likely to leave','short'];}
+function customersHTML(){
+  const list=S.customers.slice().sort((a,b)=>(b.active-a.active)||(b.score-a.score));
+  return`<p class="hint">Goodwill decides next year's offers: full, on-time orders raise it; coming up short drops it hard. Below 25, a customer leaves.</p><div class="scroll"><table><thead><tr><th>Customer</th><th>Goodwill</th><th class="n">This year</th><th>Outlook</th></tr></thead><tbody>${list.map(c=>{
+    const d=Math.round(c.score-c.start),[ol,k]=c.active?outlook(c.score):['Gone','short'],col=c.score>=60?'var(--leaf)':c.score>=40?'var(--amber)':'var(--terra)';
+    return`<tr class="${c.active?'':'off'}"><td>${esc(c.name)}<br><small>${c.crops.map(x=>`<i class="dot" style="background:${CROPS[x].color}"></i>${CROPS[x].name}`).join(' ')}</small></td><td><span class="sc"><i><i style="width:${c.score}%;background:${col}"></i></i>${Math.round(c.score)}</span></td><td class="n"><span class="${d>0?'up':d<0?'dn':''}">${d>0?'+':''}${d}</span></td><td><span class="chip ${k}">${ol}</span></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function booksHTML(){
+  const costs=Object.values(S.cost).reduce((a,b)=>a+b,0);
+  return`<div class="figs"><div><b>${fmt(S.rev)}</b><span>Revenue this year</span></div><div><b>${fmt(costs)}</b><span>Costs this year</span></div><div><b>${fmt(S.aging)}</b><span>Lost to aging stock</span></div><div><b>${fmt(S.cash)}</b><span>Cash</span></div></div>
+  <div class="rgrid"><div class="scroll"><table><thead><tr><th>Crop</th><th class="n">Loss estimate</th><th class="n">Planted</th><th class="n">Lost so far</th></tr></thead><tbody>${Object.entries(CROPS).map(([c,C])=>{const v=S.crop[c];return`<tr><td><i class="dot" style="background:${C.color}"></i>${C.name}</td><td class="n">${Math.round(estLoss(c)*100)}%${S.lossHist[c]!=null?' (yours)':''}</td><td class="n">${v?v.planted:0}</td><td class="n">${v?v.lost:0}</td></tr>`;}).join('')}</tbody></table></div>
+  <table><tbody>${[['Plants',S.cost.plants],['Heating',S.cost.heat],['Cooling',S.cost.cool],['Pest control',S.cost.pest],['Overhead',S.cost.overhead],['Growers',S.cost.labor],['Building',S.cost.build]].map(([l,v])=>`<tr><td>${l}</td><td class="n">${fmt(v||0)}</td></tr>`).join('')}</tbody></table></div>
+  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Grower's log</summary><ul class="log">${S.log.slice(0,80).map(l=>`<li class="${l.k}"><b>Wk ${l.w}</b><span>${esc(l.t)}</span></li>`).join('')}</ul></details>`;
+}
+function takeOrder(id){
+  const o=order(id);if(!o)return;const k=cfgOf(o),p=plotPlan(o,k.buf,k.early);
+  hold={orderId:id,plan:p};
+  if(activeH().every(h=>!GEO[h.lot].cells.some((c,i)=>plotFit(h,i,p).ok))){toast('No bench has room for this plot during those weeks. Build space, or decline.','alert');}
+  closeModal();renderHold();frameHouses();
+}
+function renderHold(){
+  const el=$('holding');
+  if(!hold){el.hidden=true;return;}
+  const o=order(hold.orderId),p=hold.plan,C=CROPS[o.crop];
+  el.hidden=false;
+  el.innerHTML=`<p><b>Placing ${C.name.toLowerCase()} for ${esc(o.cust)}</b><br>${p.flats} flats on ${p.cells} bench spots, weeks ${p.start}–${p.end}. Click a bench: green fits, red doesn't, grey spots are booked.</p><button class="mini" type="button" id="holdF">Show houses</button><button class="mini" type="button" id="holdX">Cancel</button>`;
+  $('holdX').onclick=()=>{hold=null;renderHold();endFraming();};
+  $('holdF').onclick=frameHouses;
+}
+
+/* ---- growers (crew tab) ---- */
+let draft=null;
+function statBars(g){return STATS.map(([k,l])=>`<div class="gs"><span>${l}</span><i><i style="width:${g[k]*10}%"></i></i><b>${g[k]}</b></div>`).join('');}
+function matrix(assign,tag,lock){
+  return`<div class="scroll"><table class="gm"><thead><tr><th>House</th>${TASKS.map(t=>`<th>${t[2]}</th>`).join('')}<th class="n">Hours/wk</th></tr></thead><tbody>${S.houses.map(h=>{
+    const a=assign[h.id]||{},hrs=TASKS.reduce((x,[k])=>x+(a[k]?THOURS[k]:0),0);
+    return`<tr><td>${esc(h.name)}${h.building?' (building)':''}</td>${TASKS.map(([k,l])=>`<td><input type="checkbox" data-gt="${tag}|${h.id}|${k}" ${a[k]?'checked':''} ${lock?'disabled':''} aria-label="${esc(h.name)}: ${l}"></td>`).join('')}<td class="n">${hrs}</td></tr>`;}).join('')}</tbody></table></div>`;
+}
+function renderGrowers(){
+  const el=$('growers');if(!el)return;const ae=document.activeElement;
+  if(el.contains(ae)&&ae.tagName==='INPUT'&&ae.type==='number')return;
+  const done=S.phase==='done',w=Math.min(S.week,WEEKS);let h='';
+  if(S.growers.length){
+    h+=`<b class="sh">On contract</b><div class="gcards">${S.growers.map(g=>{
+      const over=done||g.to<w,on=!over&&g.from<=w,hrs=gHours(g),wc=hrs*g.rate,left=over?0:g.to-Math.max(g.from,w)+1;
+      const st=over?'Contract finished':g.from>w?`Starts week ${g.from}`:'On the job';
+      return`<div class="gcard wide"><div class="gh"><b>${esc(g.name)}</b><span class="chip ${on?'ok':''}">${st}</span></div><div class="gstats">${statBars(g)}</div>${matrix(g.assign,'g'+g.id,over)}
+      <div class="grow"><label>Weeks ${g.from} through<input type="number" min="${w}" max="52" value="${g.to}" data-gto="${g.id}" ${over?'disabled':''}></label><p class="gcost">${hrs} h/wk at $${g.rate}/hr = ${fmt(wc)}/wk${left?` · ${fmt(wc*left)} still to pay`:''}</p>${over?'':`<button class="mini" type="button" data-gend="${g.id}">${g.from>w?'Cancel contract':'End contract now'}</button>`}</div></div>`;}).join('')}</div>`;
+  }
+  h+=`<b class="sh">Available this year</b>`;
+  if(!S.pool.length)h+=`<p class="empty">Nobody else is looking for work right now. New growers come around next year.</p>`;
+  else h+=`<div class="gcards">${S.pool.map(p=>{
+    if(draft&&draft.pid===p.id)return`<div class="gcard wide"><div class="gh"><b>${esc(p.name)}</b><span>$${p.rate}/hr</span></div><div class="gstats">${statBars(p)}</div>
+      <div class="grow"><label>From week<input type="number" min="${w}" max="52" value="${draft.from}" data-df="1"></label><label>Through week<input type="number" min="${w}" max="52" value="${draft.to}" data-dt="1"></label></div>
+      ${matrix(draft.assign,'d',false)}<p class="gcost" id="dprev"></p><p class="err" id="dErr"></p>
+      <div class="grow"><button class="btn" type="button" data-hireok="1">Sign contract</button><button class="mini" type="button" data-hirex="1">Cancel</button></div></div>`;
+    return`<div class="gcard"><div class="gh"><b>${esc(p.name)}</b><span>$${p.rate}/hr</span></div>${p.back?'<small class="gback">Worked for you last year</small>':''}<div class="gstats">${statBars(p)}</div><button class="mini" type="button" data-hire="${p.id}" ${done?'disabled':''}>Hire</button></div>`;}).join('')}</div>`;
+  el.innerHTML=h;if(draft)draftPreview();
+}
+function draftPreview(){
+  const p=S.pool.find(x=>x.id===draft.pid);if(!p||!$('dprev'))return;
+  const hrs=gHours(draft),n=Math.max(0,draft.to-draft.from+1);
+  $('dprev').textContent=`${hrs} h/wk at $${p.rate}/hr = ${fmt(hrs*p.rate)}/wk, about ${fmt(hrs*p.rate*n)} over ${n} week${n===1?'':'s'}. Each house and task adds paid hours.`;
+}
+
+/* ---- control panel ---- */
+function openPanel(h){mHouse=h.id;mTab=null;$('mTabs').innerHTML='';openModal('panel',`${h.name} control panel`);renderPanel();}
+function renderPanel(){
+  const h=houseOf(mHouse);if(!h){closeModal();return;}
+  const w=Math.min(S.week,WEEKS),fc=S.fc,run=S.phase==='run';
+  const mg=run?skill(h.id,'mgmt',w):0,crew=run?S.growers.filter(g=>g.from<=w&&w<=g.to&&g.assign[h.id]&&TASKS.some(([k])=>g.assign[h.id][k])):[];
+  const cf=comfort(houseCrops(h,w)),P=h.pest,pc=P<15?'var(--leaf)':P<35?'var(--amber)':'var(--terra)';
+  const tin=h.tin!=null?h.tin:(fc?climate(w,fc.fOut,h.sw,h):70),bad=cf&&(tin<cf.lo||tin>cf.hi),m=fc?moisture(climate(w,fc.fOut,h.sw,h),h.sw):{label:'Good'};
+  const warns=houseWarn(h);
+  $('mBody').innerHTML=`<p class="hint">${esc(h.desc)} Changes take effect right away and through the rest of the week.</p>
+  <p class="crewl">${crew.length?`Crew today: ${crew.map(g=>`${esc(g.name)} (${TASKS.filter(([k])=>g.assign[h.id][k]).map(t=>t[1].toLowerCase()).join(', ')})`).join('; ')}.${mg?` <b>${esc(crewName(h.id,'mgmt',w))} runs these switches</b>; beneficial insects stay your call.`:''}`:'No grower on this house this week.'}</p>
+  <div class="gauges">
+    <div class="gauge"><span>Outside now</span><b>${S.outDays.length?Math.round(S.outDays[S.outDays.length-1]):Math.round(fc?fc.fOut:60)}°F</b></div>
+    <div class="gauge ${bad?'bad':''}"><span>Inside now</span><b>${Math.round(tin)}°F</b></div>
+    <div class="gauge ${m.label==='Good'?'':'bad'}"><span>Watering</span><b>${m.label}</b></div>
+    <div class="gauge ${P>=35?'bad':''}"><span>Pests</span><b>${P<15?'Low':P<35?'Moderate':P<60?'High':'Severe'}</b><i class="pm"><i style="width:${P.toFixed(0)}%;background:${pc}"></i></i></div>
+  </div>
+  <div class="pnl">
+    <div>
+      <div class="sw">${SW.map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
+      <p class="gcost" style="margin-top:10px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
+      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(75*K)})</button> <span class="gcost">Spray resistance ${Math.round(h.resist*100)}%</span></p>
+    </div>
+    <div>${forecastChart(h)}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
+  </div>`;
+  $('sprayBtn').onclick=()=>{spray(h);renderPanel();toast(`Sprayed the ${h.name.toLowerCase()}.`,'good');};
+}
+function forecastChart(h){
+  const fc=S.fc;if(!fc||S.phase!=='run')return'';
+  const w=S.week,cf=comfort(houseCrops(h,w)),Y0=20,Y1=110,y=t=>clamp((Y1-t)/(Y1-Y0)*100,0,100),X=d=>d/DAYS*700;
+  const now=(S.day+S.clock/(WEEK_SEC/DAYS));
+  const pLo=climate(w,fc.fOut-5,h.sw,h),pHi=climate(w,fc.fOut+5,h.sw,h);
+  let s=`<svg viewBox="0 0 700 100" preserveAspectRatio="none" aria-hidden="true">`;
+  if(cf)s+=`<rect x="0" y="${y(cf.hi)}" width="700" height="${y(cf.lo)-y(cf.hi)}" fill="rgba(80,180,90,.22)"/>`;
+  s+=`<rect x="0" y="${y(fc.fOut+5)}" width="700" height="${y(fc.fOut-5)-y(fc.fOut+5)}" fill="rgba(120,130,140,.22)"/>`;
+  s+=`<rect x="${X(now)}" y="${y(Math.max(pLo,pHi))}" width="${Math.max(0,700-X(now))}" height="${Math.abs(y(pLo)-y(pHi))+.8}" fill="rgba(233,140,40,.35)"/>`;
+  if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),h.sw,h);s+=`<line x1="${X(now)}" x2="700" y1="${y(sh)}" y2="${y(sh)}" stroke="#c4542a" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/>`;}
+  const op=S.outDays.map((t,i)=>`${X(i+.5)},${y(t)}`).join(' ');if(S.outDays.length>1)s+=`<polyline points="${op}" fill="none" stroke="#56636b" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+  const ip=(h.tday||[]).map((t,i)=>t==null?'':`${X(i+.5)},${y(t)}`).filter(Boolean).join(' ');if((h.tday||[]).length>1)s+=`<polyline points="${ip}" fill="none" stroke="#c4542a" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`;
+  s+=`<line id="nowLine" x1="${X(now)}" x2="${X(now)}" y1="0" y2="100" stroke="#e9b824" stroke-width="3" vector-effect="non-scaling-stroke"/></svg>`;
+  return`<div class="fchart">${s}<span class="fy" style="top:4px">${Y1}°F</span><span class="fy" style="bottom:4px">${Y0}°F</span></div>
+  <div class="fdays">${[...Array(DAYS)].map((_,i)=>`<span>Day ${i+1}</span>`).join('')}</div>
+  <div class="flegend"><span><i style="background:rgba(80,180,90,.4)"></i>What crops like</span><span><i style="background:rgba(120,130,140,.4)"></i>Outside forecast</span><span><i style="background:rgba(233,140,40,.55)"></i>Inside ahead, at these settings</span><span><i style="background:#c4542a"></i>Inside so far</span><span><i style="background:#56636b"></i>Outside so far</span>${fc.warn?`<span><i style="background:repeating-linear-gradient(90deg,#c4542a 0 4px,transparent 4px 7px)"></i>If the ${fc.warnKind==='cold'?'front':'heat wave'} hits</span>`:''}</div>`;
+}
+
+/* ---- plot info ---- */
+function openPlot(b){mPlot=b.id;mTab=null;$('mTabs').innerHTML='';openModal('plot',`${CROPS[b.crop].name} plot`);renderPlot();}
+function renderPlot(){
+  const b=S.batches.find(z=>z.id===mPlot);if(!b||b.status==='done'){closeModal();return;}
+  const C=CROPS[b.crop],o=b.orderId!=null?order(b.orderId):null,h=houseOf(b.house),w=Math.min(S.week,WEEKS);
+  const age=b.status==='ready'?w-b.readyWeek:0;
+  let st=b.status==='planned'?(b.blocked?'Blocked: old plants are still on these benches.':`Pots in week ${b.start}.`):b.status==='growing'?`Growing: ${Math.round(clamp(b.progress/C.grow,0,1)*100)}% grown, ready about week ${readyAt(b)}.`:age<=0?'Ready and in prime condition.':`Ready, ${age} wk past prime: selling at ${Math.round(qual(age)*100)}% value. Too big after week ${b.readyWeek+C.shelf}.`;
+  $('mBody').innerHTML=`<div class="figs"><div><b>${b.status==='planned'?b.qty:b.units}</b><span>flats ${b.status==='planned'?'planned':'on the bench'}</span></div><div><b>${b.lost||0}</b><span>flats lost</span></div><div><b>${C.lo}–${C.hi}°F</b><span>what it likes</span></div></div>
+  <p>${esc(st)}</p>
+  <p class="hint">${o?`For ${esc(o.cust)}: ${o.qty} flats, pickup week ${dueW(o)}${o.status==='shipped'?' (already shipped; these are leftovers)':''}.`:'No order attached.'} In the ${esc(h.name.toLowerCase())}.</p>
+  <div class="grow">${b.status==='planned'?`<button class="btn line" type="button" id="plotCancel">Cancel this plot</button>`:''}${b.status==='ready'||(b.status==='growing'&&o&&o.status!=='open')?`<button class="btn red" type="button" id="plotToss">Toss remaining flats</button>`:''}</div>`;
+  const pc=$('plotCancel');if(pc)pc.onclick=()=>{b.status='done';b.cancelled=true;say(`Cancelled the ${C.name.toLowerCase()} plot${o?` for ${o.cust}; the order needs a new plot`:''}.`,'warn');closeModal();dirty=true;};
+  const pt=$('plotToss');if(pt)pt.onclick=()=>{cs(b.crop).wasted+=b.units;b.wasted=(b.wasted||0)+b.units;say(`Tossed ${b.units} ${C.name.toLowerCase()} ${fl(b.units)} to free the bench.`,'warn');b.units=0;b.status='done';b.endW=w;closeModal();dirty=true;};
+}
+
+/* ---- lots ---- */
+function openLot(L){mTab=null;$('mTabs').innerHTML='';const h=S.houses.find(z=>z.lot===L.key);openModal('lot',h?`${h.name}: under construction`:'Lot for sale');
+  const g=GEO[L.key];
+  $('mBody').innerHTML=h?`<p>${esc(h.desc)}</p><p class="hint">Ready in ${h.building} week${h.building>1?'s':''}.</p>`:`<p class="hint">Build a ${g.cap}-flat greenhouse here for ${fmt(HOUSE_COST)}. It takes ${BUILD_WEEKS} weeks. Every house comes with its own quirks, switches, pests and weekly costs, and you'll learn its quirk when you build.</p><p><button class="btn go" type="button" id="buildBtn" ${S.phase==='run'?'':'disabled'}>Build for ${fmt(HOUSE_COST)}</button></p>`;
+  const bb=$('buildBtn');if(bb)bb.onclick=()=>{if(build(L.key))closeModal();};
+}
+
+/* ---- welcome and report ---- */
+function openWelcome(){
+  mTab=null;$('mTabs').innerHTML='';openModal('welcome',`Year ${S.year}: welcome to your nursery`);
+  $('mBody').innerHTML=`<p class="hint">Click or tap anywhere to walk. Drag to look around. Time runs about 15 seconds a week; pause any time with the space bar.</p>
+  <ul class="how"><li><b>Office computer</b>Take orders, plan their plots, hire growers, check customers and the books.</li><li><b>Benches</b>Place each order's plot on a bench. It only fits if the spots are free for those weeks.</li><li><b>Control panels</b>Set heat, vents, shade, fans, water and pest control. Watch the live forecast.</li><li><b>For sale lots</b>Build another greenhouse when you're ready for more space.</li></ul>
+  <p><button class="btn go" type="button" id="wGo">Head to the office</button></p>`;
+  $('wGo').onclick=()=>{closeModal();goComputer('offers');};
+}
+function openReport(){
+  mTab=null;$('mTabs').innerHTML='';
+  const acc=S.orders.filter(live),ordered=acc.reduce((a,o)=>a+o.qty,0),filled=acc.reduce((a,o)=>a+o.filled,0);
+  const costs=Object.values(S.cost).reduce((a,b)=>a+b,0),pr=S.rev-costs;
+  openModal('report',`Year ${S.year} closed with ${fmt(pr)} profit`);
+  const rows=Object.entries(S.crop).map(([c,v])=>{const C=CROPS[c],act=v.planted?v.lost/v.planted:0,exp=estLoss(c);
+    return`<tr><td><i class="dot" style="background:${C.color}"></i>${C.name}</td><td class="n">${v.planted}</td><td class="n">${Math.round(exp*100)}%</td><td class="n" style="color:${act>exp+.02?'var(--terra)':'var(--leaf)'}">${Math.round(act*100)}%</td><td class="n">${v.wasted}</td><td class="n">${v.shipped}</td></tr>`;}).join('');
+  const moves=S.customers.filter(c=>c.active).map(c=>({c,d:Math.round(c.score-c.start)})).sort((a,b)=>a.d-b.d),leaving=S.customers.filter(c=>c.active&&c.score<25).map(c=>c.name);
+  $('mBody').innerHTML=`<p class="hint">You filled ${filled} of ${ordered} flats you accepted.${leaving.length?` ${esc(leaving.join(', '))} ${leaving.length>1?'are':'is'} not coming back.`:''} Next year's offers follow each customer's goodwill, and plot sizes use this year's loss rates.</p>
+  <div class="figs"><div><b>${fmt(S.rev)}</b><span>Revenue</span></div><div><b>${fmt(costs)}</b><span>Costs</span></div><div><b>${ordered?Math.round(filled/ordered*100):0}%</b><span>Accepted flats filled</span></div><div><b>${fmt(S.aging)}</b><span>Lost to aging stock</span></div></div>
+  <div class="rgrid"><div class="scroll"><table><thead><tr><th>Crop</th><th class="n">Planted</th><th class="n">Planned loss</th><th class="n">Actual loss</th><th class="n">Too big</th><th class="n">Shipped</th></tr></thead><tbody>${rows||'<tr><td colspan="6">Nothing was planted this year.</td></tr>'}</tbody></table></div>
+  <table><thead><tr><th>Goodwill moves</th><th class="n">Change</th></tr></thead><tbody>${moves.slice(0,3).concat(moves.length>3?moves.slice(-2):[]).map(x=>`<tr><td>${esc(x.c.name)}</td><td class="n"><span class="${x.d>0?'up':x.d<0?'dn':''}">${x.d>0?'+':''}${x.d}</span></td></tr>`).join('')}</tbody></table></div>
+  <p style="margin-top:16px"><button class="btn go" type="button" id="nyBtn">Start year ${S.year+1}</button></p>`;
+  $('nyBtn').onclick=()=>{nextYear();closeModal();hud();openWelcome();};
+}
+
+/* ---- modal events ---- */
+$('mTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){mTab=b.dataset.tab;renderComputer();}});
+$('mBody').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.buf){const [id,v]=t.dataset.buf.split('|');cfgOf(order(+id)).buf=+v;renderComputer();}
+  else if(t.dataset.early){const [id,v]=t.dataset.early.split('|');cfgOf(order(+id)).early=+v;renderComputer();}
+  else if(t.dataset.take){const card=t.closest('.ticket');if(card&&!still){card.animate([{transform:'none'},{transform:'scale(1.04) rotate(-2deg)'},{transform:'translateY(40px) scale(.6)',opacity:0}],{duration:320,easing:'ease-in'}).onfinish=()=>takeOrder(+t.dataset.take);}else takeOrder(+t.dataset.take);}
+  else if(t.dataset.decline){const o=order(+t.dataset.decline),card=t.closest('.ticket');
+    const fin=()=>{o.status='declined';bump(o.custId,-2);say(`Declined ${o.cust}'s ${CROPS[o.crop].name.toLowerCase()} offer. Goodwill −2.`,'warn');renderComputer();};
+    if(card&&!still){const dir=Math.random()<.5?-1:1;card.animate([{transform:'none',opacity:1},{transform:`translate(${dir*50}px,-30px) rotate(${dir*8}deg)`,offset:.3},{transform:`translate(${dir*700}px,-300px) rotate(${dir*70}deg)`,opacity:0}],{duration:650,easing:'cubic-bezier(.5,0,.8,.4)',fill:'forwards'}).onfinish=fin;}else fin();}
+  else if(t.dataset.sw){const h=houseOf(mHouse);h.sw[t.dataset.sw]=+t.dataset.v;renderPanel();dirty=true;}
+  else if(t.dataset.hire){if(S.phase==='done')return;const w=Math.min(S.week,WEEKS);draft={pid:+t.dataset.hire,from:w,to:Math.min(WEEKS,w+11),assign:{[S.houses[0].id]:{mgmt:true,crop:true,maint:true}}};renderGrowers();}
+  else if(t.dataset.hirex){draft=null;renderGrowers();}
+  else if(t.dataset.hireok){
+    const p=S.pool.find(x=>x.id===draft.pid),w=Math.min(S.week,WEEKS);let err='';
+    if(!Number.isInteger(draft.from)||!Number.isInteger(draft.to)||draft.from<w||draft.to<draft.from||draft.to>WEEKS)err=`Pick weeks from ${w} to ${WEEKS}, with the end on or after the start.`;
+    else if(!gHours(draft))err='Give them at least one task in one house.';
+    if(err){$('dErr').textContent=err;return;}
+    S.growers.push({id:p.id,name:p.name,exp:p.exp,eth:p.eth,hort:p.hort,rate:p.rate,from:draft.from,to:draft.to,assign:JSON.parse(JSON.stringify(draft.assign))});
+    S.pool=S.pool.filter(x=>x!==p);draft=null;
+    say(`Contracted ${p.name} for weeks ${S.growers[S.growers.length-1].from}–${S.growers[S.growers.length-1].to}.`,'good');
+    growerSet();syncNPCs();renderGrowers();
+  }
+  else if(t.dataset.gend){
+    const g=S.growers.find(x=>x.id===+t.dataset.gend),w=Math.min(S.week,WEEKS);if(!g)return;
+    if(g.from>=w){S.growers=S.growers.filter(x=>x!==g);S.pool.push({id:g.id,name:g.name,exp:g.exp,eth:g.eth,hort:g.hort,rate:g.rate});say(`Cancelled ${g.name}'s contract before it started.`,'info');}
+    else{g.to=w-1;say(`Ended ${g.name}'s contract.`,'info');}
+    syncNPCs();renderGrowers();
+  }
+});
+$('mBody').addEventListener('input',e=>{const t=e.target;if(!draft)return;if(t.dataset.df){draft.from=+t.value;draftPreview();}if(t.dataset.dt){draft.to=+t.value;draftPreview();}});
+$('mBody').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.gt){const [tag,hid,k]=t.dataset.gt.split('|');const assign=tag==='d'?draft&&draft.assign:(S.growers.find(g=>'g'+g.id===tag)||{}).assign;if(!assign)return;(assign[hid]||(assign[hid]={}))[k]=t.checked;if(tag!=='d'){growerSet();syncNPCs();}renderGrowers();}
+  if(t.dataset.gto){const g=S.growers.find(x=>x.id===+t.dataset.gto),w=Math.min(S.week,WEEKS),v=+t.value;if(g&&Number.isInteger(v)&&v>=Math.max(w,g.from)&&v<=WEEKS)g.to=v;t.blur();renderGrowers();}
+});
+
+/* ================= loop ================= */
+let last=performance.now(),hudT=0,lastWeekSeen=0;
+function frame(now){
+  const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(!S.paused&&S.phase==='run'){
+    S.clock+=dt*S.speed;const dl=WEEK_SEC/DAYS;
+    while(S.clock>=dl&&S.phase==='run'&&!S.paused){S.clock-=dl;dayTick();refreshModal();hud();}
+    if(S.paused)S.clock=Math.min(S.clock,dl*.999);
+  }
+  if(S.week!==lastWeekSeen){lastWeekSeen=S.week;syncNPCs();}
+  movePlayer(dt);moveNPCs(dt);updateCam(dt);
+  draw(now);pips();
+  if(mKind==='panel'&&!$('modal').hidden){const nl=document.getElementById('nowLine');if(nl){const x=(S.day+S.clock/(WEEK_SEC/DAYS))/DAYS*700;nl.setAttribute('x1',x);nl.setAttribute('x2',x);}}
+  hudT+=dt;if(hudT>.5){hudT=0;hud();}
+  requestAnimationFrame(frame);
+}
+function start(d){
+  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;buildMap();}
+  else freshGame();
+  resize();zoom=clamp(VW/1150,.55,1);
+  cam.x=wx(S.player.x,S.player.y);cam.y=wy(S.player.x,S.player.y,0)-40;
+  syncNPCs();hud();
+  if(S.phase==='done')openReport();else if(!S.welcomed)openWelcome();
+  requestAnimationFrame(frame);
+}
+window.claude?.hot?.snapshot?.(()=>S);
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+}
+</script>
+</body>
+</html>
