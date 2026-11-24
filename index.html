@@ -685,13 +685,17 @@ function drawHouseFront(g,h,now){
   const n=Math.round(h.pest/6);let sd=h.id*97+13;
   for(let k=0;k<n;k++){sd=(sd*16807)%2147483647;const fx=g.x+1+(sd%1000)/1000*(g.w-2);sd=(sd*16807)%2147483647;const fy=g.y+.5+(sd%1000)/1000*(g.h-1);const q=P(fx,fy,62+((sd>>3)%30)+Math.sin(now/240+k)*3);cx.fillStyle='#3e3322';cx.beginPath();cx.ellipse(q[0],q[1],3*zoom,2.2*zoom,0,0,7);cx.fill();}
   if(sprayFx&&sprayHouse===h.id){const t=(now-sprayFx)/1200;if(t<1){for(let k=0;k<24;k++){const fx=g.x+1+((k*37)%100)/100*(g.w-2),fy=g.y+1+((k*53)%100)/100*(g.h-2),q=P(fx,fy,20+t*50);cx.fillStyle=`rgba(255,255,255,${.7*(1-t)})`;cx.beginPath();cx.arc(q[0],q[1],(4+t*10)*zoom,0,7);cx.fill();}}else sprayFx=0;}
-  const c=P(g.appr.x+.5,g.appr.y+.5,0);label([c[0],c[1]+14*zoom],h.name,'#14211a');
+  const c=P(g.appr.x+.5,g.appr.y+.5,0);hit(label([c[0],c[1]+14*zoom],`${h.name} \u00b7 controls`,'#14211a'),()=>goPanel(h));
 }
 function drawPanel(g,h,now){
-  const x=g.pwall.x+.8,y=g.pwall.y+.25,warn=houseWarn(h).length;
-  box(x,y,18,.18,.5,26,['#3b4a44','#2c3833','#24302b']);
-  const a=P(x+.18,y+.1,24),b=P(x+.18,y+.42,24),c2=P(x+.18,y+.42,38),d=P(x+.18,y+.1,38);
-  poly([a,b,c2,d],warn?(Math.sin(now/200)>0?'#ff7a4a':'#a33'):'#7fd08a');
+  const x=g.pwall.x+.72,y=g.pwall.y+.15,warn=houseWarn(h).length;
+  box(x+.08,y+.3,0,.1,.1,20,['#5a6a64','#4a5a54','#3a4a44']);
+  box(x,y,20,.26,.7,36,['#3b4a44','#2c3833','#24302b']);
+  const a=P(x+.26,y+.1,28),b=P(x+.26,y+.6,28),c2=P(x+.26,y+.6,50),d=P(x+.26,y+.1,50);
+  poly([a,b,c2,d],warn?(Math.sin(now/200)>0?'#ff7a4a':'#b33'):'#7fd08a');
+  const top=P(x+.13,y+.35,62);
+  hit({x0:Math.min(a[0],d[0])-14,y0:top[1]-6,x1:Math.max(b[0],c2[0])+14,y1:P(x+.13,y+.35,0)[1]+4},()=>goPanel(h));
+  hit(label([top[0],top[1]-12],'Controls',warn?'#ffffff':'#14211a',warn?'#c4542a':null),()=>goPanel(h));
 }
 function cellOf(h,i){return GEO[h.lot].cells[i];}
 function drawCell(h,g,c,i,now){
@@ -734,10 +738,14 @@ function drawPerson(x,y,shirt,hat,now,mv){
   cx.lineCap='butt';
 }
 function roundRect(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
-function label(p,t,col){
+let hits=[];
+function hit(r,act){hits.push({...r,act});}
+function label(p,t,col,bg){
   cx.font=`600 12px Inter,system-ui,sans-serif`;const w=cx.measureText(t).width+14;
+  if(bg){cx.fillStyle=bg;roundRect(p[0]-w/2-2,p[1]-12,w+4,24,12);cx.fill();cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+.5);return{x0:p[0]-w/2-4,y0:p[1]-14,x1:p[0]+w/2+4,y1:p[1]+14};}
   cx.fillStyle='rgba(255,255,255,.92)';roundRect(p[0]-w/2,p[1]-10,w,20,10);cx.fill();
   cx.fillStyle=col;cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+.5);
+  return{x0:p[0]-w/2-4,y0:p[1]-14,x1:p[0]+w/2+4,y1:p[1]+14};
 }
 let trucks=[];
 function truckLeave(r){trucks.push({t0:performance.now(),mode:'leave',r});}
@@ -786,9 +794,9 @@ let sprayFx=0,sprayHouse=null;
 function draw(now){
   cx.setTransform(DPR,0,0,DPR,0,0);
   cx.fillStyle=mix(SEAS[season(Math.min(S.week,WEEKS))][0],'#2f4a2a',.3);cx.fillRect(0,0,VW,VH);
-  drawGround();drawPreviewPath();
+  hits=[];drawGround();drawPreviewPath();
   drawablesList(now).forEach(o=>o.f());
-  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);label([og[0],og[1]+14*zoom],'Office computer','#14211a');
+  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);hit(label([og[0],og[1]+14*zoom],'Office computer','#14211a'),()=>goComputer());
   const dk=P(20.5,21.5,0);label([dk[0],dk[1]+12*zoom],'Loading dock','#14211a');
   drawFx(now);drawBubbles(now);
 }
@@ -881,6 +889,7 @@ function hoverUpdate(mx,my){
 }
 function clickAt(mx,my){
   for(const bb of bubbles)if(Math.hypot(mx-bb.x,my-bb.y)<=bb.r+4){bb.act();return;}
+  if(!hold)for(let i=hits.length-1;i>=0;i--){const r=hits[i];if(mx>=r.x0&&mx<=r.x1&&my>=r.y0&&my<=r.y1){r.act();return;}}
   const b=benchAt(mx,my);
   if(hold){
     if(!b){toast('Click a bench inside a greenhouse to place this plot.','info');return;}
@@ -1096,9 +1105,12 @@ function renderPanel(){
   </div>
   <div class="pnl">
     <div>
-      <div class="sw">${SW.map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
-      <p class="gcost" style="margin-top:10px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
-      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(75*K)})</button> <span class="gcost">Spray resistance ${Math.round(h.resist*100)}%</span></p>
+      <b class="sh">Climate</b>
+      <div class="sw">${SW.filter(x=>x[0]!=='bugs').map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
+      <b class="sh" style="margin-top:16px">Pest control</b>
+      <div class="sw"><div class="swr"><span>Beneficial insects (${fmt(20*K)}/wk)</span><div class="opts">${['Off','On'].map((o,i)=>`<button type="button" data-sw="bugs" data-v="${i}" class="${h.sw.bugs===i?'on':''}" aria-pressed="${h.sw.bugs===i}" ${run?'':'disabled'}>${o}</button>`).join('')}</div></div></div>
+      <p style="margin:10px 0 0"><button class="btn red" type="button" id="sprayBtn" ${run?'':'disabled'}>Spray now (${fmt(75*K)})</button> <span class="gcost">Works right away. Spray resistance ${Math.round(h.resist*100)}%</span></p>
+      <p class="gcost" style="margin-top:12px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
     </div>
     <div>${forecastChart(h)}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
   </div>`;
