@@ -191,6 +191,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .placing{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid;border-radius:16px;padding:10px 12px;margin-bottom:10px}
 .placing>div{flex:1;min-width:0}.placing b{display:block;font-size:17px}.placing span{font-size:14px;color:var(--mute)}
 .placing .btn{padding:10px 14px;font-size:15px}
+.stat .cred{display:block;font-size:11px;color:#ffd59a;opacity:1}
+.stat .cred:empty{display:none}
+.oc{display:block;font-size:11px;font-weight:600;opacity:.8}
+.credit{margin:12px 2px 0;font-size:14px;color:var(--mute);line-height:1.4}
+.stmt{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 12px;margin-bottom:10px;font-size:15px}
+.stmt summary{cursor:pointer}.stmt .neg{color:var(--bad);font-weight:700}.stmt .pos{color:var(--go);font-weight:700}
+.stmt .kv{margin:8px 0 2px;font-size:15px}
+.tk .cal{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;margin:6px 0 4px}
+.tk .cal b{font-size:9px;color:var(--mute);text-align:center;font-weight:600}
+.tk .cal b.now{color:var(--ink)}
+.tk .cal i{display:block;height:13px;border-radius:3px;background:#efece2;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
+.tk .cal i.past{background:#dcd8cc}
+.tk .cropsrow{display:flex;gap:4px;flex-wrap:wrap}
 .nowline{position:absolute;width:3px;background:#16231b;border-radius:2px;pointer-events:none;z-index:3;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .blk{flex-direction:column;justify-content:center;align-items:center;padding:0 3px}
 .blk .bx{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:0;max-width:100%;text-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -247,7 +260,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <canvas id="cv"></canvas>
 <header class="hud" id="hud">
   <div class="when"><b id="hWhen">Year 1</b><div class="yr" id="hYr"></div></div>
-  <div class="stat"><small>Cash</small><b id="hCash">$0</b></div>
+  <div class="stat"><small>Cash</small><b id="hCash">$0</b><small class="cred" id="hCred"></small></div>
   <div class="stat"><small>Reputation</small><b id="hRep">50</b></div>
   <div class="sp"></div>
   <button class="hb" id="bBoard" type="button">Board <span class="n" id="bN"></span></button>
@@ -336,8 +349,9 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{pots:0,soil:0,hose:0},owned:STARTERS.slice(),contracts:[],plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:[false,false,false],dmgT:[0,0,0],nid:1,
-    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,full:0,short:0,failed:0},welcomed:false};
+    up:{pots:0,soil:0,hose:0},owned:STARTERS.slice(),contracts:[],credit:0,negRun:0,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:[false,false,false],dmgT:[0,0,0],nid:1,
+    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0},welcomed:false};
+  S.snap={...S.ys,cash:S.cash};
 }
 const mkWorker=(id,role,x,y)=>({id,role,x,y,f:0,path:[],task:null,work:0,leg:null,ride:0});
 let me=mkWorker('me','me',4.5,3.5),staff=[],viewF=0;
@@ -393,20 +407,41 @@ function genOffers(){
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
   for(let i=0;i<rest;i++)S.offers.push(mkOffer(wpick(theirs.length?theirs:cand)));
-  S.offers.sort((a,b)=>owns(b.crop)-owns(a.crop));
+  S.offers.sort((a,b)=>offerOwned(b)-offerOwned(a));
 }
 function genContracts(){
   const c=S.period;const n=(S.rep>=35?1:0)+(rnd()<S.rep/140?1:0)+(S.floors-1);
-  for(let i=0;i<n;i++){
-    const opts=[];
-    for(const k in CROPS){const C=CROPS[k];for(let p0=c;p0<=c+2;p0++){if(p0-C.g+1<c)continue;let run=0;while(run<4&&p0+run<=7&&C.sell.includes(p0+run))run++;if(run>=3)opts.push({k,p0,run,w:owns(k)?3:1});}}
-    if(!opts.length)return;
-    const o=wpick(opts),C=CROPS[o.k];
-    S.offers.push({id:S.nid++,contract:true,crop:o.k,p:o.p0,ps:Array.from({length:o.run},(_,j)=>o.p0+j),n:o.run,qty:ri(6,12),price:Math.round(C.price*1.1*(.95+rnd()*.15)),cust:pick(CUST)});
-  }
+  for(let i=0;i<n;i++){const of=makeContract(c);if(of)S.offers.push(of);}
 }
-const offerValue=o=>o.qty*o.price*(o.contract?o.n:1);
-function delivery(of,k,cid){return{id:'d'+cid+'_'+k,crop:of.crop,p:of.ps[k],qty:of.qty,price:of.price,cust:of.cust,cid,k};}
+const okAt=(k,p,c)=>{const C=CROPS[k];return p>=0&&p<=7&&C.sell.includes(p)&&p-C.g+1>=c;};
+const cPrice=k=>Math.round(CROPS[k].price*1.1*(.95+rnd()*.15));
+function makeContract(c){
+  const keys=Object.keys(CROPS),cands={steady:[],alt:[],ramp:[],long:[],mix:[]};
+  for(const k of keys){const C=CROPS[k];for(let p0=c+C.g-1;p0<=c+C.g+1;p0++){
+    const run=(step,max)=>{const out=[];for(let p=p0;p<=7&&out.length<max&&okAt(k,p,c);p+=step)out.push(p);return out;};
+    const a=run(1,4),b=run(2,4),l=run(1,6);
+    if(a.length>=3){cands.steady.push({k,ps:a});cands.ramp.push({k,ps:a.slice(0,3)});}
+    if(b.length>=3)cands.alt.push({k,ps:b});
+    if(l.length>=5)cands.long.push({k,ps:l});
+  }}
+  for(let ps=c+1;ps<=c+2;ps++){const dl=[];for(let p=ps;p<ps+3&&p<=7;p++){const opts=keys.filter(x=>okAt(x,p,c)&&!dl.some(d=>d.k===x));if(!opts.length)break;dl.push({k:wpick(opts.map(x=>({k:x,w:owns(x)?3:1}))).k,p});}if(dl.length>=3)cands.mix.push({dl});}
+  const W={steady:3,alt:2,ramp:2,long:2,mix:1.5},kinds=Object.keys(W).filter(k=>cands[k].length);
+  if(!kinds.length)return null;
+  const kind=wpick(kinds.map(k=>({k,w:W[k]}))).k,q=ri(6,12);
+  const LABEL={steady:'Every period',alt:'Every other period',ramp:'Ramping up',long:'Long haul',mix:'Seasonal mix'};
+  let dl;
+  if(kind==='mix'){dl=pick(cands.mix).dl.map(d=>({crop:d.k,p:d.p,qty:ri(6,11)}));}
+  else{
+    const cd=wpick(cands[kind].map(x=>({...x,w:owns(x.k)?3:1})));
+    dl=cd.ps.map((p,i)=>({crop:cd.k,p,qty:kind==='ramp'?Math.min(22,Math.round(q*(1+.4*i))):kind==='long'?Math.max(5,q-3):q}));
+  }
+  dl.forEach(d=>d.price=cPrice(d.crop));
+  return{id:S.nid++,contract:true,kind,label:LABEL[kind],dl,n:dl.length,crop:dl[0].crop,p:dl[0].p,qty:dl[0].qty,price:dl[0].price,cust:pick(CUST)};
+}
+const offerOwned=of=>of.contract&&of.dl?of.dl.every(d=>owns(d.crop)):owns(of.crop);
+const lockedCrop=of=>of.contract&&of.dl?(of.dl.find(d=>!owns(d.crop))||{}).crop:(owns(of.crop)?null:of.crop);
+const offerValue=o=>o.contract&&o.dl?o.dl.reduce((a,d)=>a+d.qty*d.price,0):o.qty*o.price*(o.contract?o.n:1);
+function delivery(of,k,cid){const d=of.dl?of.dl[k]:{crop:of.crop,p:of.ps[k],qty:of.qty,price:of.price};return{id:'d'+cid+'_'+k,crop:d.crop,p:d.p,qty:d.qty,price:d.price,cust:of.cust,cid,k};}
 function contractOf(id){return S.contracts.find(c=>c.id===id);}
 function contractFail(cid){
   const c=contractOf(cid);if(!c||c.broken)return;c.broken=true;
@@ -416,7 +451,7 @@ function contractFail(cid){
 }
 function contractShipped(cid){const c=contractOf(cid);if(!c||c.broken)return;c.done++;if(c.done>=c.n){S.rep=clamp(S.rep+4,0,100);toast('good',`Contract with ${c.cust.split(' ')[0]} complete`);}}
 function autoAccept(of){
-  if(!owns(of.crop))return false;
+  if(!offerOwned(of))return false;
   if(!of.contract){const r=firstFit(of);return r>=0&&place(of,r);}
   const cid=S.nid++,c={id:cid,cust:of.cust,crop:of.crop,n:of.n,done:0,broken:false,round:roundKey(),of};S.contracts.push(c);
   const made=[];
@@ -523,7 +558,7 @@ function hire(role){
   const used=S.crew.map(r=>r.name),name=NAMES.find(n=>!used.includes(n))||('Hand '+(S.crew.length+1));
   S.crew.push({id:'s'+S.nid++,name,role,home:role==='load'?0:clamp(viewF,0,S.floors-1),n:0,wage:ROLES[role].cost});syncStaff();
 }
-function fire(id){const r=S.crew.find(x=>x.id===id);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
+function fireCrew(id){const r=S.crew.find(x=>x.id===id);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
 function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load')return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
 function staffPick(w){
   if(w.task)return;
@@ -647,6 +682,14 @@ function simStep(dt){
   stepWorker(me,dt,1);
   tick(dt);
 }
+function settleBooks(){
+  let bill=0,int=0,od=0;
+  if(S.credit>0){int=Math.round(S.credit*CREDIT_RATE);bill=S.credit;S.cash-=bill+int;S.ys.interest+=int;S.credit=0;}
+  if(S.cash<0){od=Math.round(-S.cash*OVERDRAFT_RATE);S.cash-=od;S.ys.interest+=od;}
+  const a=S.snap||S.ys,y=S.ys;
+  S.stmt={sales:y.rev-a.rev,plugs:y.plugs-a.plugs,upkeep:y.overhead-a.overhead,crew:y.crew-a.crew,buyin:y.buy-a.buy,build:(y.build||0)-(a.build||0)-bill,credit:bill,interest:int,overdraft:od,cash:S.cash,start:a.cash??S.cash};
+  if(bill)toast('cash',`Credit bill paid: ${fmt(bill)} plus ${fmt(int)} interest`);
+}
 function endPeriod(){
   if(ask)resolveAsk(0);
   const c=S.period;
@@ -661,35 +704,42 @@ function endPeriod(){
   if(fails){S.rep=clamp(S.rep-6*fails,0,100);S.ys.failed+=fails;toast('bad',fails>1?`${fails} orders never got potted`:'An order never got potted');}
   S.tasks=[];S.queue=[];me.task=null;me.path=[];staff.forEach(w=>{w.task=null;w.path=[];});
   S.crew.forEach(r=>{if(r.n<VET)r.n++;});
+  settleBooks();
   S.period++;
   if(S.period>7){yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){S.phase='plan';S.t=0;genOffers();save();hud();openSheet();askRaises();}
+function beginPlan(){S.phase='plan';S.t=0;genOffers();payCheck();S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();}
+function payCheck(){
+  if(S.cash<0)S.negRun=(S.negRun||0)+1;else S.negRun=0;
+  if(S.negRun<2||!S.crew.length)return;
+  const p=Math.min(.6,.15*(S.negRun-1)),gone=S.crew.filter(()=>rnd()<p);
+  gone.forEach(r=>{fireCrew(r.id);toast('bad',`${r.name} quit over late paychecks`);});
+}
 function askRaises(){
   const reqs=S.crew.filter(r=>r.n>0&&r.n<VET&&rnd()<.25).map(r=>({r,to:Math.round(r.wage*(1.08+rnd()*.07)/5)*5}));
   if(!reqs.length)return;
-  if(window.__quiet){reqs.forEach(q=>{if(window.__noRaise)fire(q.r.id);else q.r.wage=q.to;});return;}
+  if(window.__quiet){reqs.forEach(q=>{if(window.__noRaise)fireCrew(q.r.id);else q.r.wage=q.to;});return;}
   let left=reqs.length;
   modal(`<h2>${reqs.length>1?'Raise requests':'A raise request'}</h2><p>Say no and they quit. They stop asking once they're up to full speed.</p>
     <div class="roles">${reqs.map((q,i)=>`<div class="role" id="rq${i}">${svgIcon(q.r.role,44)}<div class="rn"><b>${esc(q.r.name)} · ${ROLES[q.r.role].name}</b><span>Speed ${spd(q.r)}% · wants ${fmt(q.to)}/period (now ${fmt(q.r.wage)})</span></div><span class="rqb"><button class="btn sun" type="button" data-ok="${i}">Pay</button><button class="btn" type="button" data-no="${i}">Let go</button></span></div>`).join('')}</div>`);
   const done=(i,ok)=>{const q=reqs[i],el=$('rq'+i);if(!el||el.dataset.done)return;el.dataset.done=1;
     if(ok){q.r.wage=q.to;el.querySelector('.rqb').innerHTML='<b class="ok" style="color:var(--go)">Raised</b>';}
-    else{fire(q.r.id);el.querySelector('.rqb').innerHTML='<b style="color:var(--bad)">Quit</b>';}
+    else{fireCrew(q.r.id);el.querySelector('.rqb').innerHTML='<b style="color:var(--bad)">Quit</b>';}
     if(--left<=0)setTimeout(()=>{closeModal();traySig='';renderSheet();renderTray();},500);};
   $('mbox').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>done(+b.dataset.ok,true));
   $('mbox').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>done(+b.dataset.no,false));
 }
 function yearEnd(){
   S.phase='done';S.period=7;S.t=PSEC;save();hud();if(window.__quiet)return;
-  const y=S.ys,cost=y.plugs+y.overhead+y.crew+y.buy+(y.build||0),prof=y.rev-cost;
+  const y=S.ys,cost=y.plugs+y.overhead+y.crew+y.buy+(y.build||0)+(y.interest||0),prof=y.rev-cost;
   modal(`<h2>Year ${S.year} is in the books</h2>
-  <div class="kv"><span>Sales</span><b>${fmt(y.rev)}</b><span>Plugs and pots</span><b>${fmt(-y.plugs)}</b>${y.buy?`<span>Bought in</span><b>${fmt(-y.buy)}</b>`:''}<span>Upkeep</span><b>${fmt(-y.overhead)}</b>${y.build?`<span>Building and upgrades</span><b>${fmt(-y.build)}</b>`:''}${y.crew?`<span>Crew</span><b>${fmt(-y.crew)}</b>`:''}<span style="font-weight:700">Profit</span><b style="color:${prof<0?'var(--bad)':'var(--go)'}">${fmt(prof)}</b>
+  <div class="kv"><span>Sales</span><b>${fmt(y.rev)}</b><span>Plugs and pots</span><b>${fmt(-y.plugs)}</b>${y.buy?`<span>Bought in</span><b>${fmt(-y.buy)}</b>`:''}${y.interest?`<span>Interest</span><b>${fmt(-y.interest)}</b>`:''}<span>Upkeep</span><b>${fmt(-y.overhead)}</b>${y.build?`<span>Building and upgrades</span><b>${fmt(-y.build)}</b>`:''}${y.crew?`<span>Crew</span><b>${fmt(-y.crew)}</b>`:''}<span style="font-weight:700">Profit</span><b style="color:${prof<0?'var(--bad)':'var(--go)'}">${fmt(prof)}</b>
   <span>Orders shipped full</span><b>${y.full}</b><span>Shipped short</span><b>${y.short}</b><span>Missed</span><b>${y.failed}</b><span>Reputation</span><b>${Math.round(S.rep)}</b></div>
   <button class="btn go" id="nyBtn" type="button">Start year ${S.year+1}</button>`);
   $('nyBtn').onclick=()=>{nextYear();closeModal();beginPlan();};
 }
-function nextYear(){S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,full:0,short:0,failed:0};}
+function nextYear(){S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0};}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -916,6 +966,7 @@ function hud(){
   $('hWhen').textContent=S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':''}`;
   $('hYr').innerHTML=PN.map((_,i)=>`<i><b style="width:${i<c?100:i===c?(S.phase==='run'?S.t/PSEC*100:0):0}%"></b></i>`).join('');
   $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
+  $('hCred').textContent=S.credit>0?`${fmt(S.credit)} on credit`:S.cash<0&&S.negRun>0?`In the red ${S.negRun} period${S.negRun>1?'s':''}`:'';
   $('hRep').textContent=Math.round(S.rep);
   $('bGo').hidden=S.phase!=='plan';$('bGo').textContent=`Start ${PN[c].toLowerCase()}`;
   $('bBoard').hidden=S.phase==='plan'&&!sheetOpen();
@@ -1004,7 +1055,7 @@ function aimGhost(){
   ghostRow=f<0?-1:f+Math.floor(sel.h/2);
 }
 function startPlacing(of){
-  if(!owns(of.crop)){toast('bad',`You don't grow ${crop(of.crop).name.toLowerCase()} yet`);return;}
+  if(!offerOwned(of)){toast('bad',`You don't grow ${crop(lockedCrop(of)).name.toLowerCase()} yet`);return;}
   placing={of,k:0,placed:[],cid:null};
   if(of.contract){const cid=S.nid++;placing.cid=cid;S.contracts.push({id:cid,cust:of.cust,crop:of.crop,n:of.n,done:0,broken:false,round:roundKey(),of});S.offers=S.offers.filter(x=>x!==of);placing.cur=delivery(of,0,cid);}
   else placing.cur=of;
@@ -1055,12 +1106,17 @@ function removePlot(pl){
   sel=null;ghostRow=-1;renderSheet();hud();
 }
 function tkHTML(of){
-  const C=crop(of.crop),h=need(of),g=C.g,st=startOf(of),isSel=sel&&sel.offer===of,lk=!owns(of.crop);
-  if(of.contract)return`<div class="tk ct${lk?' locked':''}" data-of="${of.id}"><span class="tag ctag">Contract · ${of.n} deliveries</span><button class="dx" type="button" data-dx="${of.id}" aria-label="Decline">×</button>
-  <span class="crop" style="background:${C.color}">${C.name}</span>
-  <div class="row2"><div class="q">${of.qty}<small> fl each</small></div><span class="cps">${of.ps.map(()=>`<i style="background:${C.color}"></i>`).join('')}</span></div>
-  <div class="due">Ships ${PSH[of.ps[0]]} to ${PSH[of.ps[of.n-1]]}${g>1?` · ${g}-period grow`:''}</div>
-  <div class="val">${fmt(offerValue(of))} total · ${fmt(of.price)}/flat</div>${lk?`<button class="unl" type="button" data-gen="${of.crop}">Unlock ${fmt(GEN[of.crop])}</button>`:''}</div>`;
+  const C=crop(of.crop),h=need(of),g=C.g,st=startOf(of),isSel=sel&&sel.offer===of,lk=!offerOwned(of);
+  if(of.contract){
+    const dl=of.dl||of.ps.map(p=>({crop:of.crop,p,qty:of.qty,price:of.price})),lc=lockedCrop(of),lkc=!!lc,crops=[...new Set(dl.map(d=>d.crop))];
+    const cal=`<div class="cal">${['EW','LW','ESp','LSp','ESu','LSu','EF','LF'].map((n,i)=>`<b class="${i===S.period?'now':''}">${n}</b>`).join('')}${dl.map(d=>{const D=CROPS[d.crop],st=d.p-D.g+1;return PSH.map((_,i)=>`<i class="${i<S.period?'past':''}" style="${i>=st&&i<=d.p?`background:${D.color};opacity:${i===d.p?1:.45}`:''}">${i===d.p?d.qty:i===st?'●':''}</i>`).join('');}).join('')}</div>`;
+    const first=dl[0],fC=CROPS[first.crop];
+    return`<div class="tk ct${lkc?' locked':''}" data-of="${of.id}"><span class="tag ctag">${of.label||'Contract'} · ${dl.length} deliveries</span><button class="dx" type="button" data-dx="${of.id}" aria-label="Decline">×</button>
+    <div class="cropsrow">${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}</div>
+    ${cal}
+    <div class="due">First pot ${PSH[first.p-fC.g+1]} · last ship ${PSH[dl[dl.length-1].p]}</div>
+    <div class="val">${fmt(offerValue(of))} total · ${dl.reduce((a,d)=>a+d.qty,0)} flats</div>${lkc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${CROPS[lc].name.toLowerCase()} ${fmt(GEN[lc])}</button>`:''}</div>`;
+  }
   return`<div class="tk${isSel?' sel':''}${lk?' locked':''}" data-of="${of.id}">${of.popup?'<span class="tag">Pop-up</span>':''}<button class="dx" type="button" data-dx="${of.id}" aria-label="Decline">×</button>
   <span class="crop" style="background:${C.color}">${C.name}</span>
   <div class="row2"><div class="q">${of.qty}<small> fl</small></div><span class="shape" style="grid-template-columns:repeat(${g},8px)">${('<i style="background:'+C.color+'"></i>').repeat(g*h)}</span></div>
@@ -1070,7 +1126,7 @@ function tkHTML(of){
 let sortBy='start';
 function sortedOffers(list){
   const key=sortBy==='value'?(o=>-offerValue(o)):(o=>startOf(o)*100+o.p);
-  return list.slice().sort((a,b)=>(owns(b.crop)-owns(a.crop))||(key(a)-key(b)));
+  return list.slice().sort((a,b)=>(offerOwned(b)-offerOwned(a))||(key(a)-key(b)));
 }
 function renderSheet(){
   const el=$('sheet');if(el.hidden)return;
@@ -1085,7 +1141,9 @@ function renderSheet(){
     const toggle=placing?'':`<div class="vtog"><button type="button" data-ov="offers" class="${view==='offers'?'on':''}">${plan?'Offers':'Pop-ups'}${offers.length?` <span class="n">${offers.length}</span>`:''}</button><button type="button" data-ov="board" class="${view==='board'?'on':''}">Board</button></div>`;
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
     if(view==='offers'){
-      body=`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Pop-up orders'} ${plan?'':'<span class="paused">Paused</span>'}<small>Pick an order or a contract, then place it on the board. Contracts are a run of deliveries you place one after another, on any benches and floors.</small></h2>
+      const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
+        <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Paid in cash</span><b>${fmt(-st.build)}</b>`:''}${st.credit?`<span>Credit bill</span><b>${fmt(-st.credit)}</b>`:''}${st.interest?`<span>Credit interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
+      body=stHTML+`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Pop-up orders'} ${plan?'':'<span class="paused">Paused</span>'}<small>Pick an order or a contract, then place it on the board. Contracts are a run of deliveries you place one after another, on any benches and floors.</small></h2>
         ${offers.length>1?`<span class="pill">Sort <span class="s2"><button type="button" data-sort="start" class="${sortBy==='start'?'on':''}">Pot date</button><button type="button" data-sort="value" class="${sortBy==='value'?'on':''}">Value</button></span></span>`:''}${lossPill}</div>${toggle}
         ${offers.length?`<div class="rail" id="rail">${sortedOffers(offers).map(tkHTML).join('')}</div>`:`<div class="norail">${plan?'No new orders this period. Your benches carry on.':'No pop-up orders right now.'}</div>`}`;
     }else{
@@ -1104,12 +1162,13 @@ function renderSheet(){
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work on every floor and last for good. You can buy them any time.</small></h2></div>
-      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),nx=l<3?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon==='water'&&k==='soil'?'pot':U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<3?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(3)+'.'}</span><span class="pips3">${[0,1,2].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<3?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
+      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),nx=l<3?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon==='water'&&k==='soil'?'pot':U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<3?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(3)+'.'}</span><span class="pips3">${[0,1,2].map(i=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<3?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">on credit</small>':''}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
+      <p class="credit">Short on cash? Anything here can go on credit, up to ${fmt(CREDIT_LIMIT)}. The bill plus ${CREDIT_RATE*100}% interest comes due at the end of the period. If your cash stays below zero for two periods in a row, crew start to quit.${S.credit?` <b>On credit now: ${fmt(S.credit)}.</b>`:''}</p>
       <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}"><span class="crop" style="background:${C.color}">${C.name}</span><span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}</button>`}</div>`).join('')}</div>
+      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}"><span class="crop" style="background:${C.color}">${C.name}</span><span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">on credit</small>':''}</button>`}</div>`).join('')}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Floors</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Each floor adds eight benches with its own heater, pests and watering. The lift costs walking time.</p>
       <div class="build"><div class="stack">${Array.from({length:MAXF},(_,f)=>f<S.floors?`<i>${floorName(f)} · ${floorSpan(f)}</i>`:`<i class="no">${floorName(f)} · not built</i>`).join('')}</div>
-      ${next?`<h3>Add ${floorName(S.floors).toLowerCase()}</h3><p>${fmt(next)} now, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. One person can't keep up with two floors, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>The greenhouse is as tall as it gets</h3>'}</div>
+      ${next?`<h3>Add ${floorName(S.floors).toLowerCase()}</h3><p>${fmt(next)}${S.cash<next?' on credit (due at the end of the period, plus 10%)':' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. One person can't keep up with two floors, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>The greenhouse is as tall as it gets</h3>'}</div>
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
   }
   const hint=tab==='orders'?(placing?'Green cells are free for this delivery. Tap a row to place it.':(ordersView==='offers'?'Tap a card to place it on the board.':sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
@@ -1122,7 +1181,7 @@ function renderSheet(){
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
   el.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;hire(b.dataset.hire);const r=S.crew[S.crew.length-1];toast('good',`${r.name} joins as a ${ROLES[r.role].name.toLowerCase()}`);renderSheet();traySig='';renderTray();});
-  el.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const r=fire(b.dataset.fire);if(r)toast('bad',`You let ${r.name} go`);renderSheet();traySig='';renderTray();});
+  el.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const r=fireCrew(b.dataset.fire);if(r)toast('bad',`You let ${r.name} go`);renderSheet();traySig='';renderTray();});
   el.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{setHome(b.dataset.home,+b.dataset.f);renderSheet();traySig='';renderTray();});
   const x=$('shX');if(x)x.onclick=closeSheet;
   const go=$('goB');if(go)go.onclick=()=>{if(placing)cancelPlacing(true);sel=null;startPeriod();};
@@ -1135,24 +1194,30 @@ function renderSheet(){
   el.querySelectorAll('[data-dx]').forEach(b=>b.onclick=e=>{e.stopPropagation();const of=S.offers.find(o=>o.id==b.dataset.dx);S.offers=S.offers.filter(o=>o!==of);if(sel&&sel.offer===of)sel=null;renderSheet();hud();});
   el.querySelectorAll('.tk').forEach(t=>t.addEventListener('click',e=>{if(e.target.closest('[data-dx],[data-gen]'))return;const of=S.offers.find(o=>o.id==t.dataset.of);if(of)startPlacing(of);}));
 }
+const CREDIT_LIMIT=6000,CREDIT_RATE=.1,OVERDRAFT_RATE=.05;
+function spend(cost,what){
+  if(S.cash>=cost){S.cash-=cost;return true;}
+  if(S.credit+cost>CREDIT_LIMIT){toast('bad',`That would put you over your ${fmt(CREDIT_LIMIT)} credit line`);return false;}
+  S.credit+=cost;toast('cash',`${what} on credit: ${fmt(cost)} plus ${CREDIT_RATE*100}% due when the period ends`);return true;
+}
 function buyGen(k){
   if(owns(k))return;const cost=GEN[k];
-  if(S.cash<cost){toast('bad',`You need ${fmt(cost)} for ${crop(k).name.toLowerCase()} genetics`);return;}
-  S.cash-=cost;S.ys.build=(S.ys.build||0)+cost;S.owned.push(k);
+  if(!spend(cost,`${crop(k).name} genetics`))return;
+  S.ys.build=(S.ys.build||0)+cost;S.owned.push(k);
   toast('good',`You can grow ${crop(k).name.toLowerCase()} now`);renderSheet();hud();
 }
 function buyUp(k){
   const l=upLv(k),U=UPS[k];if(l>=3)return;
-  const cost=U.cost[l];if(S.cash<cost){toast('bad',`You need ${fmt(cost)} for that`);return;}
-  S.cash-=cost;S.ys.build=(S.ys.build||0)+cost;S.up[k]=l+1;
+  const cost=U.cost[l];if(!spend(cost,U.lv[l]))return;
+  S.ys.build=(S.ys.build||0)+cost;S.up[k]=l+1;
   toast('good',`${U.lv[l]} in place`);renderSheet();hud();
 }
 const staffCount=()=>S.crew.length;
 function buildFloor(){
   if(S.phase!=='plan'||S.floors>=MAXF)return;
   const cost=FLOOR_COST[S.floors];
-  if(S.cash<cost){toast('bad',`You need ${fmt(cost)} to build`);return;}
-  S.cash-=cost;S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=S.floors-1;boardF=viewF;
+  if(!spend(cost,floorName(S.floors)))return;
+  S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=S.floors-1;boardF=viewF;
   for(let i=0;i<2;i++){const cand=candidates(S.period,S.period,S.period+2);if(cand.length)S.offers.push(mkOffer(wpick(cand)));}
   toast('floor',`${floorName(S.floors-1)} is open: benches ${floorSpan(S.floors-1)}`);
   layout();tab='orders';renderSheet();hud();
@@ -1207,7 +1272,7 @@ function pieceDown(e){
   if(e.target.closest('[data-dx],[data-rm]'))return;
   const el=e.currentTarget;let pp=null;
   if(e.target.closest('[data-gen]'))return;
-  if(el.dataset.of){const of=S.offers.find(o=>o.id==el.dataset.of);if(of&&owns(of.crop))pp=piece(of);else if(of){toast('bad',`You don't grow ${crop(of.crop).name.toLowerCase()} yet. Unlock its genetics first`);return;}}
+  if(el.dataset.of){const of=S.offers.find(o=>o.id==el.dataset.of);if(of&&offerOwned(of))pp=piece(of);else if(of){toast('bad',`You don't grow ${crop(of.crop).name.toLowerCase()} yet. Unlock its genetics first`);return;}}
   else{const pl=S.plots.find(p=>p.id==el.dataset.pl);if(pl&&movable(pl))pp=piece(pl);}
   if(!pp)return;
   e.stopPropagation();
@@ -1282,7 +1347,7 @@ $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.credit=d.credit||0;d.negRun=d.negRun||0;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
   <div class="steps">
