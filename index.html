@@ -1091,8 +1091,8 @@ function drawWeather(dt){
   cx.globalAlpha=1;
 }
 // ---------------- greenhouse cats ----------------
-const CATS=[{id:'anna',name:'Anna',x:2.5,y:3.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#eb9a4c',dk:'#b9642a',wh:'#fff1dc'},
-            {id:'miley',name:'Miley',x:6.5,y:6.5,f:0,path:[],mode:'sleep',t:5,face:-1,dir:[0,1],col:'#7d8592',dk:'#555c68',wh:'#f6f6f6'}];
+const CATS=[{id:'anna',name:'Miley',x:2.5,y:3.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#eb9a4c',dk:'#b9642a',wh:'#fff1dc'},
+            {id:'miley',name:'Anna',x:6.5,y:6.5,f:0,path:[],mode:'sleep',t:5,face:-1,dir:[0,1],col:'#7d8592',dk:'#555c68',wh:'#f6f6f6'}];
 const CAT_LINES=[n=>`${n} headbutts your boot`,n=>`${n} purrs and flops over`,n=>`${n} is supervising`,n=>`${n} sniffs the petunias`,n=>`${n} blinks slowly at you`,n=>`${n} would like a snack`];
 const catTile=c=>[Math.floor(c.x),Math.floor(c.y)];
 function catWander(c){
