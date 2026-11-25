@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" id="vp" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Greenhouse Year</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#16231b;--mute:#5d6b62;--paper:#fbfaf5;--line:#e4e0d3;--hud:#173426;--sun:#f2c230;--go:#2e7d4a;--bad:#c8402f}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:#79a95b;font-family:Outfit,system-ui,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;touch-action:manipulation;overscroll-behavior:none;-webkit-text-size-adjust:100%;text-size-adjust:100%;background:#79a95b;font-family:Outfit,system-ui,sans-serif;color:var(--ink);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 button{font:inherit;color:inherit;cursor:pointer}
 #cv{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
 .hud{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;background:var(--hud);color:#fff}
@@ -288,6 +288,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div class="ask" id="ask" hidden></div>
 <div class="sheet" id="sheet" hidden></div>
 <div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script>
+// No pinch or double-tap zoom: on a phone it throws the whole layout off.
+(function(){
+  const stop=e=>e.preventDefault();
+  ['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,stop,{passive:false}));
+  document.addEventListener('touchmove',e=>{if(e.touches.length>1||(e.scale&&e.scale!==1))e.preventDefault();},{passive:false});
+  document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
+  addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','-','=','0'].includes(e.key))e.preventDefault();});
+  // If a zoom slips through anyway, snap back to 1x.
+  const vv=window.visualViewport;
+  if(vv)vv.addEventListener('resize',()=>{if(vv.scale>1.01){const m=document.getElementById('vp'),c=m.content;m.content=c.replace('maximum-scale=1','maximum-scale=1.0001');setTimeout(()=>{m.content=c;},30);}});
+})();
+</script>
 <script src="art.js"></script>
 <script>
 'use strict';
