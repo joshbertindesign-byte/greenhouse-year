@@ -460,18 +460,30 @@ for _l in (1, 2, 3): add(f'soil_{_l}', soil_pallet(_l)); add(f'hose_{_l}', hose_
 for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklift(_l))
 
 # ------------------------------------------------------------------ cats (facing right; flip for left)
-VCOAT = {'anna':  dict(b='#f2a154', d='#c96f2c', w='#fff1dc', o='#9a5424', eye='#2b6b2f'),
+VCOAT = {'anna':  dict(b='#fbf8f2', d='#c96f2c', w='#ffffff', o='#7a6656', eye='#3f8a3a', h='#f0a050', t='#4a4f57', ts='#9aa0a8',
+                      patches=('#ee9a48', '#8e959e', '#5a3a28')),
          'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a')}
 def vcat(name, pose):
     c = VCOAT[name]; o = c['o']; sw = .9
     b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
-    stripes = (lambda pts: ''.join(f'<path d="{p}" stroke="{c["d"]}" stroke-width="1.4" fill="none" stroke-linecap="round"/>' for p in pts)) if name == 'anna' else (lambda pts: '')
+    stripes = lambda pts: ''
+    hc, tc = c.get('h', c['b']), c.get('t', c['b'])
+    def tail(d, w1=4.6, w2=3):
+        t = f'<path d="{d}" fill="none" stroke="{o}" stroke-width="{w1}" stroke-linecap="round"/><path d="{d}" fill="none" stroke="{tc}" stroke-width="{w2}" stroke-linecap="round"/>'
+        if 'ts' in c: t += f'<path d="{d}" fill="none" stroke="{c["ts"]}" stroke-width="{w2}" stroke-dasharray="1.3 2.1"/>'
+        return t
+    def patches(clip, spots):
+        if 'patches' not in c: return ''
+        cid = f'cp{name}{pose}'
+        return f'<clipPath id="{cid}">{clip}</clipPath><g clip-path="url(#{cid})">' + ''.join(ell(x, y, rx, ry, c['patches'][k]) for k, x, y, rx, ry in spots) + '</g>'
     def head(x, y, closed=False):
-        h = poly([(x - 5.5, y - 2), (x - 4.5, y - 8.5), (x - 1, y - 4.5)], c['b'], o, sw) + poly([(x + 5.5, y - 2), (x + 4.5, y - 8.5), (x + 1, y - 4.5)], c['b'], o, sw)
+        h = poly([(x - 5.5, y - 2), (x - 4.5, y - 8.5), (x - 1, y - 4.5)], hc, o, sw) + poly([(x + 5.5, y - 2), (x + 4.5, y - 8.5), (x + 1, y - 4.5)], c['patches'][2] if 'patches' in c else hc, o, sw)
         h += poly([(x - 4.4, y - 3), (x - 4, y - 7), (x - 2, y - 4.6)], '#ffb3c0') + poly([(x + 4.4, y - 3), (x + 4, y - 7), (x + 2, y - 4.6)], '#ffb3c0')
-        h += ell(x, y, 6.4, 5.6, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        h += ell(x, y, 6.4, 5.6, hc, f'stroke="{o}" stroke-width="{sw}"')
         if name == 'miley': h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
-        h += stripes([f'M{x-1.5},{y-5} v2', f'M{x+.5},{y-5.3} v2.2', f'M{x+2.5},{y-5} v2'])
+        if 'patches' in c:
+            h += ell(x + .6, y + 2.8, 3.2, 2.2, '#ffffff')
+            h += ''.join(f'<path d="{p}" stroke="#c9742e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.5},{y-5} v1.8', f'M{x+.5},{y-5.3} v2', f'M{x+2.5},{y-5} v1.8'))
         if closed:
             h += f'<path d="M{x-3.6},{y-.2} q1.3,1.2 2.6,0 M{x+1.6},{y-.2} q1.3,1.2 2.6,0" stroke="{o}" stroke-width=".9" fill="none" stroke-linecap="round"/>'
         else:
@@ -481,26 +493,26 @@ def vcat(name, pose):
         return h
     if pose in ('walk0', 'walk1'):
         f = 1 if pose == 'walk1' else -1
-        b += f'<path d="M21,43 q-8,-2 -6,-12 q1,-3 3,-1" fill="none" stroke="{o}" stroke-width="4.6" stroke-linecap="round"/>'
-        b += f'<path d="M21,43 q-8,-2 -6,-12 q1,-3 3,-1" fill="none" stroke="{c["b"]}" stroke-width="3" stroke-linecap="round"/>'
+        b += tail('M21,43 q-8,-2 -6,-12 q1,-3 3,-1')
         for lx, ph in ((24, f), (28, -f), (36, -f), (40, f)):
-            b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.6" fill="{c["b"] if name=="anna" else c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
+            b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.6" fill="{c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += ell(32, 43, 12, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        b += patches(ell(32, 43, 11.5, 6, '#000'), [(0, 27.5, 38.2, 7.2, 4.6), (1, 36.8, 38, 5.2, 4.2), (2, 21, 40.8, 4.2, 4.2), (0, 41, 41, 3, 2.6), (2, 32.5, 37.4, 2.2, 1.8)])
         if name == 'miley': b += ell(33, 46.5, 8, 2.6, c['w'])
         b += stripes(['M27,37.5 q1,3 0,6', 'M31,37 q1,3 0,6.5', 'M35,37 q1,3 0,6.5'])
         b += head(43, 35)
     elif pose == 'sit':
-        b += f'<path d="M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5" fill="none" stroke="{o}" stroke-width="4.6" stroke-linecap="round"/>'
-        b += f'<path d="M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5" fill="none" stroke="{c["b"]}" stroke-width="3" stroke-linecap="round"/>'
+        b += tail('M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5')
         b += f'<path d="M24,52 q-1,-16 9,-17 q9,1 8,17 Z" fill="{c["b"]}" stroke="{o}" stroke-width="{sw}"/>'
+        b += patches('<path d="M24.4,51.6 q-1,-16 8.6,-16.6 q8.6,1 7.6,16.6 Z"/>', [(0, 26, 40.5, 3.8, 5), (2, 40, 39.5, 2.8, 4), (1, 37.5, 37, 3, 2.2)])
         b += ell(33.5, 45, 4.4, 6, c['w'])
         b += stripes(['M26,42 q2,1 3,0', 'M26,46 q2,1 3,0'])
         b += ell(30.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"') + ell(36.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"')
         b += head(33.5, 30)
     else:  # sleep: curled loaf
         b += ell(31, 47, 12.5, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
-        b += stripes(['M24,42 q1,3 0,6', 'M28,41 q1,3 0,7', 'M32,41 q1,3 0,7'])
-        b += f'<path d="M19,49 q8,6 22,2" fill="none" stroke="{o}" stroke-width="4.4" stroke-linecap="round"/><path d="M19,49 q8,6 22,2" fill="none" stroke="{c["b"]}" stroke-width="2.8" stroke-linecap="round"/>'
+        b += patches(ell(31, 47, 12, 6, '#000'), [(0, 27, 42, 7, 4.2), (1, 36, 41.6, 5, 3.6), (2, 21, 45, 3.8, 3.4), (2, 31.5, 41, 2.2, 1.8)])
+        b += tail('M19,49 q8,6 22,2', 4.4, 2.8)
         b += head(39, 45, True)
         b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
     return b

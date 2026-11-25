@@ -6,7 +6,7 @@ vec = {}
 for m in re.finditer(r'<symbol id="([^"]+)" viewBox="0 0 (\d+) (\d+)">(.*?)</symbol>', svg, re.S):
     i, w, h, body = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)
     refs = sorted(set(re.findall(r'url\(#([^)]+)\)', body)))
-    d = ''.join(defs[r] for r in refs)
+    d = ''.join(defs[r] for r in refs if r in defs)
     a = vj[i]['anchor']
     vec[i] = [w, h, a[0], a[1], f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w*4}" height="{h*4}"><defs>{d}</defs>{body}</svg>']
 open('/home/claude/gy8/art.js', 'w').write('const ART=' + json.dumps({'vector': vec}, separators=(',', ':')) + ';\n')
