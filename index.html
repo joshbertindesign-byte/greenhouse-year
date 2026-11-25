@@ -83,6 +83,9 @@ canvas{display:block;touch-action:none;cursor:pointer}
 .chip.ok{color:var(--leaf);background:color-mix(in srgb,var(--leaf) 14%,transparent)}
 .chip.tight{color:var(--amber);background:color-mix(in srgb,var(--amber) 15%,transparent)}
 .chip.short{color:var(--terra);background:color-mix(in srgb,var(--terra) 13%,transparent)}
+.round{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;background:color-mix(in srgb,var(--sun) 16%,var(--bg));border:2px solid var(--sun);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.round b{display:block;font:600 18px/1.2 Outfit,sans-serif}
+.round span{font-size:14px;color:var(--mute)}
 .tickets{display:grid;grid-template-columns:repeat(auto-fill,minmax(15em,1fr));gap:12px}
 .ticket{border:2px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:8px;background:var(--bg);box-shadow:0 3px 0 var(--line);align-content:start}
 .tk1{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -191,7 +194,7 @@ tr.off td{opacity:.45}
     </div>
     <div class="ctl">
       <button class="hb tab" id="bTab" type="button">Tablet<span class="n" id="tabN" hidden></span></button>
-      <button class="hb play" id="bPlay" type="button">Play</button>
+      <button class="hb play" id="bQ" type="button">Start</button>
       <div class="seg2" id="speed"><button type="button" data-sp="1">1x</button><button type="button" data-sp="2">2x</button><button type="button" data-sp="4">4x</button></div>
     </div>
   </header>
@@ -208,8 +211,12 @@ tr.off td{opacity:.45}
 <script>
 {
 /* ================= constants ================= */
-const K=3,VER=6,WEEKS=52,DAYS=7,AGE=.12,AGELOSS=.03,HOUSE_COST=9000,BUILD_WEEKS=2,FPC=2,WEEK_SEC=15;
+const QS=[1,14,27,40],QN=['Winter','Spring','Summer','Fall'];
+const qIdx=w=>{let i=0;QS.forEach((q,k)=>{if(w>=q)i=k;});return i;};
+const qEndOf=w=>{const i=qIdx(w);return i<3?QS[i+1]:WEEKS+1;};
+const K=3,VER=7,WEEKS=52,DAYS=7,AGE=.12,AGELOSS=.03,HOUSE_COST=9000,BUILD_WEEKS=2,FPC=2,WEEK_SEC=15;
 const CROPS={
+  vinca:{name:'Vinca',grow:7,loss:.07,lo:65,hi:92,cost:27,price:165,season:[28,40],shelf:3,color:'#6a4fb3'},
   petunia:{name:'Petunia',grow:8,loss:.08,lo:58,hi:80,cost:30,price:180,season:[10,20],shelf:3,color:'#b8417f'},
   geranium:{name:'Geranium',grow:12,loss:.10,lo:55,hi:78,cost:42,price:255,season:[14,22],shelf:4,color:'#cf3d32'},
   begonia:{name:'Begonia',grow:10,loss:.09,lo:62,hi:82,cost:36,price:216,season:[14,24],shelf:3,color:'#d9772f'},
@@ -242,10 +249,10 @@ const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let S;
 
 /* ================= world ================= */
-const MW=32,MH=24,T={GRASS:0,PATH:1,ROAD:2,FLOOR:3,BENCH:4,WALL:5,DOOR:6,OFFICE:7,TREE:8,LOT:9};
-const LOTS=[{key:'main',x:5,y:2,w:13,h:9,door:'s'},{key:'a',x:20,y:2,w:11,h:9,door:'s'},{key:'b',x:5,y:13,w:11,h:9,door:'n'}];
-const OFFICE={x:1,y:17,w:3,h:3,st:{x:4,y:18}};
-const TREES=[[0,7],[0,9],[2,4],[1,1],[3,2],[2,14],[0,21],[17,15],[17,19],[23,15],[27,17],[30,14],[26,19],[13,0],[8,0],[30,0],[0,15]];
+const MW=15,MH=13,T={GRASS:0,PATH:1,ROAD:2,FLOOR:3,BENCH:4,WALL:5,DOOR:6,OFFICE:7,TREE:8,LOT:9};
+const LOTS=[{key:'main',x:1,y:2,w:13,h:9,door:'n'}];
+const DOCK={x:7,y:1};
+const TREES=[[0,12],[14,12],[14,1]];
 const GEO={};
 LOTS.forEach(L=>{
   const dx=L.x+Math.floor(L.w/2),s=L.door==='s';
@@ -259,12 +266,8 @@ let MAP=[];
 function buildMap(){
   MAP=[...Array(MH)].map(()=>Array(MW).fill(T.GRASS));
   const set=(x,y,t)=>{if(x>=0&&y>=0&&x<MW&&y<MH)MAP[y][x]=t;};
-  for(let x=1;x<MW;x++){set(x,11,T.PATH);set(x,12,T.PATH);}
-  for(let y=13;y<=18;y++)set(4,y,T.PATH);
-  for(let y=13;y<=21;y++)set(19,y,T.PATH);
-  for(let x=0;x<MW;x++){set(x,22,T.ROAD);set(x,23,T.ROAD);}
-  for(let x=18;x<=22;x++)set(x,21,T.PATH);
-  for(let y=OFFICE.y;y<OFFICE.y+OFFICE.h;y++)for(let x=OFFICE.x;x<OFFICE.x+OFFICE.w;x++)set(x,y,T.OFFICE);
+  for(let x=0;x<MW;x++)set(x,0,T.ROAD);
+  for(let x=4;x<=10;x++)set(x,1,T.PATH);
   TREES.forEach(([x,y])=>{if(MAP[y][x]===T.GRASS)set(x,y,T.TREE);});
   LOTS.forEach(L=>{
     const g=GEO[L.key],h=S.houses.find(z=>z.lot===L.key),up=h&&!h.building;
@@ -320,7 +323,7 @@ const order=id=>S.orders.find(o=>o.id===id);
 const dueW=o=>o.ship+o.delay;
 const live=o=>o.status==='open'||o.status==='shipped';
 const activeH=()=>S.houses.filter(h=>!h.building);
-function say(t,k){S.log.unshift({w:Math.min(S.week,WEEKS),t,k:k||'info'});if(S.log.length>200)S.log.length=200;toast(t,k);if(k==='alert'&&S.pauseAlert&&!S.paused){S.paused=true;hud();}}
+function say(t,k){S.log.unshift({w:Math.min(S.week,WEEKS),t,k:k||'info'});if(S.log.length>200)S.log.length=200;if(!S.ff)toast(t,k);}
 
 function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,res:{a:0,b:0},broken:{},ventStuck:0,tin:null,moist:'Good',hist:[],tday:[],building:0};}
 function newCustomer(name,score){
@@ -333,6 +336,50 @@ function jitNeed(list){
   const need=Array(WEEKS+2).fill(0);
   list.forEach(o=>{const C=CROPS[o.crop];for(let w=Math.max(1,o.ship-C.grow);w<=Math.min(WEEKS,o.ship);w++)need[w]+=o.qty/(1-estLoss(o.crop));});
   return need;
+}
+function roundFor(o){
+  const last=o.ship-CROPS[o.crop].grow;let r=null;
+  for(const q of QS)if(q<=last&&o.ship<=q+25){r=q;break;}
+  if(r==null)for(const q of QS)if(q<=last)r=q;
+  return r==null?1:r;
+}
+function beginRound(q){
+  S.phase='buy';S.roundCash=S.cash;
+  const fresh=S.orders.filter(o=>o.status==='future'&&o.round===q);fresh.forEach(o=>{o.status='offer';});
+  S.log.unshift({w:q,t:`${QN[qIdx(q)]} buying round: ${fresh.length} new offer${fresh.length===1?'':'s'}.`,k:'info'});
+  if(!window.__quiet&&S.welcomed&&typeof openTablet==='function')setTimeout(()=>{if(S.phase==='buy')openTablet('offers');},50);
+}
+function startQuarter(){
+  if(S.phase!=='buy')return;
+  const left=S.orders.filter(o=>o.status==='offer'&&!o.popup);
+  left.forEach(o=>{o.status='declined';bump(o.custId,-2);});
+  S.phase='run';
+  if(left.length)say(`${left.length} undecided offer${left.length>1?'s were':' was'} declined. Goodwill \u22122 each.`,'warn');
+  checkPotting();growerSet();
+  if(typeof closeModal==='function'&&!window.__quiet){closeModal();hud();}
+}
+function canClose(){
+  if(S.phase!=='run')return{ok:false,why:''};
+  const end=qEndOf(S.week);
+  const due=S.orders.filter(o=>o.status==='open'&&dueW(o)<end).length;
+  const pots=S.batches.filter(b=>b.status==='planned'&&b.start<end).length;
+  const loads=S.tasks.filter(t=>t.type==='load'||t.type==='pot').length;
+  if(due)return{ok:false,why:`${due} pickup${due>1?'s are':' is'} still due this ${QN[qIdx(S.week)].toLowerCase()}.`};
+  if(pots||loads)return{ok:false,why:`Plots still need potting this ${QN[qIdx(S.week)].toLowerCase()}.`};
+  return{ok:true,why:''};
+}
+function closeQuarter(){
+  const w=S.week;let n=0,r=0;
+  S.batches.forEach(b=>{
+    const o=b.orderId!=null&&order(b.orderId),openO=o&&o.status==='open';
+    if(b.status==='ready'&&!openO&&b.units>0){const v=Math.round(b.units*CROPS[b.crop].price*.5*qual(w-b.readyWeek));n+=b.units;r+=v;b.units=0;b.status='done';b.endW=w;}
+    if(b.status==='dead'){b.status='done';b.endW=w;}
+  });
+  S.tasks.filter(t=>t.type==='clear'||t.type==='spray').forEach(t=>dropTask(t));
+  if(n){S.cash+=r;S.rev+=r;say(`Clearance sale: ${n} leftover ${fl(n)} sold for ${fmt(r)}.`,'good');}
+  const end=qEndOf(w);S.ff=true;
+  while(S.phase==='run'&&S.week<end)dayTick();
+  S.ff=false;hud();
 }
 function genOffers(){
   const cap=activeH().reduce((a,h)=>a+h.cap,0);
@@ -347,7 +394,7 @@ function genOffers(){
     });
     if(S.year===1&&tries<199&&Math.max(...jitNeed(list))>cap*.85)continue;
     list.sort((a,b)=>a.ship-b.ship);
-    S.orders=list.map(o=>({...o,id:S.nid++,delay:0,status:'offer',filled:0,value:1}));
+    S.orders=list.map(o=>({...o,id:S.nid++,delay:0,status:'future',round:roundFor(o),filled:0,value:1}));
     return;
   }
 }
@@ -423,8 +470,17 @@ function cellBooked(hid,idx,a,z,ignore){
 }
 const cellNow=(hid,idx)=>S.batches.find(b=>b.house===hid&&(b.status==='growing'||b.status==='ready'||b.status==='dead')&&b.cells.includes(idx));
 
+function popUp(w){
+  const pool=S.customers.filter(c=>c.active);if(!pool.length)return;
+  const c=pick(pool),r=rnd(),crop=r<.6?'vinca':r<.8?'pothos':'mum',C=CROPS[crop];
+  const ship=Math.min(WEEKS,w+C.grow+ri(1,3));if(ship-C.grow<=w)return;
+  const o={crop,ship,qty:ri(5,10),price:Math.round(C.price*(1.15+rnd()*.15)),custId:c.id,cust:c.name,id:S.nid++,delay:0,status:'offer',popup:true,expires:w+2,filled:0,value:1};
+  S.orders.push(o);
+  say(`Pop-up contract: ${c.name} needs ${o.qty} ${C.name.toLowerCase()} by week ${ship}, paying ${Math.round((o.price/C.price-1)*100)}% over list. Decide by week ${o.expires}.`,'good');
+}
 function weekStart(){
   const w=S.week;
+  S.orders.filter(o=>o.popup&&o.status==='offer'&&w>o.expires).forEach(o=>{o.status='declined';o.expired=true;});
   S.houses.forEach(h=>{h.tday=[];});S.outDays=[];
   const ex=S.orders.filter(o=>o.status==='offer'&&w>o.ship-CROPS[o.crop].grow);
   ex.forEach(o=>{o.status='declined';o.expired=true;bump(o.custId,-2);});
@@ -439,6 +495,8 @@ function weekStart(){
     addTask({type:'load',orderId:o.id});
     say(`${o.cust}'s truck is at the dock for ${o.qty} ${CROPS[o.crop].name.toLowerCase()}. Load it this week.`,'info');
   });
+  if(w>=26&&w<=38&&rnd()<.5)popUp(w);
+  if(QS.includes(w)){beginRound(w);return;}
   checkPotting();
   growerSet();
 }
@@ -466,7 +524,7 @@ function dayTick(){
   S.outDays[d]=out;
   activeH().forEach(h=>{
     h.broken=h.broken||{};
-    if(rnd()<BREAK_P){const opts=Object.keys(PARTS).filter(k=>!h.broken[k]);if(opts.length){const k=pick(opts);if(k==='vent')h.ventStuck=h.sw.vent;h.broken[k]=true;addTask({type:'fix',house:h.id,comp:k});say(`${h.name}: the ${PARTS[k]}. Fix it to get that switch working again.`,'alert');}}
+    if(!S.ff&&rnd()<BREAK_P){const opts=Object.keys(PARTS).filter(k=>!h.broken[k]);if(opts.length){const k=pick(opts);if(k==='vent')h.ventStuck=h.sw.vent;h.broken[k]=true;addTask({type:'fix',house:h.id,comp:k});say(`${h.name}: the ${PARTS[k]}. Fix it to get that switch working again.`,'alert');}}
     const es=effSw(h);
     let t=climate(w,out,es,h);
     const eth=skill(h.id,'maint',w),hort=skill(h.id,'crop',w),dev=Math.abs(out-fc.fOut)-5;
@@ -549,7 +607,7 @@ function endYear(){
 function nextYear(){
   const gone=[];
   S.customers.forEach(c=>{if(c.active&&c.score<25){c.active=false;gone.push(c.name);}});
-  S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=true;S.orders=[];S.batches=[];S.log=[];S.tasks=[];S.queue=[];pw.task=null;S.houses.forEach(h=>{h.broken={};});
+  S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=false;S.orders=[];S.batches=[];S.log=[];S.tasks=[];S.queue=[];pw.task=null;S.houses.forEach(h=>{h.broken={};});
   S.lossHist=S.nextLoss||S.lossHist;
   S.houses.forEach(h=>{h.hist=[];h.pest=Math.min(h.pest,20);h.tin=null;h.tday=[];h.res.a*=.5;h.res.b*=.5;});
   const used=new Set(S.customers.map(c=>c.name)),free=NAMES.filter(n=>!used.has(n));
@@ -562,8 +620,8 @@ function nextYear(){
   joined.forEach(n=>say(`New customer: ${n} heard about you.`,'good'));
 }
 function freshGame(){
-  S={v:VER,rs:(Date.now()%2147483647)|0,year:1,week:1,day:0,clock:0,phase:'run',paused:true,speed:1,cash:9000,startCash:9000,
-    houses:[],customers:[],orders:[],batches:[],pool:[],growers:[],tasks:[],queue:[],fc:null,fcN:null,outDays:[],log:[],cost:{},rev:0,aging:0,crop:{},lossHist:{},pauseAlert:true,nid:1,player:{x:4.5,y:17.5},welcomed:false};
+  S={v:VER,rs:(Date.now()%2147483647)|0,year:1,week:1,day:0,clock:0,phase:'run',paused:false,speed:1,cash:9000,startCash:9000,
+    houses:[],customers:[],orders:[],batches:[],pool:[],growers:[],tasks:[],queue:[],fc:null,fcN:null,outDays:[],log:[],cost:{},rev:0,aging:0,crop:{},lossHist:{},pauseAlert:true,nid:1,player:{x:7.5,y:3.5},welcomed:false};
   S.houses.push(newHouse(MAIN,'main',true));
   const names=NAMES.slice().sort(()=>rnd()-.5);
   for(let i=0;i<7;i++)S.customers.push(newCustomer(names[i],ri(55,68)));
@@ -612,8 +670,8 @@ function taskDur(t){
   return t.type==='pot'?.35*(b?b.cells.length:4):t.type==='clear'?.25*(b?b.cells.length:4):t.type==='load'?.22*(o?o.qty:8):t.type==='spray'?2:3;
 }
 function taskTile(t){
-  if(t.type==='load')return{x:20,y:21};
-  const h=houseOf(taskHouse(t));if(!h)return{x:20,y:21};const g=GEO[h.lot];
+  if(t.type==='load')return DOCK;
+  const h=houseOf(taskHouse(t));if(!h)return DOCK;const g=GEO[h.lot];
   if(t.type==='pot'||t.type==='clear'){const b=plotOf(t.plotId),c=b&&g.cells[b.cells[0]];if(c)return{x:c.x,y:MAP[c.y+1]&&MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1};}
   if(t.type==='fix'&&t.comp==='heat')return{x:g.x+g.w-2,y:g.y+1};
   if(t.type==='fix'&&(t.comp==='cool'||t.comp==='water'))return{x:g.x+1,y:g.y+3};
@@ -692,7 +750,7 @@ function workCrew(dt){
 /* ================= plots ================= */
 function plotPlan(o,buf,early){
   const C=CROPS[o.crop],L=estLoss(o.crop),flats=Math.ceil(o.qty/(1-L)*(1+buf/100));
-  const start=Math.max(S.week+1,o.ship-C.grow-early),ready=start+C.grow;
+  const start=Math.max(S.week+(S.phase==='buy'?0:1),o.ship-C.grow-early),ready=start+C.grow;
   return{flats,cells:Math.ceil(flats/FPC),start,ready,end:Math.max(o.ship,ready),late:Math.max(0,ready-o.ship),cost:flats*C.cost,rev:o.qty*o.price};
 }
 function plotCellsFrom(h,idx,n){const g=GEO[h.lot];if(idx+n>g.cells.length)return null;return[...Array(n)].map((_,i)=>idx+i);}
@@ -710,13 +768,14 @@ function placePlot(h,idx){
   say(`${was==='offer'?'Accepted':'Re-planned'}: ${o.qty} ${CROPS[o.crop].name.toLowerCase()} for ${o.cust}. Potting week ${p.start} in the ${h.name.toLowerCase()}.`,'good');
   popFx(h,fit.cells);
   hold=null;renderHold();endFraming();dirty=true;
+  if(S.phase==='buy'&&S.orders.some(x=>x.status==='offer'))setTimeout(()=>openTablet('offers'),450);
 }
 
 /* ================= rendering ================= */
 const cv=$('cv'),cx=cv.getContext('2d');
 let VW=0,VH=0,DPR=1,zoom=1,cam={x:0,y:0},camFollow=true,dirty=true,camTarget=null,zoomGoal=null,zoomBefore=null;
 const TW=64,TH=32;
-function resize(){const r=$('stage').getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);VW=r.width;VH=r.height;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px';dirty=true;}
+function resize(){setTimeout(()=>{if(S)frameHouses(true);},0);const r=$('stage').getBoundingClientRect();DPR=Math.min(2,window.devicePixelRatio||1);VW=r.width;VH=r.height;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);cv.style.width=VW+'px';cv.style.height=VH+'px';dirty=true;}
 const ro=new ResizeObserver(resize);ro.observe($('stage'));
 const wx=(x,y)=>(x-y)*TW/2,wy=(x,y,z)=>(x+y)*TH/2-(z||0);
 function P(x,y,z){return[(wx(x,y)-cam.x)*zoom+VW/2,(wy(x,y,z)-cam.y)*zoom+VH/2];}
@@ -749,7 +808,6 @@ function drawGround(){
 let hover=null,hoverTile=null;
 function drawablesList(now){
   const L=[];
-  L.push({d:OFFICE.x+OFFICE.y+OFFICE.w+OFFICE.h-1,f:drawOffice});
   TREES.forEach(([x,y])=>{if(MAP[y][x]===T.TREE)L.push({d:x+y+1,f:()=>drawTree(x,y)});});
   LOTS.forEach(Lt=>{
     const h=S.houses.find(z=>z.lot===Lt.key),g=GEO[Lt.key];
@@ -761,7 +819,7 @@ function drawablesList(now){
   });
   L.push({d:S.player.x+S.player.y,f:()=>drawPerson(S.player.x,S.player.y,'#2f7d3e','#e2c26a',now,moving)});
   npcs.forEach(n=>L.push({d:n.x+n.y,f:()=>{drawPerson(n.x,n.y,'#3d6fa0','#d7e2e8',now,n.moving);label(P(n.x,n.y,58),n.name,'#3d6fa0');}}));
-  const tr=truckPos(now);if(tr)L.push({d:tr.x+22.5,f:()=>drawTruck(tr.x,22.1)});
+  const tr=truckPos(now);if(tr)L.push({d:1,f:()=>drawTruck(tr.x,.08)});
   return L.sort((a,b)=>a.d-b.d);
 }
 function drawOffice(){
@@ -828,7 +886,7 @@ function drawHouseFront(g,h,now){
   const n=Math.round(h.pest/6);let sd=h.id*97+13;
   for(let k=0;k<n;k++){sd=(sd*16807)%2147483647;const fx=g.x+1+(sd%1000)/1000*(g.w-2);sd=(sd*16807)%2147483647;const fy=g.y+.5+(sd%1000)/1000*(g.h-1);const q=P(fx,fy,62+((sd>>3)%30)+Math.sin(now/240+k)*3);cx.fillStyle='#3e3322';cx.beginPath();cx.ellipse(q[0],q[1],3*zoom,2.2*zoom,0,0,7);cx.fill();}
   if(sprayFx&&sprayHouse===h.id){const t=(now-sprayFx)/1200;if(t<1){for(let k=0;k<24;k++){const fx=g.x+1+((k*37)%100)/100*(g.w-2),fy=g.y+1+((k*53)%100)/100*(g.h-2),q=P(fx,fy,20+t*50);cx.fillStyle=`rgba(255,255,255,${.7*(1-t)})`;cx.beginPath();cx.arc(q[0],q[1],(4+t*10)*zoom,0,7);cx.fill();}}else sprayFx=0;}
-  const c=P(g.appr.x+.5,g.appr.y+.5,0);hit(label([c[0],c[1]+14*zoom],h.name,'#14211a'),()=>openTablet('h'+h.id));
+  const c=P(g.x+g.w/2,g.y+g.h+.6,0);hit(label([c[0],c[1]+10*zoom],`${h.name} \u00b7 open controls`,'#14211a'),()=>openTablet('h'+h.id));
 }
 function cellOf(h,i){return GEO[h.lot].cells[i];}
 function drawCell(h,g,c,i,now){
@@ -882,13 +940,15 @@ function label(p,t,col,bg){
 }
 let trucks=[];
 function truckLeave(r){trucks.push({t0:performance.now(),mode:'leave',r});}
+let truckIn=0;
 function truckPos(now){
-  trucks=trucks.filter(t=>now-t.t0<3200);
+  trucks=trucks.filter(t=>now-t.t0<2600);
   const lt=trucks.find(t=>t.mode==='leave');
-  if(lt){const t=(now-lt.t0)/3200;return{x:20-t*t*24};}
-  const due=S.phase==='run'&&S.orders.some(o=>o.status==='open'&&dueW(o)===S.week);
-  if(due&&S.day>=4){const t=Math.min(1,(S.day-4+S.clock/(WEEK_SEC/DAYS))/1.2);return{x:20+(1-t)*14};}
-  return null;
+  if(lt){const t=(now-lt.t0)/2600;return{x:5.6+t*t*14};}
+  const due=S.phase!=='done'&&S.tasks.some(t=>t.type==='load');
+  if(!due){truckIn=0;return null;}
+  if(!truckIn)truckIn=now;
+  const t=Math.min(1,(now-truckIn)/1400);return{x:5.6-(1-t)*(1-t)*12};
 }
 function drawTruck(x,y){
   box(x,y,0,1.9,.8,34,['#f4f1e8','#e2ddcf','#cfc8b6']);
@@ -900,7 +960,6 @@ let bubbles=[];
 function drawBubbles(now){
   bubbles=[];
   const put=(p,kinds,act)=>{kinds.forEach((k,i)=>{const x=p[0]+(i-(kinds.length-1)/2)*34,y=p[1]+Math.sin(now/300+i)*3;bubble(x,y,k);bubbles.push({x,y,r:16,act});});};
-  if(S.orders.some(o=>o.status==='offer')&&S.phase==='run')put(P(OFFICE.x+1.5,OFFICE.y+1.5,80),['offer'],()=>openTablet('offers'));
   activeH().forEach(h=>{const g=GEO[h.lot],ks=[...new Set(houseWarn(h).map(x=>x.k))];if(ks.length)put(P(g.x+g.w/2,g.y+g.h/2,WH+RH+44),ks,()=>openTablet('h'+h.id));});
   if(S.phase==='run')S.tasks.forEach(t=>{
     if(t.type==='pot'&&!taskValid(t))return;
@@ -951,8 +1010,7 @@ function draw(now){
   cx.fillStyle=mix(SEAS[season(Math.min(S.week,WEEKS))][0],'#2f4a2a',.3);cx.fillRect(0,0,VW,VH);
   hits=[];drawGround();drawPreviewPath();
   drawablesList(now).forEach(o=>o.f());
-  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);hit(label([og[0],og[1]+14*zoom],'Office','#14211a'),()=>openTablet());
-  const dk=P(20.5,21.5,0);label([dk[0],dk[1]+12*zoom],'Loading dock','#14211a');
+  const dk=P(DOCK.x+.5,DOCK.y+.5,0);label([dk[0]+62*zoom,dk[1]-70*zoom],'Loading dock','#14211a');
   drawFx(now);drawBubbles(now);
 }
 
@@ -961,7 +1019,7 @@ let path=[],pending=null,moving=false;
 function walkTo(tx,ty,then){
   const sx=Math.floor(S.player.x),sy=Math.floor(S.player.y),p=findPath(sx,sy,tx,ty);
   if(p==null){toast(`Can't get there from here.`,'alert');return;}
-  path=p;pending=then||null;camFollow=true;if(!p.length&&then){pending=null;then();}
+  path=p;pending=then||null;if(!p.length&&then){pending=null;then();}
 }
 function movePlayer(dt){
   moving=false;if(!path.length)return;
@@ -979,7 +1037,7 @@ function syncNPCs(){
   const w=Math.min(S.week,WEEKS),act=S.phase==='run'?S.growers.filter(g=>g.from<=w&&w<=g.to&&gHours(g)>0):[];
   npcs.filter(n=>!act.some(g=>g.id===n.id)).forEach(n=>{const t=n.task!=null&&S.tasks.find(x=>x.id===n.task);if(t){t.who=null;t.prog=0;}});
   npcs=npcs.filter(n=>act.some(g=>g.id===n.id));
-  act.forEach(g=>{if(!npcs.some(n=>n.id===g.id))npcs.push({id:g.id,name:g.name,x:OFFICE.st.x+.5,y:OFFICE.st.y+.5,path:[],wait:0,moving:false});});
+  act.forEach(g=>{if(!npcs.some(n=>n.id===g.id))npcs.push({id:g.id,name:g.name,x:DOCK.x+.5,y:DOCK.y+2.5,path:[],wait:0,moving:false});});
 }
 function moveNPCs(dt){
   npcs.forEach(n=>{
@@ -1005,15 +1063,14 @@ function updateCam(dt){
   const tx=wx(S.player.x,S.player.y),ty=wy(S.player.x,S.player.y,0)-40;
   cam.x+=(tx-cam.x)*k;cam.y+=(ty-cam.y)*k;
 }
-function frameHouses(){
-  const hs=activeH();if(!hs.length)return;
+function frameHouses(snap){
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
-  hs.forEach(h=>{const g=GEO[h.lot];[[g.x,g.y],[g.x+g.w,g.y],[g.x,g.y+g.h],[g.x+g.w,g.y+g.h]].forEach(([x,y])=>{const X=wx(x,y);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,wy(x,y,WH+RH));y1=Math.max(y1,wy(x,y,0));});});
-  const band=VW<600?170:120,availH=Math.max(160,VH-band-30),z=clamp(Math.min((VW-40)/(x1-x0),availH/(y1-y0)),.4,1.3);
-  if(zoomBefore==null)zoomBefore=zoom;
-  camTarget={x:(x0+x1)/2,y:(y0+y1)/2+band/2/z,z};camFollow=false;
+  [[1,0],[MW-1,0],[1,MH-1],[MW-1,MH-1]].forEach(([x,y])=>{const X=wx(x,y);x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,wy(x,y,WH+RH+30));y1=Math.max(y1,wy(x,y,0));});
+  const band=hold?(VW<600?170:120):(VW<600?70:56),top=(document.querySelector('.hud')?.offsetHeight||60)+10,availH=Math.max(160,VH-band-top),z=clamp(Math.min((VW<600?VW*1.3:VW-24)/(x1-x0),availH/(y1-y0)),.3,1.6);
+  camTarget={x:(x0+x1)/2,y:(y0+y1)/2+(band-top)/2/z,z};camFollow=false;
+  if(snap){cam.x=camTarget.x;cam.y=camTarget.y;zoom=z;}
 }
-function endFraming(){camTarget=null;camFollow=true;if(zoomBefore!=null){zoomGoal=zoomBefore;zoomBefore=null;}}
+function endFraming(){frameHouses();}
 
 /* ================= warnings ================= */
 function houseWarn(h){
@@ -1062,19 +1119,16 @@ function clickAt(mx,my){
     if(pb){selPlot=pb.id;openPlot(pb);return;}
     const c=cellOf(b.h,b.i);walkManual(c.x,MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1);return;}
   const [x,y]=toTile(mx,my,0),t=tileAt(x,y);
-  if(t===T.OFFICE){openTablet();return;}
   const h=houseAtTile(x,y);
   if(h&&!h.building){const g=GEO[h.lot];
     if(t===T.WALL){walkTo(g.door.x,g.door.y);return;}}
-  const lot=lotAtTile(x,y);
-  if(lot&&(!h||h.building)){openLot(lot);return;}
   if(walk(x,y))walkManual(x,y);
 }
 function walkManual(x,y){if(pw.task!=null){const t=S.tasks.find(z=>z.id===pw.task);if(t)t.prog=0;pw.task=null;}walkTo(x,y);}
 cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false};});
 cv.addEventListener('pointermove',e=>{
   const r=cv.getBoundingClientRect();hoverUpdate(e.clientX-r.left,e.clientY-r.top);
-  if(drag&&e.buttons){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.moved=true;if(drag.moved){camFollow=false;if(camTarget){camTarget=null;zoomBefore=null;}cam.x=drag.cx-dx/zoom;cam.y=drag.cy-dy/zoom;}}
+  if(drag&&e.buttons){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.moved=true;if(drag.moved){camFollow=false;if(camTarget){camTarget=null;}cam.x=drag.cx-dx/zoom;cam.y=drag.cy-dy/zoom;}}
 });
 cv.addEventListener('pointerup',e=>{const r=cv.getBoundingClientRect();if(drag&&!drag.moved){hoverUpdate(e.clientX-r.left,e.clientY-r.top);clickAt(e.clientX-r.left,e.clientY-r.top);}drag=null;});
 cv.addEventListener('wheel',e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.1:.9));},{passive:false});
@@ -1083,8 +1137,7 @@ $('zIn').addEventListener('click',()=>setZoom(zoom*1.15));
 $('zOut').addEventListener('click',()=>setZoom(zoom/1.15));
 window.addEventListener('keydown',e=>{
   if(e.target.closest&&e.target.closest('input,select,textarea'))return;
-  if(e.key===' '){e.preventDefault();togglePlay();}
-  else if(e.key==='Escape'){if(!$('modal').hidden)closeModal();else if(hold){hold=null;renderHold();endFraming();}}
+  if(e.key==='Escape'){if(!$('modal').hidden)closeModal();else if(hold){hold=null;renderHold();endFraming();}}
   else if(['1','2','4'].includes(e.key)){S.speed=+e.key;hud();}
   else if(e.key==='t'||e.key==='T'){if(!$('modal').hidden&&mKind==='tablet')closeModal();else openTablet();}
 });
@@ -1093,14 +1146,14 @@ window.addEventListener('keydown',e=>{
 function hud(){
   const w=Math.min(S.week,WEEKS),pr=S.cash-S.startCash;
   $('hYear').textContent=`Year ${S.year}`;
-  $('hDate').textContent=S.phase==='done'?`Year ${S.year} done`:`Week ${w} · ${MONTHL[monthIdx(w)]}`;
+  $('hDate').textContent=S.phase==='done'?`Year ${S.year} done`:S.phase==='buy'?`${QN[qIdx(w)]} buying round`:`Week ${w} \u00b7 ${MONTHL[monthIdx(w)]}`;
   $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hProfit').textContent=fmt(pr);$('hProfit').classList.toggle('neg',pr<0);
   const a=S.customers.filter(c=>c.active);$('hGw').textContent=a.length?Math.round(a.reduce((t,c)=>t+c.score,0)/a.length):0;
   const fc=S.fc,fn=S.fcN;
   const fcText=S.phase!=='run'||!fc?'':fc.warn?`${fc.warnKind==='cold'?'Cold front':'Heat wave'} possible this week`:fn&&fn.warn?`Next week: ${fn.warnKind==='cold'?'cold front':'heat wave'} possible`:`This week ${Math.round(fc.fOut-5)}–${Math.round(fc.fOut+5)}°F`;
   $('hFc').textContent=fcText;$('hFc').hidden=!fcText;$('hFc').classList.toggle('warn',!!(fc&&(fc.warn||(fn&&fn.warn))));
-  $('bPlay').textContent=S.paused?'Play':'Pause';$('bPlay').classList.toggle('play',S.paused);$('bPlay').disabled=S.phase==='done';
+  const qb=$('bQ'),cc=canClose();qb.hidden=S.phase==='done';qb.textContent=S.phase==='buy'?`Start ${QN[qIdx(S.week)].toLowerCase()}`:`Close ${QN[qIdx(S.week)].toLowerCase()}`;qb.classList.toggle('play',S.phase==='buy'||cc.ok);qb.disabled=S.phase==='run'&&!cc.ok;qb.title=S.phase==='run'?(cc.ok?'Sell leftovers at clearance and skip to the next buying round':cc.why):'';
   document.querySelectorAll('#speed button').forEach(b=>b.classList.toggle('on',+b.dataset.sp===S.speed));
   renderAlerts();renderQueue();
   const no=S.orders.filter(o=>o.status==='offer').length;$('tabN').hidden=!no;$('tabN').textContent=no;
@@ -1110,8 +1163,7 @@ function pips(){
   const el=$('pips');if(!el.children.length)el.innerHTML='<i><b></b></i>'.repeat(DAYS);
   [...el.children].forEach((c,i)=>{c.firstChild.style.width=clamp(f*DAYS-i,0,1)*100+'%';});
 }
-function togglePlay(){if(S.phase==='done')return;S.paused=!S.paused;if(!S.paused)S.welcomed=true;hud();}
-$('bPlay').addEventListener('click',togglePlay);
+$('bQ').addEventListener('click',()=>{if(S.phase==='buy')startQuarter();else if(S.phase==='run'){const c=canClose();if(c.ok)closeQuarter();else toast(c.why,'alert');}});
 $('bTab').addEventListener('click',()=>{if(!$('modal').hidden&&mKind==='tablet')closeModal();else openTablet();});
 function renderQueue(){
   const q=S.queue.map(id=>S.tasks.find(t=>t.id===id)).filter(Boolean),crew=S.tasks.filter(t=>t.who&&t.who!=='p').length,open=S.tasks.filter(t=>t.who==null&&(t.type!=='pot'||taskValid(t))).length;
@@ -1151,7 +1203,7 @@ function renderTablet(){
   tabs([['offers','Offers',nOff],['orders','Orders',nNeed],...activeH().map(h=>['h'+h.id,h.name,houseWarn(h).length]),['crew','Crew'],['customers','Customers'],['books','Books']]);
   const B=$('mBody');
   if(mTab[0]==='h'){mHouse=+mTab.slice(1);renderPanel();}
-  else if(mTab==='offers')B.innerHTML=offersHTML();
+  else if(mTab==='offers'){B.innerHTML=offersHTML();const rg=$('roundGo');if(rg)rg.onclick=startQuarter;}
   else if(mTab==='orders')B.innerHTML=ordersHTML();
   else if(mTab==='customers')B.innerHTML=customersHTML();
   else if(mTab==='crew'){B.innerHTML=`<ul class="tasks"><li><b>Greenhouse management</b> runs on experience: they set the house's switches each week, and the most experienced read the forecast perfectly.</li><li><b>Crop management</b> runs on horticultural knowledge: lower pest pressure and fewer losses on crops waiting past prime.</li><li><b>Maintenance</b> runs on work ethic: when the weather breaks out of the forecast range, the house holds closer to good temperatures.</li></ul><div id="growers"></div>`;renderGrowers();}
@@ -1160,12 +1212,13 @@ function renderTablet(){
 function cfgOf(o){return cfg[o.id]||(cfg[o.id]={buf:10,early:0});}
 function offersHTML(){
   const os=S.orders.filter(o=>o.status==='offer').sort((a,b)=>a.ship-b.ship);
-  if(!os.length)return`<p class="empty">No open offers right now. New customers send offers at the start of each year.</p>`;
-  return`<p class="hint">Pick an offer and plan its plot, then place it on a greenhouse bench. Placing the plot accepts the order. Declining costs a little goodwill; offers expire once it's too late to pot them.</p><div class="tickets">${os.map(o=>{
+  const qn=QN[qIdx(Math.min(S.week,WEEKS))],banner=S.phase==='buy'?`<div class="round"><div><b>${qn} buying round</b><span>The clock is stopped. Plan plots for the offers you want; anything left undecided is declined when the ${qn.toLowerCase()} starts.${S.roundCash!=null&&S.week>1?` Cash ${fmt(S.cash)}.`:''}</span></div><button class="btn go" type="button" id="roundGo">Start ${qn.toLowerCase()}</button></div>`:'';
+  if(!os.length)return banner+`<p class="empty">${S.phase==='buy'?'No offers left to decide.':'No open offers right now. New offers arrive at each quarterly buying round, and pop-up contracts show up in summer.'}</p>`;
+  return banner+`<p class="hint">Pick an offer and plan its plot, then place it on the bench. Placing the plot accepts the order. Declining costs a little goodwill.</p><div class="tickets">${os.map(o=>{
     const C=CROPS[o.crop],c=cust(o.custId),k=cfgOf(o),p=plotPlan(o,k.buf,k.early),exp=o.ship-C.grow-1;
-    return`<div class="ticket" data-o="${o.id}"><div class="tk1"><span class="cb" style="background:${C.color}">${C.name}</span><span class="tkwk">Pickup wk ${o.ship}</span></div>
+    return`<div class="ticket" data-o="${o.id}"><div class="tk1"><span class="cb" style="background:${C.color}">${C.name}</span><span class="tkwk">${o.popup?'<span class="chip tight">Pop-up</span> ':''}Pickup wk ${o.ship}</span></div>
       <div class="tk2"><b>${o.qty}</b><span>flats at $${o.price} · ${fmt(o.qty*o.price)}</span></div>
-      <div class="tk3">${esc(o.cust)}<small>goodwill ${Math.round(c?c.score:0)} · offer expires after week ${exp}</small></div>
+      <div class="tk3">${esc(o.cust)}<small>goodwill ${Math.round(c?c.score:0)} · ${o.popup?`decide by week ${o.expires}`:S.phase==='buy'?'decide this round':`expires after week ${exp}`}</small></div>
       <div class="cfg">
         <label>Extra flats for losses<span class="opts">${[0,10,20].map(v=>`<button type="button" data-buf="${o.id}|${v}" class="${k.buf===v?'on':''}">${v}%</button>`).join('')}</span></label>
         <label>Pot early<span class="opts">${[0,1,2].map(v=>`<button type="button" data-early="${o.id}|${v}" class="${k.early===v?'on':''}">${v?v+' wk':'No'}</button>`).join('')}</span></label>
@@ -1213,7 +1266,7 @@ function renderHold(){
   el.hidden=false;
   el.innerHTML=`<p><b>Placing ${C.name.toLowerCase()} for ${esc(o.cust)}</b><br>${p.flats} flats on ${p.cells} bench spots, weeks ${p.start}–${p.end}. Click a bench: green fits, red doesn't, grey spots are booked.</p><button class="mini" type="button" id="holdF">Show houses</button><button class="mini" type="button" id="holdX">Cancel</button>`;
   $('holdX').onclick=()=>{hold=null;renderHold();endFraming();};
-  $('holdF').onclick=frameHouses;
+  $('holdF').onclick=()=>frameHouses();
 }
 
 /* ---- growers (crew tab) ---- */
@@ -1324,10 +1377,10 @@ function openLot(L){mTab=null;$('mTabs').innerHTML='';const h=S.houses.find(z=>z
 /* ---- welcome and report ---- */
 function openWelcome(){
   mTab=null;$('mTabs').innerHTML='';openModal('welcome',`Year ${S.year}: welcome to your nursery`);
-  $('mBody').innerHTML=`<p class="hint">Open the tablet (button at the top, or T) for orders, each house's controls, crew, customers and the books. Tap task bubbles in the yard to add them to your to-do list, and your grower runs over and does them. Time runs about 15 seconds a week; space bar pauses.</p>
-  <ul class="how"><li><b>Tablet</b>Take orders and drop their plots on a bench, set each house's climate, hire crew, check the books.</li><li><b>Hands-on tasks</b>Pot plots on their start week, load trucks before the week ends, spray, fix breakdowns and clear old stock. Growers pick up tasks in their houses.</li><li><b>Control</b>Each house's tab shows its live forecast. Settings apply right away, no walking needed.</li><li><b>For sale lots</b>Build another greenhouse when you're ready for more space.</li></ul>
-  <p><button class="btn go" type="button" id="wGo">Open the tablet</button></p>`;
-  $('wGo').onclick=()=>{closeModal();openTablet('offers');};
+  $('mBody').innerHTML=`<p class="hint">The year runs in four quarters. Each one opens with a buying round where the clock stops: take the offers you can grow and place their plots. Then time runs about 15 seconds a week with no pausing, so keep up with the to-do list. When a quarter's work is done, close it to sell leftovers and skip ahead.</p>
+  <ul class="how"><li><b>Tablet</b>Take orders and drop their plots on a bench, set each house's climate, hire crew, check the books.</li><li><b>Hands-on tasks</b>Pot plots on their start week, load trucks before the week ends, spray, fix breakdowns and clear old stock. Growers pick up tasks in their houses.</li><li><b>Control</b>Each house's tab shows its live forecast. Settings apply right away, no walking needed.</li></ul>
+  <p><button class="btn go" type="button" id="wGo">Start the winter buying round</button></p>`;
+  $('wGo').onclick=()=>{S.welcomed=true;closeModal();openTablet('offers');};
 }
 function openReport(){
   mTab=null;$('mTabs').innerHTML='';
@@ -1342,7 +1395,7 @@ function openReport(){
   <div class="rgrid"><div class="scroll"><table><thead><tr><th>Crop</th><th class="n">Planted</th><th class="n">Planned loss</th><th class="n">Actual loss</th><th class="n">Too big</th><th class="n">Shipped</th></tr></thead><tbody>${rows||'<tr><td colspan="6">Nothing was planted this year.</td></tr>'}</tbody></table></div>
   <table><thead><tr><th>Goodwill moves</th><th class="n">Change</th></tr></thead><tbody>${moves.slice(0,3).concat(moves.length>3?moves.slice(-2):[]).map(x=>`<tr><td>${esc(x.c.name)}</td><td class="n"><span class="${x.d>0?'up':x.d<0?'dn':''}">${x.d>0?'+':''}${x.d}</span></td></tr>`).join('')}</tbody></table></div>
   <p style="margin-top:16px"><button class="btn go" type="button" id="nyBtn">Start year ${S.year+1}</button></p>`;
-  $('nyBtn').onclick=()=>{nextYear();closeModal();hud();openWelcome();};
+  $('nyBtn').onclick=()=>{nextYear();closeModal();hud();openTablet('offers');};
 }
 
 /* ---- modal events ---- */
@@ -1399,12 +1452,11 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 function start(d){
-  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;S.houses.forEach(h=>{if(!h.res)h.res={a:Math.min(RES_CAP,h.resist||0),b:0};h.broken=h.broken||{};});S.tasks=S.tasks||[];S.queue=[];S.tasks.forEach(t=>{t.who=null;t.prog=0;});buildMap();}
+  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=false;S.houses.forEach(h=>{if(!h.res)h.res={a:Math.min(RES_CAP,h.resist||0),b:0};h.broken=h.broken||{};});S.tasks=S.tasks||[];S.queue=[];S.tasks.forEach(t=>{t.who=null;t.prog=0;});buildMap();}
   else freshGame();
-  resize();zoom=clamp(VW/1150,.55,1);
-  cam.x=wx(S.player.x,S.player.y);cam.y=wy(S.player.x,S.player.y,0)-40;
+  resize();frameHouses(true);
   syncNPCs();hud();
-  if(S.phase==='done')openReport();else if(!S.welcomed)openWelcome();
+  if(S.phase==='done')openReport();else if(!S.welcomed)openWelcome();else if(S.phase==='buy')openTablet('offers');
   requestAnimationFrame(frame);
 }
 window.claude?.hot?.snapshot?.(()=>S);
