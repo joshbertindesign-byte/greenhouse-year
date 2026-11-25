@@ -64,9 +64,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lane.h .card{width:66px;height:62px}
 .empty{color:var(--mute);font-size:15px;padding:0 6px}
 
-.sheet{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100vw,820px);max-height:92vh;overflow:auto;background:var(--paper);border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:14px 14px calc(14px + env(safe-area-inset-bottom));animation:up .28s ease-out}
+.sheet{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100vw,820px);height:94vh;max-height:94vh;overflow:hidden;background:#24402f;border-radius:30px 30px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.14);padding:12px 10px calc(26px + env(safe-area-inset-bottom));animation:up .28s ease-out;display:flex;flex-direction:column}
 @keyframes up{from{transform:translate(-50%,40px);opacity:0}}
-@media (min-width:860px){.sheet{bottom:auto;top:50%;transform:translate(-50%,-50%);border-radius:22px;animation:none}}
+@media (min-width:860px){.sheet{bottom:auto;top:50%;transform:translate(-50%,-50%);border-radius:44px;animation:none;width:min(calc(100vw - 32px),1180px);height:min(calc(100vh - 32px),800px);max-height:none;padding:20px 20px 32px;box-shadow:0 34px 70px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.25)}}
 .bhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .bhead h2{margin:0;font-size:22px;font-weight:700;flex:1;min-width:180px}
 .bhead h2 small{display:block;font-size:14px;font-weight:400;color:var(--mute)}
@@ -326,6 +326,61 @@ button{font:inherit;color:inherit;cursor:pointer}
 .board .cell.late{background:repeating-linear-gradient(135deg,#f6f3ea 0 5px,#efebe0 5px 10px);border-color:transparent}
 .bd{flex-basis:100%;font-size:13px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 8px}.bd b{color:var(--ink)}
 .bd .up{color:var(--go)}.bd .dn{color:var(--bad)}
+
+.sheet{box-shadow:0 0 0 100vmax rgba(14,30,22,.38),0 -8px 30px rgba(0,0,0,.35)}
+@media (min-width:860px){.sheet{box-shadow:0 0 0 100vmax rgba(14,30,22,.38),0 34px 70px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.25)}}
+@media (max-width:860px){.ttop .tw b,.ttop .tw small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.sheet:before{content:'';position:absolute;left:50%;top:5px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:#0b1510}
+.sheet .bzl{position:absolute;left:0;right:0;bottom:7px;text-align:center;color:rgba(255,255,255,.42);font-size:10px;font-weight:700;letter-spacing:.28em;pointer-events:none}
+@media (min-width:860px){.sheet .bzl{bottom:10px;font-size:11px}}
+.tscr{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper);border-radius:22px;overflow:hidden;box-shadow:0 0 0 3px #0b1510}
+.ttop{flex:none;background:#173426;color:#fff;display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;padding:10px 12px 10px 18px}
+.ttop .tw{display:flex;flex-direction:column;line-height:1.1;min-width:150px}.ttop .tw small{font-size:12px;font-weight:600;color:#a8c7b2;letter-spacing:.06em}.ttop .tw b{font-size:20px}
+.ttabs{display:flex;gap:4px;background:rgba(255,255,255,.08);padding:4px;border-radius:14px}
+.ttabs button{display:flex;align-items:center;gap:7px;border:0;border-radius:10px;padding:9px 14px;background:transparent;color:#dbe9df;font:600 15px Outfit,sans-serif;cursor:pointer}
+.ttabs button.on{background:var(--paper);color:var(--ink);font-weight:700}
+.ttabs button .nb{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;padding:1px 7px}
+.ttop .sp{flex:1}.ttop .st{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}.ttop .st small{font-size:12px;color:#a8c7b2;font-weight:600}.ttop .st b{font-size:18px}
+.ttop .go{border:0;border-radius:12px;padding:11px 18px;background:var(--sun);color:#2b2104;font:700 16px Outfit,sans-serif;cursor:pointer}
+.ttop .tx{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer}
+.scr{flex:1;min-height:0;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
+.scr .bfoot{margin-top:14px}
+@media (max-width:860px){.ttop{padding:10px 10px 10px 14px;gap:8px}.ttop .tw{flex:1;min-width:0}.ttop .tw b{font-size:18px}.ttop .st{display:none}.ttabs{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.ttabs button{flex-direction:column;gap:2px;padding:6px 0;font-size:12px}.ttabs button .nb{display:none}.scr{padding:10px 8px}.ttop .go{padding:10px 14px;font-size:15px}}
+.olay{display:flex;gap:16px;align-items:flex-start}.ocol{width:360px;flex:none;display:flex;flex-direction:column;gap:12px}
+@media (max-width:860px){.olay{flex-direction:column;gap:10px}.ocol{width:auto;align-self:stretch;gap:10px}}
+.hc{background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:22px;padding:13px 15px 14px;display:flex;flex-direction:column;gap:9px;box-shadow:0 6px 0 var(--cs,#efe8d6);position:relative}
+.hc.empty{border-color:var(--line);box-shadow:none;color:var(--mute)}.hc.empty b{color:var(--ink);font-size:17px}
+.hc .r1{display:flex;align-items:center;gap:10px}.hc .r1 .nm{display:flex;flex-direction:column;line-height:1.15;flex:1;min-width:0}.hc .r1 .nm b{font-size:16px}.hc .r1 .nm small{font-size:12px;font-weight:700;color:#5d6b62;letter-spacing:.03em}
+.hc .r2{display:flex;align-items:center;gap:8px}.hc .r2 .crop{font-weight:700;font-size:14px;border-radius:8px;padding:3px 10px;color:#fff}.hc .r2 b{font-size:16px}.hc .r2 .pr{margin-left:auto;font-size:34px;line-height:1}
+.hc .r3{display:flex;flex-direction:column;gap:5px;font-size:13px;color:#4f5c54}.hc .r3 span{display:flex;align-items:center;gap:6px}.hc .r3 b{color:var(--ink)}
+.hc .r4{display:flex;align-items:center;gap:8px;border-top:2px dashed #eee8d8;padding-top:10px}.hc .r4>small{font-size:13px;font-weight:700;color:#5d6b62;width:42px}
+.hc .forms{gap:6px}.hc .fm{flex-direction:column;padding:7px 10px}.hc .rot{margin-left:auto;width:46px;height:46px;border-radius:50%;padding:0;display:grid;place-items:center}
+.hc .fdesc{margin:0;font-size:12px}
+.hc .ctag{background:#6b4fc8;color:#fff;font-weight:700;font-size:13px;border-radius:8px;padding:3px 9px}
+.hc .cur{background:#f4f1e6;border-radius:12px;padding:8px 10px;font-size:14px;display:flex;flex-direction:column;gap:8px}
+.hc .unl{display:block;width:100%;border:0;border-radius:12px;background:var(--sun);color:#2b2104;font-weight:700;font-size:15px;padding:10px 6px}
+.rd{border-radius:18px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:#fff;border:2px solid var(--line);font-size:15px}
+.rd.ok{background:#e9f4ea;border-color:#c6e2cb}.rd.bad{background:#fbe9e5;border-color:#f0c6bd}
+.rd .big{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px}.rd .big b{font-size:30px;color:var(--go);line-height:1}.rd .big .neg{font-size:20px;color:var(--bad)}.rd .big span{color:#33463a}
+.rd .chips{display:flex;flex-wrap:wrap;gap:6px}.rd .chips span{background:#fff;border-radius:8px;padding:4px 9px;font-size:13px;font-weight:600}.rd .chips .up{background:#fff4d0;color:#7a5600;font-weight:700}.rd .chips .dn{color:var(--bad)}
+.abtn{display:flex;gap:10px}.abtn .bin2{display:flex;align-items:center;gap:8px;border:0;border-radius:16px;padding:0 20px;height:56px;background:#3b2f2a;color:#fff;font:700 17px Outfit,sans-serif;cursor:pointer}
+.abtn .place{flex:1;border:0;border-radius:16px;height:56px;background:var(--go);color:#fff;font:700 19px Outfit,sans-serif;box-shadow:0 5px 0 #1f5c36;cursor:pointer}.abtn .place:disabled{background:#b9c7bd;box-shadow:none;cursor:default}
+.nx{display:flex;flex-direction:column;gap:8px}.nx .h{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:#5d6b62}
+.nx .g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.nx .m{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #e9e4d6;border-radius:14px;padding:8px 10px;min-width:0}.nx .m span{display:flex;flex-direction:column;line-height:1.15;min-width:0}.nx .m b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nx .m small{font-size:12px;color:#5d6b62;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bp{flex:1;min-width:0;align-self:stretch;background:#fff;border:2px solid #ebe6d8;border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:860px){.bp{padding:10px 4px}}
+.bp .bh{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.bp .bh>b{font-size:18px}.bp .ftabs{margin:0;flex-wrap:wrap}
+.bwrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.lgd{flex:1;min-width:150px;display:flex;flex-direction:column;gap:9px;font-size:13px;color:#33463a;padding-top:6px}
+.lgd span{display:flex;align-items:center;gap:8px}.lgd i{width:22px;height:22px;border-radius:6px;flex:none}.lgd .note{background:#f6f3ea;border-radius:12px;padding:10px 12px;line-height:1.35;display:block}
+@media (max-width:860px){.lgd{flex-direction:row;flex-wrap:wrap;gap:6px 12px;font-size:12px;padding:0 8px}.lgd i{width:16px;height:16px}.lgd .note{display:none}}
+.cl{display:flex;gap:16px;align-items:flex-start}@media (max-width:860px){.cl{flex-direction:column}}
+.cl .cg{flex:1;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}@media (max-width:640px){.cl .cg{grid-template-columns:1fr}}
+.cl .cs{width:300px;flex:none;display:flex;flex-direction:column;gap:12px}@media (max-width:860px){.cl .cs{width:auto;align-self:stretch}}
+.panel{background:#fff;border:2px solid #ebe6d8;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}.panel>b{font-size:16px}
+.tierrow{display:flex;align-items:center;gap:10px;font-size:13px;color:#33463a}.tierrow .tchip{width:70px;text-align:center;font-size:13px;padding:3px 0}
+.lg{display:flex;align-items:center;gap:10px;font-size:14px}.lg b{width:34px}.lg .p{color:var(--go)}.lg .n{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -401,10 +456,11 @@ const tierOf=n=>TIERS[tierIx(custR(n))];
 const short1=n=>n.split(' ')[0];
 const initials=n=>n.split(' ').filter(w=>w!=='and').slice(0,2).map(w=>w[0]).join('');
 const avgRep=()=>CUST.reduce((a,n)=>a+custR(n),0)/CUST.length;
-function custRep(n,d){
+function custRep(n,d,why){
   if(!S.cust||!S.cust[n]||!d)return 0;
   const c=S.cust[n],r0=c.r;if(d>0)d*=clamp((100-r0)/40,.15,1);
   c.r=clamp(r0+d,0,100);S.rep=avgRep();
+  if(why){S.repLog=S.repLog||[];S.repLog.push({n,d:c.r-r0,why});if(S.repLog.length>30)S.repLog.shift();}
   const t0=tierIx(r0),t1=tierIx(c.r);
   if(t1!==t0)toast(t1>t0?'good':'bad',`${n} is now ${TIERS[t1].n}: ${PERK[t1].toLowerCase()}`);
   return c.r-r0;
@@ -610,9 +666,9 @@ function contractFail(cid){
   const c=contractOf(cid);if(!c||c.broken)return;c.broken=true;
   const rest=S.plots.filter(p=>{const o=orderOf(p);return o&&o.contract===cid&&!p.done&&!p.potted.some(Boolean);});
   rest.forEach(p=>{S.orders=S.orders.filter(o=>o.id!==p.oid);S.plots=S.plots.filter(x=>x!==p);});
-  custRep(c.cust,-8);toast('bad',`${c.cust.split(' ')[0]} cancelled the rest of the contract`);
+  custRep(c.cust,-8,'contract broken off after a failure');toast('bad',`${c.cust.split(' ')[0]} cancelled the rest of the contract`);
 }
-function contractShipped(cid){const c=contractOf(cid);if(!c||c.broken)return;c.done++;if(c.done>=c.n){custRep(c.cust,4);toast('good',`Contract with ${c.cust.split(' ')[0]} complete`);}}
+function contractShipped(cid){const c=contractOf(cid);if(!c||c.broken)return;c.done++;if(c.done>=c.n){custRep(c.cust,4,'contract completed');toast('good',`Contract with ${c.cust.split(' ')[0]} complete`);}}
 function autoAccept(of){
   if(!offerOwned(of))return false;
   if(!of.contract){const r=firstFit(of);return r>=0&&place(of,r);}
@@ -674,7 +730,7 @@ function truckLeaves(k,missed){
   k.state='gone';k.leftAt=performance.now();
   if(missed){
     const pl=S.plots.find(p=>p.id===k.plot);
-    if(pl&&!pl.done){pl.done=true;pl.fail=true;orderOf(pl).status='failed';custRep(orderOf(pl).cust,-12);S.ys.failed++;const cid=orderOf(pl).contract;if(cid)contractFail(cid);
+    if(pl&&!pl.done){pl.done=true;pl.fail=true;orderOf(pl).status='failed';custRep(orderOf(pl).cust,-12,'truck left empty');S.ys.failed++;const cid=orderOf(pl).contract;if(cid)contractFail(cid);
       S.tasks.filter(t=>t.plot===pl.id).forEach(dropTask);toast('bad',`${orderOf(pl).cust.split(' ')[0]}'s truck gave up waiting`);}
   }
   dockNext();
@@ -698,8 +754,8 @@ function finishShip(pl,bought,truckId){
   const pm=1+.1*upLv('pots'),buyCost=bought*Math.round(C.price*1.2),rev=Math.round(sent*o.price*pm),clear=extra*Math.round(o.price*.35*pm);
   S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;S.ys.buy+=buyCost;o.status='shipped';o.sent=sent;if(o.contract)contractShipped(o.contract);
   const k=truckById(truckId),waited=k&&k.arrived!=null?(S.t-k.arrived)-((k.deadline-k.arrived)-TRUCK_WAIT):0,slow=waited>TRUCK_WAIT*.5;
-  if(sent>=o.qty){if(!bought&&!pl.hurt&&!slow)custRep(o.cust,2);if(slow)custRep(o.cust,-1);S.ys.full++;toast('cash',`${sent} ${C.name.toLowerCase()} shipped${slow?' (kept them waiting)':''}, +${fmt(rev+clear-buyCost)}`);}
-  else{custRep(o.cust,-shortRep(sent,o.qty));S.ys.short++;toast('bad',`Short: ${sent} of ${o.qty} ${C.name.toLowerCase()}, +${fmt(rev+clear)}`);}
+  if(sent>=o.qty){if(!bought&&!pl.hurt&&!slow)custRep(o.cust,2,'full truck, on time');if(slow)custRep(o.cust,-1,'kept their truck waiting');S.ys.full++;toast('cash',`${sent} ${C.name.toLowerCase()} shipped${slow?' (kept them waiting)':''}, +${fmt(rev+clear-buyCost)}`);}
+  else{custRep(o.cust,-shortRep(sent,o.qty),`shipped ${sent} of ${o.qty}`);S.ys.short++;toast('bad',`Short: ${sent} of ${o.qty} ${C.name.toLowerCase()}, +${fmt(rev+clear)}`);}
   if(k&&k.state!=='gone')truckLeaves(k,false);
 }
 const shortRep=(sent,qty)=>Math.round(2+8*(1-sent/qty));
@@ -804,7 +860,7 @@ function enqueue(t){
 
 // ---------------- period flow ----------------
 function startPeriod(){
-  const c=S.period;S.phase='run';S.t=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];S.phase='run';S.t=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(12).fill(false);S.dmgT=Array(12).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
@@ -880,7 +936,7 @@ function endPeriod(){
   S.trucks.filter(k=>k.state==='line'||k.state==='dock'||k.state==='coming').forEach(k=>truckLeaves(k,true));
   let fails=0;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>{
-    if(!pl.potted.some(Boolean)){pl.done=true;pl.fail=true;pl.e=c;orderOf(pl).status='failed';fails++;custRep(orderOf(pl).cust,-12);if(orderOf(pl).contract)contractFail(orderOf(pl).contract);}
+    if(!pl.potted.some(Boolean)){pl.done=true;pl.fail=true;pl.e=c;orderOf(pl).status='failed';fails++;custRep(orderOf(pl).cust,-12,'order never potted');if(orderOf(pl).contract)contractFail(orderOf(pl).contract);}
     else pl.potted.forEach((v,k)=>{if(!v){pl.alive[k]=0;pl.flats[k]=0;}});
   });
   S.tasks.filter(t=>t.type==='pest').forEach(t=>{const pl=S.plots.find(p=>p.id===t.plot);if(pl&&!pl.done)hurt(pl,t.bench,.2,1);});
@@ -1401,7 +1457,7 @@ function removeContract(cid){
   guardRep(d?[{cust:c.cust,d}]:[],`Cancelling this contract costs ${CANCEL_REP} reputation with ${c.cust}.`,()=>{
     dropOrders(contractUnpotted(cid));
     if(isNew&&!S.plots.some(p=>orderOf(p)?.contract===cid))S.contracts=S.contracts.filter(x=>x!==c);else c.broken=true;
-    if(d){custRep(c.cust,d);toast('bad',`Contract cancelled, ${d} with ${short1(c.cust)}`);}else toast('good','Contract binned');
+    if(d){custRep(c.cust,d,'you cancelled their contract');toast('bad',`Contract cancelled, ${d} with ${short1(c.cust)}`);}else toast('good','Contract binned');
     sel=null;ghostRow=-1;renderSheet();hud();});
 }
 function dropPiece(pp,row){
@@ -1426,7 +1482,7 @@ function removePlot(pl){
   const isNew=pl.taken===roundKey(),d=isNew?0:-BUMP_REP;
   guardRep(d?[{cust:o.cust,d}]:[],`Dropping this order costs ${BUMP_REP} reputation with ${o.cust}.`,()=>{
     dropOrders([pl]);
-    if(d){custRep(o.cust,d);toast('bad',`Order dropped, ${d} with ${short1(o.cust)}`);}else toast('good','Order binned');
+    if(d){custRep(o.cust,d,'you dropped their order');toast('bad',`Order dropped, ${d} with ${short1(o.cust)}`);}else toast('good','Order binned');
     sel=null;ghostRow=-1;renderSheet();hud();});
 }
 const potM=()=>1+.1*upLv('pots');
@@ -1460,7 +1516,7 @@ function confirmPv(){
   guardRep(ev.rep,what,()=>{
     if(!placing)return;
     ev.ctr.forEach(cid=>{const c=contractOf(cid);if(!c)return;if(c.round===roundKey()&&!S.plots.some(p=>orderOf(p)?.contract===cid&&!ev.gone.includes(p)))S.contracts=S.contracts.filter(x=>x!==c);else c.broken=true;});
-    dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d));
+    dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d,'you swapped out their order'));
     if(ev.gone.length)toast(ev.rep.length?'bad':'good',`Swapped out ${ev.gone.length} order${ev.gone.length>1?'s':''}${ev.rep.length?': '+ev.rep.map(x=>`${x.d} with ${short1(x.cust)}`).join(', '):''}`);
     if(!place(placing.cur,top0)){toast('bad','No room there');renderSheet();return;}
     pv=null;advancePlacing();renderSheet();hud();
@@ -1480,7 +1536,7 @@ function canNudge(pl,d,avoid){
 }
 function nudge(pl,d){
   const o=orderOf(pl),cut=Math.round(o.qty*o.price*potM()*.1),rp=d>0?-3:0;
-  const go=()=>{pl.s+=d;pl.e+=d;o.p+=d;o.price=Math.round(o.price*.9);if(rp)custRep(o.cust,rp);toast(d<0?'cash':'bad',`${short1(o.cust)} takes it a period ${d<0?'early':'late'}: ${fmt(-cut)}${rp?`, ${rp} reputation`:''}`);renderSheet();hud();};
+  const go=()=>{pl.s+=d;pl.e+=d;o.p+=d;o.price=Math.round(o.price*.9);if(rp)custRep(o.cust,rp,'you asked them to wait');toast(d<0?'cash':'bad',`${short1(o.cust)} takes it a period ${d<0?'early':'late'}: ${fmt(-cut)}${rp?`, ${rp} reputation`:''}`);renderSheet();hud();};
   if(rp)guardRep([{cust:o.cust,d:rp}],`Asking ${o.cust} to wait costs ${-rp} reputation with them.`,go);else go();
 }
 function shapeHTML(h,g,color,px){return`<span class="shp" style="grid-template-columns:repeat(${g},${px}px)">${`<i style="width:${px}px;height:${px}px;background:${color}"></i>`.repeat(h*g)}</span>`;}
@@ -1488,10 +1544,10 @@ function miniHTML(of){const C=crop(of.crop),f=of.contract?null:forms(of)[0];retu
 function formsHTML(x){
   const fs=forms(x),cur=clamp(x.fm||0,0,fs.length-1),C=crop(x.crop),ms=minStart();
   if(fs.length<2)return{btns:`<div class="forms"><span class="fm on" style="cursor:default">${shapeHTML(fs[0].h,fs[0].g,C.color,11)}<small>Only shape</small></span></div>`,desc:fs[0].d};
-  return{btns:`<div class="forms">${fs.map((f,i)=>`<button type="button" class="fm${i===cur?' on':''}" data-fm="${i}"${x.p-f.g+1<ms?' disabled title="Too late to pot this way"':''}>${shapeHTML(f.h,f.g,C.color,11)}<small>${f.n}</small></button>`).join('')}<button type="button" class="rot" id="rotB" aria-label="Rotate">⟳</button></div>`,desc:fs[cur].d};
+  return{btns:`<div class="forms">${fs.map((f,i)=>`<button type="button" class="fm${i===cur?' on':''}" data-fm="${i}"${x.p-f.g+1<ms?' disabled title="Too late to pot this way"':''}>${shapeHTML(f.h,f.g,C.color,11)}<small>${f.n}</small></button>`).join('')}</div><button type="button" class="rot" id="rotB" aria-label="Rotate shape">${tico('rot',20)}</button>`,desc:fs[cur].d};
 }
 const HOVER=matchMedia('(hover:hover) and (pointer:fine)').matches;
-function refreshPv(){renderBoard();const ro=$('ro');if(ro)ro.innerHTML=readoutHTML();const pg=$('pvGo');if(pg)pg.onclick=confirmPv;}
+function refreshPv(){renderBoard();const ro=$('ro');if(ro)ro.innerHTML=readoutHTML();const pg=$('pvGo');if(pg){pg.onclick=confirmPv;pg.disabled=!(pv&&evalPv(pv.top).ok);}}
 function livePv(e){if(!placing||!sel||!$('modal').hidden||!sheetOpen()||tab!=='orders')return;const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r<0)return;const moved=aimCol(colAt(e.clientX)),t=topFor(sel,r);if(!moved&&pv&&pv.top===t)return;pv={top:t};refreshPv();}
 let slide=null;
 function setForm(i){
@@ -1503,27 +1559,36 @@ function setForm(i){
   renderSheet();
 }
 const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' on credit':''}</button>`;
+const TICO={orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>'};
+const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
 function handHTML(of){
-  const head=`<div class="hc1">${custAv(of.cust,28)}<span class="hcn"><b>${esc(of.cust)}</b>${tierChip(of.cust)}</span></div>`;
+  const T=tierOf(of.cust),head=`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}</div>`;
+  const shapes=x=>{const F=formsHTML(x);return`<div class="r4"><small>Shape</small>${F.btns}</div><p class="fdesc">${F.desc}</p>`;};
   if(of.contract){
     const dl=of.dl,crops=[...new Set(dl.map(d=>d.crop))],cur=placing&&placing.of===of?placing.cur:null,C0=crop(dl[0].crop),lc=lockedCrop(of);
-    return`<div class="hcard" style="--c:#6b4fc8">${head}<div class="hc2"><span class="ctag">Contract · ${of.label}</span>${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}</div>
-    <div class="hc2">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]} · <b>${fmt(offerValue(of)*potM())}</b></div>
-    ${cur?(()=>{const F=formsHTML(cur);return`<div class="hcur"><div class="hmain"><div class="hinfo">Delivery ${placing.k+1} of ${of.n}<br><b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b><div class="hship">Ships ${PN[cur.p].toLowerCase()}</div></div>${F.btns}</div><div class="fdesc">${F.desc}</div></div>`;})():''}${lc?unlockBtn(lc):''}</div>`;
+    return`<div class="hc" style="--c:#6b4fc8;--cs:#ddd3f5">${head}
+    <div class="r2"><span class="ctag">Contract · ${of.label}</span><b class="pr" style="font-size:30px">${fmt(offerValue(of)*potM())}</b></div>
+    <div class="r2" style="flex-wrap:wrap">${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}<small style="color:#4f5c54">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]}</small></div>
+    ${cur?`<div class="cur"><span>Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, ships ${PN[cur.p].toLowerCase()}</span>${shapes(cur)}</div>`:''}${lc?unlockBtn(lc):''}</div>`;
   }
-  const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,F=mine?formsHTML(of):null,f0=forms(of)[0];
-  return`<div class="hcard" style="--c:${C.color}">${of.popup?'<span class="htag">Pop-up</span>':''}${head}
-  <div class="hmain"><div class="hinfo"><span class="crop" style="background:${C.color}">${C.name}</span> <b>${of.qty} flats</b><div class="hval">${fmt(valAt(of,of.p))}</div><div class="hship">${flexible(of)?`Wants it by ${PN[of.p].toLowerCase()}<br>Peak season ${(PEAK[of.crop]||[]).map(p=>PSH[p]).join(', ')}`:`Ships ${PN[of.p].toLowerCase()}`}</div></div>${F?F.btns:`<div class="forms"><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Shape</small></span></div>`}</div>
-  ${F?`<div class="fdesc">${F.desc}</div>`:''}${lk?unlockBtn(of.crop):''}</div>`;
+  const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,f0=forms(of)[0];
+  const info=flexible(of)?`<span>${tico('cal',15)}Wants it by <b>${PN[of.p].toLowerCase()}</b></span><span>${tico('sun',15,'#c98a00')}Peak season <b>${(PEAK[of.crop]||[]).map(p=>PN[p].toLowerCase()).join(', ')}</b></span>`:`<span>${tico('cal',15)}Ships <b>${PN[of.p].toLowerCase()}</b> (fixed date)</span>`;
+  return`<div class="hc" style="--c:${C.color};--cs:${C.color}33">${head}
+  <div class="r2"><span class="crop" style="background:${C.color}">${C.name}</span><b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
+  <div class="r3">${info}</div>
+  ${mine?shapes(of):`<div class="r4"><small>Shape</small><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Standard</small></span></div>`}
+  ${lk?unlockBtn(of.crop):''}</div>`;
 }
 function readoutHTML(){
-  if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`<div class="readout"><span>You don't grow ${crop(lc).name.toLowerCase()} yet. Unlock it, or bin this offer.</span></div>`:'';}
-  if(!pv)return`<div class="readout"><span>${firstFit(sel)<0?`No free spot for this one. ${HOVER?'Point at':'Tap'} the board to swap orders out, or bin it.`:HOVER?'Point at a row on the board to preview it there.':'Tap or slide on the board to preview it.'}</span></div>`;
+  if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`<div class="rd"><span>You don't grow ${crop(lc).name.toLowerCase()} yet. Unlock it, or bin this offer.</span></div>`:'';}
+  if(!pv)return`<div class="rd"><span>${firstFit(sel)<0?`No free spot for this one. ${HOVER?'Point at':'Tap'} the board to swap orders out, or bin it.`:HOVER?'Point at the board to try a spot.':'Tap or slide on the board to try a spot.'}</span></div>`;
   const ev=evalPv(pv.top);
-  if(!ev.ok)return`<div class="readout"><b class="neg">${ev.reason}.</b><span>Tap another row.</span></div>`;
-  const net=ev.gain-ev.loss,reps=ev.rep.map(x=>{const dr=tierDrops([x])[0];return`<span class="rchip">${x.d} with ${esc(short1(x.cust))}${dr?` · to ${dr.to.n}`:''}</span>`;}).join('');
-  const x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd),bd=flexible(x)?`<div class="bd"><span>Ships <b>${PN[dd].toLowerCase()}</b></span><span class="${ke?'dn':''}">${ke?`${ke} period${ke>1?'s':''} early ×${earlyF(ke)}`:'On the customer’s date'}</span><span class="${sf>1.1?'up':sf<1?'dn':''}">${sf>1.1?'Peak season ×1.15':sf<1?'Off season ×0.85':'Near peak season'}</span></div>`:'';
-  return`<div class="readout"><b class="pos">+${fmt(ev.gain)}</b><span>on ${span(pv.top,sel.h)}${S.floors>1?' ('+floorName(Math.floor(pv.top/8)).toLowerCase()+')':''}</span>${ev.gone.length?`<b class="neg">−${fmt(ev.loss)}</b><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''}</span>${reps}<span class="net">Net ${net>=0?'+':''}${fmt(net)}</span>`:''}<button class="btn go" type="button" id="pvGo">Place</button>${bd}</div>`;
+  if(!ev.ok)return`<div class="rd bad"><b style="color:var(--bad)">${ev.reason}.</b><span>Try another spot.</span></div>`;
+  const net=ev.gain-ev.loss,x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd);
+  const chips=[`<span>Ships ${PN[dd].toLowerCase()}</span>`];
+  if(flexible(x)){chips.push(ke?`<span class="dn">${ke} period${ke>1?'s':''} early ×${earlyF(ke)}</span>`:'<span>On the customer’s date ×1.0</span>');chips.push(sf>1.1?'<span class="up">Peak season ×1.15</span>':sf<1?'<span class="dn">Off season ×0.85</span>':'<span>Near peak season</span>');}
+  ev.rep.forEach(r=>{const dr=tierDrops([r])[0];chips.push(`<span class="dn">${r.d} with ${esc(short1(r.cust))}${dr?` · to ${dr.to.n}`:''}</span>`);});
+  return`<div class="rd ok"><div class="big"><b>+${fmt(ev.gain)}</b><span>on benches <b style="font-size:inherit;color:inherit">${span(pv.top,sel.h)}</b>${S.floors>1?' in '+floorName(Math.floor(pv.top/8)).toLowerCase():''}</span>${ev.gone.length?`<span class="neg">−${fmt(ev.loss)}</span><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''} · net ${net>=0?'+':''}${fmt(net)}</span>`:''}</div><div class="chips">${chips.join('')}</div></div>`;
 }
 function tkHTML(of){
   const C=crop(of.crop),h=need(of),g=C.g,st=startOf(of),isSel=sel&&sel.offer===of,lk=!offerOwned(of);
@@ -1548,6 +1613,8 @@ function sortedOffers(list){
   const key=sortBy==='value'?(o=>-offerValue(o)):(o=>startOf(o)*100+o.p);
   return list.slice().sort((a,b)=>(offerOwned(b)-offerOwned(a))||(key(a)-key(b)));
 }
+let lastTab='';
+function nxHTML(of){const C=crop(of.crop),f=of.contract?null:forms(of)[0],col=of.contract?'#6b4fc8':C.color;return`<div class="m">${f?shapeHTML(f.h,f.g,col,8):shapeHTML(1,2,col,8)}<span><b>${of.contract?`Contract ×${of.n}`:`${of.qty} ${C.name.toLowerCase()}`}</b><small>${of.contract?`${[...new Set(of.dl.map(d=>CROPS[d.crop].name))].join(', ')} · from ${PSH[of.dl[0].p]}`:`Due ${PSH[of.p]} · ${fmt(valAt(of,of.p))}`}</small></span></div>`;}
 function renderSheet(){
   const el=$('sheet');if(el.hidden)return;
   const plan=S.phase==='plan',c=S.period;
@@ -1555,22 +1622,29 @@ function renderSheet(){
   if(placing)sel=piece(placing.cur);
   else if(sel&&sel.offer&&!S.offers.includes(sel.offer))sel=null;
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
-  const tabs=`<div class="tabs">${[['orders','Orders'],['cust','Customers'],['crew',`Crew${staffCount()?' · '+staffCount():''}`],['build','Upgrades']].map(([k,l])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}${plan?'':'<span style="flex:1"></span><button class="xbtn" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
+  const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
+  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span><div class="st"><small>${stat[0]}</small><b>${stat[1]}</b></div>${plan?`<button class="go" type="button" id="goB">Start ${PN[c].toLowerCase()}</button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
     const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
         <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Paid in cash</span><b>${fmt(-st.build)}</b>`:''}${st.credit?`<span>Credit bill</span><b>${fmt(-st.credit)}</b>`:''}${st.interest?`<span>Credit interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
     const q=queue(),hof=placing?placing.of:q[0],inQ=placing&&placing.of.contract,peek=(inQ?q:q.slice(1)).slice(0,2),left=q.length+(inQ?1:0);
-    const hand=hof?`<div class="hand">${handHTML(hof)}<div class="hside"><div class="peek"><small>Next up</small>${peek.length?peek.map(miniHTML).join(''):'<span class="mini none">Nothing</span>'}</div><span class="left">${left} offer${left>1?'s':''} left</span><button class="bin" type="button" id="binB">${glyph('bad',14)} Bin</button></div></div><div id="ro">${readoutHTML()}</div>`
-      :`<div class="hand"><div class="hcard empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div></div>`;
-    body=stHTML+`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Pop-up orders'} ${plan?'':'<span class="paused">Paused</span>'}<small>Booked this year: ${fmt(booked())}</small></h2>${lossPill}</div>${hand}
-      ${S.floors>1?`<div class="ftabs">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-bf="${f}" class="${boardF===f?'on':''}">${floorName(f)}${levels()>1?' · '+floorSpan(f):''}</button>`).join('')}</div>`:''}
-      <div class="board" id="board"></div>`;
+    const okNow=placing&&pv&&evalPv(pv.top).ok;
+    const nxt=`<div class="nx"><div class="h"><span>NEXT UP</span><span>${left} offer${left===1?'':'s'} left</span></div><div class="g">${peek.length?peek.map(nxHTML).join(''):'<div class="m"><span><small>Nothing after this one</small></span></div>'}</div></div>`;
+    const leftCol=hof?`${handHTML(hof)}<div id="ro">${readoutHTML()}</div><div class="abtn"><button class="bin2" type="button" id="binB">${tico('bin',18)}Bin</button><button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place order</button></div>${nxt}`
+      :`<div class="hc empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`;
+    const sw=(st,txt)=>`<span><i style="${st}"></i>${txt}</span>`;
+    const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
+    const ft=S.floors>1?`<div class="ftabs">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-bf="${f}" class="${boardF===f?'on':''}">${floorName(f)}${levels()>1?' · '+floorSpan(f):''}</button>`).join('')}</div>`:'';
+    body=`<div class="olay"><div class="ocol">${stHTML}${leftCol}</div><div class="bp"><div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
   }else if(tab==='cust'){
-    body=`<div class="bhead"><h2>Customers<small>Each customer remembers how you treat them. Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier.</small></h2></div>
-      <div class="custs">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,44)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span>${PERK[ti]}</span><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span></div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
-      <p class="hint" style="margin:12px 2px 0;color:var(--mute);font-size:14px">Tiers: Wary from 20, Steady from 40, Loyal from 65, Partner from 85. Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</p>`;
+    const log=(S.repLog||[]).slice(-7).reverse();
+    body=`<div class="bhead"><h2>Your customers<small>Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier.</small></h2></div>
+      <div class="cl"><div class="cg">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,46)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span><span>${PERK[ti]}</span></div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
+      <div class="cs"><div class="panel"><b>Tiers</b>${TIERS.slice().reverse().map((t,k)=>`<div class="tierrow"><span class="tchip" style="background:${t.c}">${t.n}</span>${PERK[4-k]} · from ${t.min}</div>`).join('')}</div>
+      <div class="panel"><b>Last period</b>${log.length?log.map(e=>{const d=Math.round(e.d);return`<div class="lg"><b class="${d>0?'p':d<0?'n':''}">${d>0?'+':''}${d}</b><span>${esc(short1(e.n))}: ${esc(e.why)}</span></div>`;}).join(''):'<span style="font-size:14px;color:var(--mute)">No changes yet. Ship some trucks!</span>'}<span style="background:#f6f3ea;border-radius:12px;padding:10px 12px;font-size:13px;color:#33463a">Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</span></div></div></div>`;
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
       <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
@@ -1590,7 +1664,9 @@ function renderSheet(){
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
-  el.innerHTML=tabs+body+`<div class="bfoot"><span class="hint">${hint}</span>${plan?`<button class="btn sun" type="button" id="goB">Start ${PN[c].toLowerCase()}</button>`:''}</div>`;
+  const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
+  el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}<div class="bfoot"><span class="hint">${hint}</span></div></div></div><div class="bzl">GREENHOUSE YEAR</div>`;
+  if(keep)$('scr').scrollTop=keep;
   if(tab==='orders'&&$('board'))renderBoard();
   el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(placing)cancelPlacing(true);tab=b.dataset.tab;sel=null;renderSheet();});
   el.querySelectorAll('[data-ov]').forEach(b=>b.onclick=()=>{ordersView=b.dataset.ov;sel=null;ghostRow=-1;renderSheet();});
@@ -1644,7 +1720,7 @@ function buildFloor(){
   layout();tab='orders';renderSheet();hud();
 }
 function boardMetrics(){
-  const W=$('board').parentElement.clientWidth,lab=30,cw=Math.min(62,(W-lab)/8),rh=Math.max(34,Math.round(cw)),hh=placing&&flexible(placing.cur)?50:28;
+  const bw=$('board').parentElement.clientWidth,W=bw>=640?bw-176:bw,lab=30,cw=Math.min(62,(W-lab)/8),rh=Math.max(34,Math.round(cw)),hh=placing&&flexible(placing.cur)?50:28;
   return{W,lab,cw,rh,hh,H:hh+rh*8};
 }
 function blkInner(wide,text){return`${wide?`<span class="bi">${glyph('pot',15)}</span>`:''}<span class="bt">${text}</span>${wide?`<span class="bi">${glyph('load',15)}</span>`:''}`;}
