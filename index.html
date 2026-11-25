@@ -381,6 +381,32 @@ button{font:inherit;color:inherit;cursor:pointer}
 .panel{background:#fff;border:2px solid #ebe6d8;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:9px}.panel>b{font-size:16px}
 .tierrow{display:flex;align-items:center;gap:10px;font-size:13px;color:#33463a}.tierrow .tchip{width:70px;text-align:center;font-size:13px;padding:3px 0}
 .lg{display:flex;align-items:center;gap:10px;font-size:14px}.lg b{width:34px}.lg .p{color:var(--go)}.lg .n{color:var(--bad)}
+
+.hstrip{position:fixed;left:8px;right:8px;z-index:5;display:flex;gap:6px;justify-content:center;pointer-events:none}
+.hstrip button{pointer-events:auto;position:relative;min-width:46px;height:44px;border:0;border-radius:14px;background:rgba(23,52,38,.88);color:#fff;font:700 16px Outfit,sans-serif;padding:0 10px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.hstrip button.on{background:#faf7ef;color:#16231b;box-shadow:0 0 0 3px #173426}
+.hstrip button small{display:block;font-size:10px;font-weight:600;opacity:.75;line-height:1;margin-top:-2px}
+.hstrip button .n{position:absolute;top:-7px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:#5d6b62;color:#fff;font-size:12px;display:grid;place-items:center;padding:0 5px}
+.hstrip button .n.hot{background:#e2552f}
+
+.pbar{background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:18px;padding:8px 10px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.pb1{display:flex;align-items:center;gap:8px;border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;width:100%;cursor:pointer;min-height:32px}
+.pb1 .crop{color:#fff;font-weight:700;font-size:13px;border-radius:8px;padding:2px 8px;flex:none}.pb1 .q{font-weight:700;font-size:15px;white-space:nowrap}
+.pb1 .due{font-size:12px;color:#5d6b62;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pb1 .pr{margin-left:auto;font-size:22px;font-weight:800;flex:none}.pb1 .chev{flex:none;width:28px;height:28px;border-radius:50%;background:#f1eee5;display:grid;place-items:center;font-size:13px;transition:transform .2s}
+.pb1[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.pb2{display:flex;align-items:center;gap:6px}.pb2 .forms{gap:5px}.pb2 .fm{padding:5px 7px;min-width:0;border-radius:10px}.pb2 .fm small{display:none}
+.pb2 .rot{width:40px;height:40px;border-radius:50%;padding:0;display:grid;place-items:center}
+.pb2 .nxt{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:#5d6b62;font-weight:700;white-space:nowrap}
+.pb2 .unl{flex:1;border:0;border-radius:10px;background:var(--sun);color:#2b2104;font-weight:700;font-size:14px;padding:9px 6px}
+.drw{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.drw .hc{box-shadow:none}
+.dock{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-top:2px solid var(--line)}
+.dro{flex:1;min-width:0;font-size:13px;line-height:1.25;color:#33463a}.dro b{font-size:20px;color:var(--go)}.dro .bad{color:var(--bad);font-weight:700}.dro .dn{color:var(--bad)}.dro .up{color:#7a5600;font-weight:700}
+.dock .bin2{display:grid;place-items:center;border:0;height:50px;width:50px;padding:0;border-radius:14px;background:#3b2f2a;color:#fff;cursor:pointer}.dock .place{flex:none;border:0;height:50px;padding:0 22px;font:700 17px Outfit,sans-serif;border-radius:14px;background:var(--go);color:#fff;box-shadow:0 4px 0 #1f5c36;cursor:pointer}.dock .place:disabled{background:#b9c7bd;box-shadow:none}
+@media (max-width:860px){.ttop .go .lng{display:none}}
+.coach{background:#173426;color:#fff;border-radius:12px;padding:8px 10px 8px 14px;font-size:14px;display:flex;align-items:center;gap:10px;line-height:1.3}
+.coach button{flex:none;border:0;border-radius:9px;background:var(--sun);color:#2b2104;font-weight:700;padding:7px 12px}
 </style>
 </head>
 <body>
@@ -395,6 +421,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <div class="seg" id="speed"><button type="button" data-s="1" class="on">1x</button><button type="button" data-s="1.5">1.5x</button></div>
 </header>
 <div class="toasts" id="toasts"></div>
+<div class="hstrip" id="hstrip" hidden></div>
 <div class="floors" id="floors" hidden><button type="button" id="fUp" aria-label="Floor up">▲<span class="n"></span></button><b id="fLab">Floor<big>1</big></b><button type="button" id="fDn" aria-label="Floor down">▼<span class="n"></span></button></div>
 <footer class="tray" id="tray">
   <div class="lane"><span class="who">YOU</span><div class="cards" id="qMe"></div></div>
@@ -860,7 +887,7 @@ function enqueue(t){
 
 // ---------------- period flow ----------------
 function startPeriod(){
-  const c=S.period;S.repLog=[];S.phase='run';S.t=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.phase='run';S.t=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(12).fill(false);S.dmgT=Array(12).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
@@ -892,9 +919,9 @@ function fire(e){
   if(e.k==='thirst'){const pl=S.plots.find(p=>p.id===e.plot);if(pl&&!pl.done&&pl.potted.some(Boolean)&&rnd()<[0,.35,.6][upLv('boom')]){boomT[plotF(pl)]=performance.now();float(BENCH[pl.rows[0]],'Boom watered','#2a78d0');return;}if(pl&&!pl.done&&pl.potted.some(Boolean)&&!S.tasks.some(t=>t.type==='water'&&t.plot===pl.id))addTask({type:'water',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),due:S.t+18*(1+.25*upLv('hose'))});}
   if(e.k==='pest'){
     const opts=[];S.plots.filter(pl=>!pl.done&&pl.s<=c&&plotF(pl)===e.f).forEach(pl=>pl.rows.forEach((r,k)=>{if(pl.potted[k]&&!S.tasks.some(t=>t.type==='pest'&&t.bench===r))opts.push([pl,r]);}));
-    if(opts.length){const [pl,r]=pick(opts);addTask({type:'pest',bench:r,plot:pl.id,due:S.t+24});toast('pest',`Pests on bench ${benchName(r)}`);}
+    if(opts.length){const [pl,r]=pick(opts);addTask({type:'pest',bench:r,plot:pl.id,due:S.t+24});toast('pest',`Pests on bench ${benchName(r)}`,()=>jumpTo(Math.floor(r/8)));}
   }
-  if(e.k==='break'&&!S.broken[e.f]){S.broken[e.f]=true;S.dmgT[e.f]=0;addTask({type:'fix',f:e.f,due:S.t+20});toast('fix',`${unitName(c)} down${S.floors>1?' in house '+(e.f+1):''}`);}
+  if(e.k==='break'&&!S.broken[e.f]){S.broken[e.f]=true;S.dmgT[e.f]=0;addTask({type:'fix',f:e.f,due:S.t+20});toast('fix',`${unitName(c)} down${S.floors>1?' in house '+(e.f+1):''}`,()=>jumpTo(e.f));}
   if(e.k==='popup')genPopup();
 }
 function hurt(pl,r,frac,min){const k=pl.rows.indexOf(r);if(k<0||!pl.potted[k])return 0;const n=Math.min(pl.alive[k],Math.max(min||0,Math.round(pl.alive[k]*frac)));pl.alive[k]-=n;return n;}
@@ -911,7 +938,7 @@ function tick(dt){
       t.born=S.t;t.due=S.t+24;
       const f=BENCH[t.bench].f;
       const nb=S.plots.filter(p=>!p.done&&plotF(p)===f).flatMap(p=>p.rows.filter((r,k)=>p.potted[k]&&Math.abs(r-t.bench)<=2&&r!==t.bench&&!S.tasks.some(x=>x.type==='pest'&&x.bench===r)).map(r=>[p,r]));
-      if(nb.length&&rnd()<[1,.6,.35][upLv('bugs')]){const [p2,r2]=pick(nb);addTask({type:'pest',bench:r2,plot:p2.id,due:S.t+24});toast('pest',`Pests spread to ${benchName(r2)}`);}
+      if(nb.length&&rnd()<[1,.6,.35][upLv('bugs')]){const [p2,r2]=pick(nb);addTask({type:'pest',bench:r2,plot:p2.id,due:S.t+24});toast('pest',`Pests spread to ${benchName(r2)}`,()=>jumpTo(Math.floor(r2/8)));}
     }
   }
   for(let f=0;f<S.floors;f++)if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
@@ -986,15 +1013,18 @@ const cv=$('cv'),cx=cv.getContext('2d');
 let DPR=1,VW=0,VH=0,sc=1,ox=0,oy=0,iconR=26,TW=64,TH=32;
 const FH=72;let camZ=0,viewTop=0,viewBot=0;
 const P=(x,y,z=0)=>[ox+(x-y)*TW/2*sc,oy+(x+y)*TH/2*sc-(z-camZ)*sc];
+let focusH=0,focusHint=false;
+const focusMode=()=>!!S&&S.floors>1&&VH>VW*1.2&&VW<700;
 function layout(){
   DPR=Math.min(2,devicePixelRatio||1);VW=innerWidth;VH=innerHeight;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);
-  const top=$('hud').offsetHeight+16,bot=$('tray').offsetHeight+8,tall=VH>VW*1.2,side=S&&S.floors>4&&!tall?84:0;
+  const top=$('hud').offsetHeight+16+(focusMode()?54:0),bot=$('tray').offsetHeight+8,tall=VH>VW*1.2,side=S&&S.floors>4&&!tall?84:0;
   TW=64;TH=32;
   const pts=[[2.5,-2.7,40],[7.5,-2.7,40]];
-  for(const H of HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))))pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
+  const fm=focusMode()&&focusH>=0&&focusH<S.floors;
+  for(const H of fm?[HOUSES[focusH]]:HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))))pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   for(const [x,y,z] of pts){const X=(x-y)*TW/2,Y=(x+y)*TH/2-z;x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
-  sc=clamp(Math.min((tall?VW*(S&&S.floors>1?1.12:1.3):VW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6);
+  sc=clamp(Math.min((tall?VW*(S&&S.floors>1&&!fm?1.12:1.3):VW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6);
   ox=VW/2-(x0+x1)/2*sc;oy=top+(VH-top-bot)/2-(y0+y1)/2*sc;
   iconR=clamp(15*sc+12,S&&S.floors>1?21:24,34);viewTop=top;viewBot=VH-bot;
   const fl=$('floors');fl.style.top=(tall?VH-bot-188:top+(VH-top-bot)/2-100)+'px';
@@ -1268,7 +1298,8 @@ function drawIcons(){
   const r=iconR,items=[],load=S.tasks.find(t=>t.type==='load');
   if(load){const p=P(4.5,-1,70);items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:'load',t:load,tasks:[load],n:S.trucks.filter(k=>k.state==='line'||k.state==='dock').length});}
   const group=sc<.6&&S.floors>1,groups={},left=t=>t.due!=null?(t.due-S.t)/(t.due-t.born):9;
-  for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF).sort((a,b)=>a.id-b.id)){
+  const fOnly=focusMode()&&focusH>=0;
+  for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF&&(!fOnly||taskF(t)===focusH)).sort((a,b)=>a.id-b.id)){
     const p=t.type==='fix'?P(unitOf(t.f).x+.5,unitOf(t.f).y+.5,80+ZB()):P(BENCH[t.bench].x+1.5,BENCH[t.bench].y+.5,70+ZB());
     if(group){const key=taskF(t)+t.type,g=groups[key]||(groups[key]={sx:0,sy:0,k:t.type,tasks:[]});g.sx+=p[0];g.sy+=p[1];g.tasks.push(t);continue;}
     items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:t.type,t,tasks:[t]});
@@ -1370,7 +1401,8 @@ function hud(){
   renderFloors();
 }
 function renderFloors(){
-  const el=$('floors');el.hidden=levels()<2;if(viewF>=levels())viewF=levels()-1;if(el.hidden)return;
+  renderStrip();
+  const el=$('floors');el.hidden=levels()<2||focusMode();if(viewF>=levels())viewF=levels()-1;if(el.hidden)return;
   const cnt=(lo,hi)=>{const ts=S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))>=lo&&lvOf(taskF(t))<=hi);return{n:ts.length,hot:ts.some(t=>t.due!=null&&!engaged(t)&&(t.due-S.t)<(t.due-t.born)*.35)};};
   const up=cnt(viewF+1,9),dn=cnt(0,viewF-1);
   $('fUp').disabled=viewF>=levels()-1;$('fDn').disabled=viewF<=0;
@@ -1378,6 +1410,22 @@ function renderFloors(){
   nu.textContent=up.n||'';nu.classList.toggle('hot',up.hot);nd.textContent=dn.n||'';nd.classList.toggle('hot',dn.hot);
   $('fLab').innerHTML=`Floor<big>${viewF+1}</big>`;
 }
+let stripSig='';
+function houseLoad(h){const ts=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===h);return{n:ts.length,hot:ts.some(t=>t.due!=null&&!engaged(t)&&(t.due-S.t)<(t.due-t.born)*.35)};}
+function renderStrip(){
+  const el=$('hstrip'),on=focusMode()&&!sheetOpen();el.hidden=!on;if(!on){stripSig='';return;}
+  el.style.top=($('hud').offsetHeight+8)+'px';
+  const items=[{h:-1,lab:'All',n:0,hot:false},...HOUSES.slice(0,S.floors).map(H=>({h:H.h,lab:H.h+1,sub:H.L?'F'+(H.L+1):'',...houseLoad(H.h)}))];
+  const sig=focusH+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
+  el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:''}</button>`).join('');
+  el.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>focusHouse(+b.dataset.fh));
+}
+function focusHouse(h){
+  if(!S||h>=S.floors)return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
+  stripSig='';layout();renderFloors();
+}
+function jumpTo(h){if(focusMode()&&focusH!==h&&h>=0)focusHouse(h);else if(lvOf(h)!==viewF)setFloor(lvOf(h));}
+function maybeHint(){if(focusHint||!S||S.floors<3||!(VH>VW*1.2&&VW<700))return;focusHint=true;toast('floor','Tip: turn your phone sideways to see all your greenhouses at once');}
 function setFloor(f){f=clamp(f,0,levels()-1);if(f===viewF)return;viewF=f;renderFloors();if(sheetOpen()&&lvOf(boardF)!==viewF){boardF=viewF*4;renderSheet();}}
 $('fUp').onclick=()=>setFloor(viewF+1);$('fDn').onclick=()=>setFloor(viewF-1);
 addEventListener('keydown',e=>{if((e.key==='r'||e.key==='R')&&placing&&sheetOpen()){setForm();return;}if(e.key==='ArrowUp'||e.key==='PageUp')setFloor(viewF+1);if(e.key==='ArrowDown'||e.key==='PageDown')setFloor(viewF-1);});
@@ -1404,7 +1452,7 @@ function renderTray(){
 $('tray').addEventListener('click',e=>{
   const x=e.target.closest('[data-x]');if(x){const t=S.tasks.find(t=>t.id==x.dataset.x);if(t){S.queue=S.queue.filter(q=>q!==t);if(me.task===t){me.task=null;me.path=[];}}return;}
   const av=e.target.closest('#qC .av');if(av){crewPop=crewPop===av.dataset.w?null:av.dataset.w;renderCrewPop();return;}
-  const c=e.target.closest('#qMe .card');if(c){const t=S.tasks.find(t=>t.id==c.dataset.id);if(t){enqueue(t);if(t.type!=='load'&&lvOf(taskF(t))!==viewF)setFloor(lvOf(taskF(t)));}}
+  const c=e.target.closest('#qMe .card');if(c){const t=S.tasks.find(t=>t.id==c.dataset.id);if(t){enqueue(t);if(t.type!=='load')jumpTo(taskF(t));}}
 });
 let crewPop=null;
 function renderCrewPop(){
@@ -1541,6 +1589,7 @@ function evalPv(top){
 }
 function boardTap(r,c){
   if(!placing||r<0)return;
+  if(!S.coached){S.coached=1;const cm=$('coach');if(cm)cm.remove();}
   const inRows=pv&&r>=pv.top&&r<pv.top+sel.h,changed=c!=null&&c>=0?aimCol(c):false;
   if(inRows&&!changed){confirmPv();return;}
   pv={top:topFor(sel,r)};renderSheet();
@@ -1596,7 +1645,7 @@ function setForm(i){
 const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' on credit':''}</button>`;
 const TICO={orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>'};
 const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
-function handHTML(of){
+function handHTML(of,noShapes){
   const T=tierOf(of.cust),head=`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}</div>`;
   const shapes=x=>{const F=formsHTML(x);return`<div class="r4"><small>Shape</small>${F.btns}</div><p class="fdesc">${F.desc}</p>`;};
   if(of.contract){
@@ -1604,17 +1653,38 @@ function handHTML(of){
     return`<div class="hc" style="--c:#6b4fc8;--cs:#ddd3f5">${head}
     <div class="r2"><span class="ctag">Contract · ${of.label}</span><b class="pr" style="font-size:30px">${fmt(offerValue(of)*potM())}</b></div>
     <div class="r2" style="flex-wrap:wrap">${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}<small style="color:#4f5c54">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]}</small></div>
-    ${cur?`<div class="cur"><span>Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, ships ${PN[cur.p].toLowerCase()}</span>${shapes(cur)}</div>`:''}${lc?unlockBtn(lc):''}</div>`;
+    ${cur?`<div class="cur"><span>Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, ships ${PN[cur.p].toLowerCase()}</span>${noShapes?'':shapes(cur)}</div>`:''}${lc&&!noShapes?unlockBtn(lc):''}</div>`;
   }
   const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,f0=forms(of)[0];
   const info=flexible(of)?`<span>${tico('cal',15)}Wants it by <b>${PN[of.p].toLowerCase()}</b></span><span>${tico('sun',15,'#c98a00')}Peak season <b>${(PEAK[of.crop]||[]).map(p=>PN[p].toLowerCase()).join(', ')}</b></span>`:`<span>${tico('cal',15)}Ships <b>${PN[of.p].toLowerCase()}</b> (fixed date)</span>`;
   return`<div class="hc" style="--c:${C.color};--cs:${C.color}33">${head}
   <div class="r2"><span class="crop" style="background:${C.color}">${C.name}</span><b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
   <div class="r3">${info}</div>
-  ${mine?shapes(of):`<div class="r4"><small>Shape</small><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Standard</small></span></div>`}
-  ${lk?unlockBtn(of.crop):''}</div>`;
+  ${mine&&noShapes?'':mine?shapes(of):`<div class="r4"><small>Shape</small><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Standard</small></span></div>`}
+  ${lk&&!noShapes?unlockBtn(of.crop):''}</div>`;
+}
+let drawer=false;
+const isPhone=()=>innerWidth<=860;
+function pbarHTML(of,peek,left){
+  const x=placing?placing.cur:null,C=crop((x||of).crop),col=of.contract?'#6b4fc8':C.color,lc=lockedCrop(of);
+  const l1=of.contract?`<span class="crop" style="background:#6b4fc8">Contract ×${of.n}</span><span class="due">${x?`Delivery ${placing.k+1}: ${x.qty} ${C.name.toLowerCase()}, ship ${PSH[x.p]}`:esc(short1(of.cust))}</span><b class="pr">${fmt(offerValue(of)*potM())}</b>`
+    :`<span class="crop" style="background:${C.color}">${C.name}</span><span class="q">${of.qty}</span><span class="due">${flexible(of)?'by':'ships'} ${PSH[of.p]} · ${esc(short1(of.cust))}</span><b class="pr">${fmt(valAt(of,of.p))}</b>`;
+  const nx=`<span class="nxt">${peek.map(o=>{const f=o.contract?null:forms(o)[0],c2=o.contract?'#6b4fc8':crop(o.crop).color;return f?shapeHTML(f.h,f.g,c2,6):shapeHTML(1,2,c2,6);}).join('')}${left} left</span>`;
+  const l2=lc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${crop(lc).name.toLowerCase()} ${fmt(GEN[lc])}</button>${nx}`:x?`${formsHTML(x).btns}${nx}`:nx;
+  return`<div class="pbar" style="--c:${col}"><button type="button" class="pb1" id="pbT" aria-expanded="${drawer}">${l1}<span class="chev">▾</span></button><div class="pb2">${l2}</div></div>`;
+}
+function dockRO(){
+  if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`Unlock ${crop(lc).name.toLowerCase()}, or bin this offer.`:'';}
+  if(!pv)return firstFit(sel)<0?'No free spot. Tap the board to swap orders out.':'Tap or slide on the board to try a spot.';
+  const ev=evalPv(pv.top);if(!ev.ok)return`<span class="bad">${ev.reason}.</span>`;
+  const x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd),bits=[`${span(pv.top,sel.h)}${S.floors>1?' · H'+(Math.floor(pv.top/8)+1):''}`,`ships ${PSH[dd]}`];
+  if(flexible(x)){if(ke)bits.push(`<span class="dn">${ke} early ×${earlyF(ke)}</span>`);if(sf>1.1)bits.push('<span class="up">peak ×1.15</span>');else if(sf<1)bits.push('<span class="dn">off season ×0.85</span>');}
+  if(ev.gone.length)bits.push(`<span class="dn">bumps ${ev.gone.length} (−${fmt(ev.loss)})</span>`);
+  ev.rep.forEach(r=>bits.push(`<span class="dn">${r.d} ${esc(short1(r.cust))}</span>`));
+  return`<b>+${fmt(ev.gain)}</b><br>${bits.join(' · ')}`;
 }
 function readoutHTML(){
+  if(isPhone())return dockRO();
   if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`<div class="rd"><span>You don't grow ${crop(lc).name.toLowerCase()} yet. Unlock it, or bin this offer.</span></div>`:'';}
   if(!pv)return`<div class="rd"><span>${firstFit(sel)<0?`No free spot for this one. ${HOVER?'Point at':'Tap'} the board to swap orders out, or bin it.`:HOVER?'Point at the board to try a spot.':'Tap or slide on the board to try a spot.'}</span></div>`;
   const ev=evalPv(pv.top);
@@ -1659,8 +1729,8 @@ function renderSheet(){
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
   const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
   const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
-  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span><div class="st"><small>${stat[0]}</small><b>${stat[1]}</b></div>${plan?`<button class="go" type="button" id="goB">Start ${PN[c].toLowerCase()}</button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
-  let body='';
+  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span><div class="st"><small>${stat[0]}</small><b>${stat[1]}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
     const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
@@ -1673,7 +1743,13 @@ function renderSheet(){
     const sw=(st,txt)=>`<span><i style="${st}"></i>${txt}</span>`;
     const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
     const ft=S.floors>1?`<div class="ftabs">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-bf="${f}" class="${boardF===f?'on':''}">${floorName(f)}${levels()>1?' · '+floorSpan(f):''}</button>`).join('')}</div>`:'';
-    body=`<div class="olay"><div class="ocol">${stHTML}${leftCol}</div><div class="bp"><div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
+    const coach=!S.coached&&placing?`<div class="coach" id="coach"><span>${HOVER?'Move across':'Tap or slide on'} the board to try spots. Each square is one bench for one period.</span><button type="button" id="coachX">Got it</button></div>`:'';
+    if(isPhone()){
+      body=(hof?pbarHTML(hof,peek,left):`<div class="hc empty" style="margin-bottom:8px"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`)
+        +(drawer&&hof?`<div class="drw">${handHTML(hof,true)}${nxt}${stHTML}<div>${lossPill}</div>${legend}</div>`:'')
+        +`<div class="bp">${coach}${ft?`<div class="bh">${ft}</div>`:''}<div class="bwrap"><div class="board" id="board"></div></div></div>`;
+      dock=hof?`<div class="dock"><div class="dro" id="ro">${dockRO()}</div><button class="bin2" type="button" id="binB" aria-label="Bin this offer">${tico('bin',18)}</button><button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place</button></div>`:'';
+    }else body=`<div class="olay"><div class="ocol">${stHTML}${leftCol}</div><div class="bp">${coach}<div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
   }else if(tab==='cust'){
     const log=(S.repLog||[]).slice(-7).reverse();
     body=`<div class="bhead"><h2>Your customers<small>Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier.</small></h2></div>
@@ -1700,7 +1776,7 @@ function renderSheet(){
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
   const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
-  el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}<div class="bfoot"><span class="hint">${hint}</span></div></div></div><div class="bzl">GREENHOUSE YEAR</div>`;
+  el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}${dock?'':`<div class="bfoot"><span class="hint">${hint}</span></div>`}</div>${dock}</div><div class="bzl">GREENHOUSE YEAR</div>`;
   if(keep)$('scr').scrollTop=keep;
   if(tab==='orders'&&$('board'))renderBoard();
   el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(placing)cancelPlacing(true);tab=b.dataset.tab;sel=null;renderSheet();});
@@ -1708,6 +1784,8 @@ function renderSheet(){
   const plx=$('plX');if(plx)plx.onclick=()=>cancelPlacing();
   el.querySelectorAll('[data-bf]').forEach(b=>b.onclick=()=>{boardF=+b.dataset.bf;viewF=lvOf(boardF);renderFloors();ghostRow=-1;if(placing){const f=firstFitOn(sel,boardF);pv=f<0?null:{top:f};}renderSheet();});
   const bn=$('binB');if(bn)bn.onclick=binHand;
+  const pbt=$('pbT');if(pbt)pbt.onclick=()=>{drawer=!drawer;renderSheet();};
+  const cx2=$('coachX');if(cx2)cx2.onclick=()=>{S.coached=1;save();renderSheet();};
   el.querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>setForm(+b.dataset.fm));const rb=$('rotB');if(rb)rb.onclick=()=>setForm();
   const pg=$('pvGo');if(pg)pg.onclick=confirmPv;
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
@@ -1749,7 +1827,7 @@ function buildFloor(){
   if(S.phase!=='plan'||S.floors>=MAXF)return;
   const cost=FLOOR_COST[S.floors];
   if(!spend(cost,floorName(S.floors)))return;
-  S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;
+  S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;focusH=S.floors-1;
   for(let i=0;i<2;i++){const cand=candidates(S.period,S.period,S.period+2);if(cand.length)S.offers.push(mkOffer(wpick(cand)));}
   toast('floor',`${floorName(S.floors-1)} is open (${levelName(lvOf(S.floors-1))})`);
   layout();tab='orders';renderSheet();hud();
@@ -1926,7 +2004,7 @@ function frame(now){
 }
 let lite='';
 function renderSheetLite(){const sig=S.offers.map(o=>o.id).join(',');if(sig!==lite){lite=sig;if(tab==='orders')renderSheet();}}
-addEventListener('resize',()=>{layout();if(sheetOpen()&&tab==='orders')renderBoard();});
+addEventListener('resize',()=>{layout();renderFloors();if(sheetOpen())renderSheet();});
 function boot(){
   S=load();
   if(!S){fresh();genOffers();}
