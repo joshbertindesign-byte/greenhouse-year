@@ -8,9 +8,15 @@ Open `index.html` in a browser, or turn on GitHub Pages for this repo (Settings 
 
 ## How it plays
 
-- **Office computer:** order offers, accepted orders, customer goodwill, hiring growers, and the books.
-- **Plots:** plan an offer's plot at the computer, then place it on a greenhouse bench. Placing it accepts the order, and it only fits if those bench spots are free for its weeks.
-- **Control panels:** each house has heater, vents, fans and wet wall, shade cloth, irrigation and beneficial insects, plus a live forecast chart and pest spraying.
+- **Tablet** (top button or T): order offers and accepted orders, a tab for each greenhouse with its switches and live forecast, crew, customers and the books. Settings apply instantly; no walking needed.
+- **Plots:** pick an offer on the tablet, then drop its plot on a greenhouse bench. Placing it accepts the order, and it only fits if those bench spots are free for its weeks.
+- **Hands-on tasks:** bubbles pop up in the yard. Tap them to add them to your to-do list and your grower runs over and does them:
+  - pot plots on their start week
+  - load trucks before the week ends (unloaded trucks leave empty)
+  - spray (two products; rotate them to avoid resistance)
+  - fix breakdowns (heater, vents, fans, shade cloth, irrigation)
+  - clear old or overgrown stock off the benches
+- **Crew:** hired growers pick up tasks in the houses and roles you assign them.
 - **Lots for sale:** build more greenhouses. Each one has its own quirk.
 - **Time:** about 15 seconds per week at 1x, with pause (space bar) and 2x or 4x speed.
 

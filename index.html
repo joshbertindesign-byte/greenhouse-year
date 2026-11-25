@@ -49,10 +49,17 @@ canvas{display:block;touch-action:none;cursor:pointer}
 .toast.good{border-color:var(--leaf)}
 .holding{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:14;background:var(--bg);border:2px solid var(--sun);border-radius:16px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;width:min(94%,640px);box-shadow:0 4px 0 rgba(0,0,0,.15)}
 .holding p{margin:0;font-size:14px;flex:1;min-width:14em}
-.alerts{position:absolute;left:12px;bottom:12px;z-index:12;display:flex;flex-direction:column;gap:6px;max-width:min(70%,340px)}
+.alerts{position:absolute;left:12px;top:12px;z-index:12;display:flex;flex-direction:column;gap:6px;max-width:min(70%,340px)}
 .alerts button{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px;text-align:left;display:flex;gap:8px;align-items:center}
 .alerts button.alert{border-color:var(--terra)}
 .alerts i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-weight:700;font-size:13px;color:#fff;flex:none}
+.queue{position:absolute;left:12px;bottom:12px;z-index:12;display:flex;flex-wrap:wrap;gap:6px;max-width:min(80%,560px);align-items:center}
+.queue b{font-size:13px;color:#fff;background:rgba(20,51,38,.85);border-radius:999px;padding:4px 10px}
+.queue button{background:var(--bg);border:2px solid var(--sun);border-radius:12px;padding:5px 10px;font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center}
+.queue button.now{background:#fff7d6}
+.queue button i{font-style:normal;color:var(--mute)}
+.hb.tab{background:#2c4d3c;border-color:#2c4d3c;position:relative}
+.hb .n{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;background:var(--terra);color:#fff;font-size:11px;margin-left:6px;padding:0 4px}
 .zoom{position:absolute;right:12px;bottom:12px;z-index:12;display:flex;flex-direction:column;gap:6px}
 .zoom button{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-size:20px;font-weight:600}
 .modal{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(8,20,14,.32)}
@@ -167,7 +174,7 @@ tr.off td{opacity:.45}
 .how li{background:var(--panel);border-radius:12px;padding:10px 12px;font-size:14px}
 .how b{display:block;font:600 16px/1.2 Outfit,sans-serif;margin-bottom:2px}
 @media(max-width:760px){.pnl,.rgrid{grid-template-columns:minmax(0,1fr)}.gauges{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.alerts{flex-direction:row;flex-wrap:wrap;max-width:70%}.alerts button{padding:6px}.alerts .at{display:none}.alerts i{width:26px;height:26px}.toast{font-size:13px;padding:6px 10px}.hud{gap:6px 10px;padding:6px 10px}.brand{display:none}.stat{padding:2px 8px}.stat b{font-size:15px}.date b{font-size:16px}.pips i{width:11px}.ctl{margin-left:0}.hb{min-height:38px}.modal{align-items:flex-end;padding:0}.sheet{border-radius:18px 18px 0 0;max-height:88%}.alerts{max-width:62%}.holding{bottom:10px;left:10px;transform:none;width:calc(100% - 76px)}}
+@media(max-width:600px){.queue{bottom:64px;max-width:calc(100% - 76px)}.queue b{display:none}.alerts{flex-direction:row;flex-wrap:wrap;max-width:70%}.alerts button{padding:6px}.alerts .at{display:none}.alerts i{width:26px;height:26px}.toast{font-size:13px;padding:6px 10px}.hud{gap:6px 10px;padding:6px 10px}.brand{display:none}.stat{padding:2px 8px}.stat b{font-size:15px}.date b{font-size:16px}.pips i{width:11px}.ctl{margin-left:0}.hb{min-height:38px}.modal{align-items:flex-end;padding:0}.sheet{border-radius:18px 18px 0 0;max-height:88%}.alerts{max-width:62%}.holding{bottom:10px;left:10px;transform:none;width:calc(100% - 76px)}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 </style>
 </head>
@@ -183,6 +190,7 @@ tr.off td{opacity:.45}
       <div class="stat"><span>Goodwill</span><b id="hGw">0</b></div>
     </div>
     <div class="ctl">
+      <button class="hb tab" id="bTab" type="button">Tablet<span class="n" id="tabN" hidden></span></button>
       <button class="hb play" id="bPlay" type="button">Play</button>
       <div class="seg2" id="speed"><button type="button" data-sp="1">1x</button><button type="button" data-sp="2">2x</button><button type="button" data-sp="4">4x</button></div>
     </div>
@@ -191,6 +199,7 @@ tr.off td{opacity:.45}
     <canvas id="cv" aria-label="Your nursery yard. Click or tap to walk."></canvas>
     <div class="toasts" id="toasts" aria-live="polite"></div>
     <div class="alerts" id="alerts"></div>
+    <div class="queue" id="queue"></div>
     <div class="zoom"><button type="button" id="zIn" aria-label="Zoom in">+</button><button type="button" id="zOut" aria-label="Zoom out">&minus;</button></div>
     <div class="holding" id="holding" hidden></div>
     <div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mTitle"><div class="shead"><h2 id="mTitle"></h2><button class="mini" type="button" id="mClose">Close</button><nav class="tabs" id="mTabs"></nav></div><div class="sbody" id="mBody"></div></div></div>
@@ -300,8 +309,9 @@ function moisture(t,sw){
   const dry=Math.max(0,.85-ratio),wet=Math.max(0,ratio-1.3);
   return{dry,wet,label:dry>0?'Dry':wet>0?'Soggy':'Good'};
 }
+const effSw=h=>{const b=h.broken||{},s={...h.sw};if(b.heat)s.heat=0;if(b.cool)s.cool=0;if(b.shade)s.shade=0;if(b.water)s.water=0;if(b.vent)s.vent=h.ventStuck||0;return s;};
 const heatCost=(h,out)=>(h.sw.heat===1?12+Math.max(0,60-out)*1.6:h.sw.heat===2?25+Math.max(0,70-out)*2.6:0)*h.heatMul*K;
-const weekCost=(h,out)=>heatCost(h,out)+((h.sw.cool?40:0)+(h.sw.bugs?8:0)+(h.main?15:12))*K;
+const weekCost=(h,out)=>{const e=effSw(h);return heatCost({...h,sw:e},out)+((e.cool?40:0)+(h.sw.bugs?8:0)+(h.main?15:12))*K;};
 const estLoss=c=>S.lossHist[c]!=null?S.lossHist[c]:CROPS[c].loss;
 const cs=c=>S.crop[c]||(S.crop[c]={planted:0,lost:0,wasted:0,shipped:0});
 const houseOf=id=>S.houses.find(h=>h.id===id);
@@ -312,7 +322,7 @@ const live=o=>o.status==='open'||o.status==='shipped';
 const activeH=()=>S.houses.filter(h=>!h.building);
 function say(t,k){S.log.unshift({w:Math.min(S.week,WEEKS),t,k:k||'info'});if(S.log.length>200)S.log.length=200;toast(t,k);if(k==='alert'&&S.pauseAlert&&!S.paused){S.paused=true;hud();}}
 
-function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,res:{a:0,b:0},tin:null,moist:'Good',hist:[],tday:[],building:0};}
+function newHouse(t,lot,main){const g=GEO[lot];return{id:S.nid++,lot,...t,main:!!main,cap:g.cap,sw:{heat:1,vent:0,cool:0,shade:0,water:0,bugs:0},pest:6,res:{a:0,b:0},broken:{},ventStuck:0,tin:null,moist:'Good',hist:[],tday:[],building:0};}
 function newCustomer(name,score){
   const keys=Object.keys(CROPS),crops=[pick(keys)];
   if(rnd()<.6){const c2=pick(keys);if(!crops.includes(c2))crops.push(c2);}
@@ -404,13 +414,14 @@ function projUnits(b){
 function plotSpan(b){
   const o=b.orderId!=null?order(b.orderId):null,open=o&&o.status==='open',C=CROPS[b.crop];
   if(b.status==='done')return null;
+  if(b.status==='dead')return[S.week,S.week+1];
   if(b.status==='planned'){const r=b.start+C.grow;return[b.start,open?Math.max(dueW(o),r):r+C.shelf];}
   const r=readyAt(b);return[S.week,open?Math.max(dueW(o),r):r+C.shelf];
 }
 function cellBooked(hid,idx,a,z,ignore){
   return S.batches.find(b=>b.id!==ignore&&b.house===hid&&b.status!=='done'&&b.cells.includes(idx)&&(()=>{const sp=plotSpan(b);return sp&&sp[0]<=z&&a<=sp[1];})());
 }
-const cellNow=(hid,idx)=>S.batches.find(b=>b.house===hid&&(b.status==='growing'||b.status==='ready')&&b.cells.includes(idx));
+const cellNow=(hid,idx)=>S.batches.find(b=>b.house===hid&&(b.status==='growing'||b.status==='ready'||b.status==='dead')&&b.cells.includes(idx));
 
 function weekStart(){
   const w=S.week;
@@ -422,30 +433,50 @@ function weekStart(){
   if(S.fc&&S.fc.ev==='heat')say(S.fc.warn?'The forecast heat wave arrived.':'Surprise heat wave rolling through.','alert');
   if(rnd()<.05&&activeH().length){const h=pick(activeH());h.pest=Math.min(100,h.pest+18);say(`Thrips blew into the ${h.name.toLowerCase()} from the field next door.`,'alert');}
   S.houses.forEach(h=>{if(h.building>0){h.building--;if(!h.building){buildMap();say(`The ${h.name.toLowerCase()} is finished. ${h.desc}`,'good');}}});
+  S.orders.forEach(o=>{
+    if(o.status!=='open'||dueW(o)!==w)return;
+    if(o.delay===0&&rnd()<.12){o.delay=rnd()<.4?2:1;say(`${o.cust}'s truck is running late. ${CROPS[o.crop].name} pickup moved to week ${dueW(o)}.`,'alert');return;}
+    addTask({type:'load',orderId:o.id});
+    say(`${o.cust}'s truck is at the dock for ${o.qty} ${CROPS[o.crop].name.toLowerCase()}. Load it this week.`,'info');
+  });
+  checkPotting();
+  growerSet();
+}
+function checkPotting(){
+  const w=S.week;
   S.batches.filter(b=>b.status==='planned'&&b.start<=w).forEach(b=>{
     const C=CROPS[b.crop],h=houseOf(b.house);
     if(b.start+C.grow>WEEKS+2){b.status='done';b.cancelled=true;return;}
-    const busy=b.cells.some(i=>cellNow(b.house,i));
-    if(busy){if(!b.blocked)say(`Can't pot ${b.qty} ${C.name.toLowerCase()} in the ${h.name.toLowerCase()}: old plants still sit on those benches. Toss them or wait.`,'alert');b.blocked=true;return;}
-    b.blocked=false;
-    Object.assign(b,{status:'growing',units:b.qty,planted:b.qty,progress:0,lost:0,shipped:0,plantedWeek:w});
-    const c=b.qty*C.cost;S.cash-=c;S.cost.plants+=c;cs(b.crop).planted+=b.qty;
+    const blockers=[...new Set(b.cells.map(i=>cellNow(b.house,i)).filter(Boolean))];
+    if(blockers.length){
+      if(!b.blocked)say(`Can't pot ${b.qty} ${C.name.toLowerCase()} in the ${h.name.toLowerCase()}: old plants are in the way. Clear them first.`,'alert');
+      b.blocked=true;blockers.forEach(x=>addTask({type:'clear',plotId:x.id}));return;
+    }
+    b.blocked=false;addTask({type:'pot',plotId:b.id});
   });
-  growerSet();
 }
+function plant(b){
+  const C=CROPS[b.crop];
+  Object.assign(b,{status:'growing',units:b.qty,planted:b.qty,progress:0,lost:0,shipped:0,plantedWeek:S.week,blocked:false});
+  const c=b.qty*C.cost;S.cash-=c;S.cost.plants+=c;cs(b.crop).planted+=b.qty;
+}
+const BREAK_P=.008,PARTS={heat:'heater quit',vent:'vent motor jammed',cool:'fan motor burned out',shade:'shade cloth tore',water:'irrigation line burst'};
 function dayTick(){
   const w=S.week,d=S.day,fc=S.fc,out=fc.out+fc.days[d];
   S.outDays[d]=out;
   activeH().forEach(h=>{
-    let t=climate(w,out,h.sw,h);
+    h.broken=h.broken||{};
+    if(rnd()<BREAK_P){const opts=Object.keys(PARTS).filter(k=>!h.broken[k]);if(opts.length){const k=pick(opts);if(k==='vent')h.ventStuck=h.sw.vent;h.broken[k]=true;addTask({type:'fix',house:h.id,comp:k});say(`${h.name}: the ${PARTS[k]}. Fix it to get that switch working again.`,'alert');}}
+    const es=effSw(h);
+    let t=climate(w,out,es,h);
     const eth=skill(h.id,'maint',w),hort=skill(h.id,'crop',w),dev=Math.abs(out-fc.fOut)-5;
     if(eth&&dev>0){
       const cf=comfort(houseCrops(h,w)),target=cf?(cf.lo+cf.hi)/2:70,corr=Math.min(Math.abs(t-target),eth/10*(dev+4));
       if(corr>=1){t+=Math.sign(target-t)*corr;if(h.mlog!==w){h.mlog=w;say(`${crewName(h.id,'maint',w)}'s maintenance held the ${h.name.toLowerCase()} closer to target as the weather broke from the forecast.`,'good');}}
     }
-    const m=moisture(t,h.sw);
+    const m=moisture(t,es);
     let P=h.pest;
-    P+=((P*(t>75?.16:t>65?.11:.05)+.8+(h.sw.vent?1.5:0)+(h.sw.cool?2.5:0)+(w>=14&&w<=40?1:0)+h.pestIn)*(1-.05*hort)-.3*hort)/DAYS;
+    P+=((P*(t>75?.16:t>65?.11:.05)+.8+(es.vent?1.5:0)+(es.cool?2.5:0)+(w>=14&&w<=40?1:0)+h.pestIn)*(1-.05*hort)-.3*hort)/DAYS;
     if(h.sw.bugs)P-=(2+P*.18)/DAYS;
     h.pest=clamp(P,0,100);for(const k of ['a','b'])h.res[k]=Math.max(0,h.res[k]-RES_FADE/DAYS);h.tin=t;h.moist=m.label;h.tday[d]=t;
     S.batches.forEach(b=>{
@@ -462,7 +493,7 @@ function dayTick(){
       }
       if(b.units<=0){b.status='done';b.endW=w;}
     });
-    const ht=heatCost(h,out)/DAYS,cl=(h.sw.cool?40:0)*K/DAYS,pe=(h.sw.bugs?8:0)*K/DAYS,ov=(h.main?15:12)*K/DAYS;
+    const ht=heatCost({...h,sw:es},out)/DAYS,cl=(es.cool?40:0)*K/DAYS,pe=(h.sw.bugs?8:0)*K/DAYS,ov=(h.main?15:12)*K/DAYS;
     S.cost.heat+=ht;S.cost.cool+=cl;S.cost.pest+=pe;S.cost.overhead+=ov;S.cash-=ht+cl+pe+ov;
   });
   S.growers.forEach(g=>{if(g.from<=w&&w<=g.to){const c=gHours(g)*g.rate/DAYS;S.cost.labor+=c;S.cash-=c;}});
@@ -474,10 +505,24 @@ function weekEnd(){
   const w=S.week;
   S.orders.forEach(o=>{
     if(o.status!=='open'||dueW(o)!==w)return;
-    const C=CROPS[o.crop];
-    if(o.delay===0&&rnd()<.12){o.delay=rnd()<.4?2:1;say(`${o.cust}'s truck is running late. ${C.name} pickup moved to week ${dueW(o)}.`,'alert');return;}
+    const lt=S.tasks.find(t=>t.type==='load'&&t.orderId===o.id);
+    if(lt){dropTask(lt);shipOrder(o,true);}
+  });
+  S.batches.forEach(b=>{
+    if(b.status==='ready'&&w-b.readyWeek>=CROPS[b.crop].shelf){
+      if(b.units>0){cs(b.crop).wasted+=b.units;b.wasted=b.units;b.status='dead';addTask({type:'clear',plotId:b.id});say(`${b.units} ${CROPS[b.crop].name.toLowerCase()} ${fl(b.units)} got too big to sell. Clear them off the bench.`,'warn');}
+      else{b.status='done';b.endW=w;}
+    }
+  });
+  S.week++;S.day=0;
+  if(S.week>WEEKS){endYear();return;}
+  S.fc=S.fcN;S.fcN=rollFc(S.week+1);
+  weekStart();
+}
+function shipOrder(o,empty){
+    const w=S.week,C=CROPS[o.crop];
     let need=o.qty,r=0;
-    S.batches.filter(b=>b.status==='ready'&&b.crop===o.crop&&(b.orderId===o.id||!(order(b.orderId)&&order(b.orderId).status==='open'))).sort((a,b)=>(b.orderId===o.id)-(a.orderId===o.id)||a.readyWeek-b.readyWeek)
+    if(!empty)S.batches.filter(b=>b.status==='ready'&&b.crop===o.crop&&(b.orderId===o.id||!(order(b.orderId)&&order(b.orderId).status==='open'))).sort((a,b)=>(b.orderId===o.id)-(a.orderId===o.id)||a.readyWeek-b.readyWeek)
       .forEach(b=>{const take=Math.min(need,b.units);if(!take)return;r+=take*o.price*qual(w-b.readyWeek);b.units-=take;b.shipped+=take;need-=take;if(b.units<=0){b.status='done';b.endW=w;}});
     o.filled=o.qty-need;o.status='shipped';
     const full=o.filled*o.price;o.value=full?r/full:1;
@@ -486,20 +531,11 @@ function weekEnd(){
     if(o.filled&&o.value<.9)d-=Math.round((1-o.value)*15);
     bump(o.custId,d);
     const v=Math.round(o.value*100),vt=o.filled&&v<100?` at ${v}% value`:'',gw=` Goodwill ${d>0?'+':''}${d}.`;
-    if(need>0)say(`Shipped ${o.filled} of ${o.qty} ${C.name.toLowerCase()} to ${o.cust}${vt} (+${fmt(r)}). Short ${need}.${gw}`,'alert');
+    if(empty)say(`${o.cust}'s truck left without being loaded. Short all ${o.qty}.`,'alert');
+    else if(need>0)say(`Shipped ${o.filled} of ${o.qty} ${C.name.toLowerCase()} to ${o.cust}${vt} (+${fmt(r)}). Short ${need}.${gw}`,'alert');
     else say(`Shipped ${o.qty} ${C.name.toLowerCase()} to ${o.cust}${vt} (+${fmt(r)}).${gw}`,v<100?'warn':'good');
+    if(empty)S.log[0].t=`${o.cust}'s truck left without being loaded. Short all ${o.qty}.${gw}`;
     truckLeave(r);
-  });
-  S.batches.forEach(b=>{
-    if(b.status==='ready'&&w-b.readyWeek>=CROPS[b.crop].shelf){
-      if(b.units>0){cs(b.crop).wasted+=b.units;b.wasted=b.units;say(`${b.units} ${CROPS[b.crop].name.toLowerCase()} ${fl(b.units)} got too big to sell and ${b.units===1?'was':'were'} tossed.`,'warn');}
-      b.units=0;b.status='done';b.endW=w;
-    }
-  });
-  S.week++;S.day=0;
-  if(S.week>WEEKS){endYear();return;}
-  S.fc=S.fcN;S.fcN=rollFc(S.week+1);
-  weekStart();
 }
 function endYear(){
   S.phase='done';S.paused=true;S.week=WEEKS;S.day=DAYS;
@@ -513,7 +549,7 @@ function endYear(){
 function nextYear(){
   const gone=[];
   S.customers.forEach(c=>{if(c.active&&c.score<25){c.active=false;gone.push(c.name);}});
-  S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=true;S.orders=[];S.batches=[];S.log=[];
+  S.year++;S.week=1;S.day=0;S.clock=0;S.phase='run';S.paused=true;S.orders=[];S.batches=[];S.log=[];S.tasks=[];S.queue=[];pw.task=null;S.houses.forEach(h=>{h.broken={};});
   S.lossHist=S.nextLoss||S.lossHist;
   S.houses.forEach(h=>{h.hist=[];h.pest=Math.min(h.pest,20);h.tin=null;h.tday=[];h.res.a*=.5;h.res.b*=.5;});
   const used=new Set(S.customers.map(c=>c.name)),free=NAMES.filter(n=>!used.has(n));
@@ -527,7 +563,7 @@ function nextYear(){
 }
 function freshGame(){
   S={v:VER,rs:(Date.now()%2147483647)|0,year:1,week:1,day:0,clock:0,phase:'run',paused:true,speed:1,cash:9000,startCash:9000,
-    houses:[],customers:[],orders:[],batches:[],pool:[],growers:[],fc:null,fcN:null,outDays:[],log:[],cost:{},rev:0,aging:0,crop:{},lossHist:{},pauseAlert:true,nid:1,player:{x:4.5,y:17.5},welcomed:false};
+    houses:[],customers:[],orders:[],batches:[],pool:[],growers:[],tasks:[],queue:[],fc:null,fcN:null,outDays:[],log:[],cost:{},rev:0,aging:0,crop:{},lossHist:{},pauseAlert:true,nid:1,player:{x:4.5,y:17.5},welcomed:false};
   S.houses.push(newHouse(MAIN,'main',true));
   const names=NAMES.slice().sort(()=>rnd()-.5);
   for(let i=0;i<7;i++)S.customers.push(newCustomer(names[i],ri(55,68)));
@@ -552,6 +588,105 @@ function build(lotKey){
   S.cash-=HOUSE_COST;S.cost.build+=HOUSE_COST;buildMap();
   say(`Building the ${h.name.toLowerCase()}: ready in ${BUILD_WEEKS} weeks.`,'good');
   return true;
+}
+
+/* ================= tasks ================= */
+const TDEF={
+  pot:{name:'Pot plot',role:['crop'],glyph:'pot'},
+  load:{name:'Load truck',role:['crop','maint','mgmt'],glyph:'truck'},
+  spray:{name:'Spray',role:['crop'],glyph:'spray'},
+  fix:{name:'Fix',role:['maint'],glyph:'fix'},
+  clear:{name:'Clear bench',role:['crop','maint'],glyph:'clear'}
+};
+const plotOf=id=>S.batches.find(b=>b.id===id);
+function addTask(t){
+  if(S.tasks.some(x=>x.type===t.type&&x.plotId===t.plotId&&x.orderId===t.orderId&&x.house===t.house&&x.comp===t.comp&&x.kind===t.kind))return null;
+  const n={id:S.nid++,prog:0,who:null,born:S.week*DAYS+S.day,...t};S.tasks.push(n);dirty=true;
+  if(S.autoQueue&&!crewFor(n))enqueue(n);
+  return n;
+}
+function dropTask(t){S.tasks=S.tasks.filter(x=>x!==t);S.queue=S.queue.filter(id=>id!==t.id);if(pw.task===t.id){pw.task=null;path=[];}dirty=true;}
+function taskHouse(t){if(t.house!=null)return t.house;const b=t.plotId!=null&&plotOf(t.plotId);return b?b.house:null;}
+function taskDur(t){
+  const b=t.plotId!=null&&plotOf(t.plotId),o=t.orderId!=null&&order(t.orderId);
+  return t.type==='pot'?.35*(b?b.cells.length:4):t.type==='clear'?.25*(b?b.cells.length:4):t.type==='load'?.22*(o?o.qty:8):t.type==='spray'?2:3;
+}
+function taskTile(t){
+  if(t.type==='load')return{x:20,y:21};
+  const h=houseOf(taskHouse(t));if(!h)return{x:20,y:21};const g=GEO[h.lot];
+  if(t.type==='pot'||t.type==='clear'){const b=plotOf(t.plotId),c=b&&g.cells[b.cells[0]];if(c)return{x:c.x,y:MAP[c.y+1]&&MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1};}
+  if(t.type==='fix'&&t.comp==='heat')return{x:g.x+g.w-2,y:g.y+1};
+  if(t.type==='fix'&&(t.comp==='cool'||t.comp==='water'))return{x:g.x+1,y:g.y+3};
+  if(t.type==='fix'&&t.comp==='vent')return{x:g.x+Math.floor(g.w/2),y:g.y+3};
+  return g.pst;
+}
+function taskValid(t){
+  if(t.type==='pot'){const b=plotOf(t.plotId);return b&&b.status==='planned'&&!b.cells.some(i=>cellNow(b.house,i));}
+  if(t.type==='clear'){const b=plotOf(t.plotId);return b&&b.status!=='done'&&b.status!=='planned';}
+  if(t.type==='load'){const o=order(t.orderId);return o&&o.status==='open'&&dueW(o)===S.week;}
+  if(t.type==='fix'){const h=houseOf(t.house);return h&&h.broken&&h.broken[t.comp];}
+  if(t.type==='spray')return !!houseOf(t.house);
+  return false;
+}
+function taskLabel(t){
+  const b=t.plotId!=null&&plotOf(t.plotId),o=t.orderId!=null&&order(t.orderId),h=houseOf(taskHouse(t));
+  if(t.type==='pot')return`Pot ${b?b.qty+' '+CROPS[b.crop].name.toLowerCase():'plot'}`;
+  if(t.type==='clear')return`Clear ${b?CROPS[b.crop].name.toLowerCase():'bench'}`;
+  if(t.type==='load'){if(!o)return'Load truck';const rd=S.batches.filter(b=>b.status==='ready'&&b.crop===o.crop).reduce((a,b)=>a+b.units,0);return`Load ${o.qty} ${CROPS[o.crop].name.toLowerCase()} (${Math.min(rd,o.qty)} ready)`;}
+  if(t.type==='spray')return`${SPRAYS[t.kind]?SPRAYS[t.kind].split(' (')[0]:'Spray'}, ${h?h.name.toLowerCase():''}`;
+  return`Fix ${t.comp==='heat'?'heater':t.comp==='vent'?'vents':t.comp==='cool'?'fans':t.comp==='shade'?'shade cloth':'irrigation'}`;
+}
+function crewFor(t){
+  const w=S.week,hid=taskHouse(t),roles=TDEF[t.type].role;
+  return S.growers.find(g=>g.from<=w&&w<=g.to&&(t.type==='load'?gHours(g)>0:g.assign[hid]&&roles.some(r=>g.assign[hid][r])));
+}
+function completeTask(t){
+  if(!taskValid(t)){dropTask(t);return;}
+  if(t.type==='pot'){plant(plotOf(t.plotId));popFx(houseOf(plotOf(t.plotId).house),plotOf(t.plotId).cells);}
+  else if(t.type==='clear'){const b=plotOf(t.plotId);if(b.status!=='dead'&&b.units>0){cs(b.crop).wasted+=b.units;b.wasted=(b.wasted||0)+b.units;}b.units=0;b.status='done';b.endW=S.week;checkPotting();}
+  else if(t.type==='load')shipOrder(order(t.orderId));
+  else if(t.type==='spray'){const h=houseOf(t.house),kill=sprayKill(h.res[t.kind]);spray(h,t.kind);toast(`${SPRAYS[t.kind]} knocked out about ${Math.round(kill*100)}% of the pests in the ${h.name.toLowerCase()}.`,'good');}
+  else if(t.type==='fix'){const h=houseOf(t.house);h.broken[t.comp]=false;say(`Fixed the ${h.name.toLowerCase()}'s ${t.comp==='heat'?'heater':t.comp==='vent'?'vents':t.comp==='cool'?'fans':t.comp==='shade'?'shade cloth':'irrigation'}.`,'good');}
+  dropTask(t);refreshModal();
+}
+function enqueue(t){if(t.who&&t.who!=='p')return;if(S.queue.includes(t.id))return;if(S.queue.length>=8){toast('Your to-do list is full. Finish a task first.','alert');return;}t.who='p';S.queue.push(t.id);renderQueue();}
+function dequeue(t){S.queue=S.queue.filter(id=>id!==t.id);if(t.who==='p')t.who=null;if(pw.task===t.id){pw.task=null;path=[];}t.prog=0;renderQueue();}
+let pw={task:null,phase:null};
+function workPlayer(dt){
+  if(S.paused||S.phase!=='run')return;
+  S.tasks.filter(t=>!taskValid(t)&&t.type!=='pot').forEach(dropTask);
+  if(pw.task==null&&S.queue.length){
+    const t=S.tasks.find(x=>x.id===S.queue[0]);
+    if(!t||(t.type==='pot'&&!taskValid(t))){S.queue.shift();if(t&&t.who==='p')t.who=null;renderQueue();return;}
+    pw.task=t.id;pw.phase='walk';const tt=taskTile(t);walkTo(tt.x,tt.y,()=>{pw.phase='work';});
+  }
+  if(pw.task!=null&&pw.phase==='work'){
+    const t=S.tasks.find(x=>x.id===pw.task);if(!t){pw.task=null;return;}
+    t.prog+=dt*S.speed/taskDur(t);
+    if(t.prog>=1){pw.task=null;S.queue=S.queue.filter(id=>id!==t.id);completeTask(t);renderQueue();}
+  }
+}
+function workCrew(dt){
+  if(S.paused||S.phase!=='run')return;
+  const w=S.week;
+  npcs.forEach(n=>{
+    const g=S.growers.find(x=>x.id===n.id);if(!g)return;
+    let t=n.task!=null&&S.tasks.find(x=>x.id===n.task);
+    if(!t){
+      n.task=null;
+      const mine=S.tasks.filter(x=>x.who==null&&crewFor(x)===g||(x.who==null&&crewFor(x)&&crewFor(x).id===g.id));
+      const cand=S.tasks.filter(x=>x.who==null&&(x.type!=='pot'||taskValid(x))&&(()=>{const hid=taskHouse(x),roles=TDEF[x.type].role;return x.type==='load'?(()=>{const o=order(x.orderId),ready=S.batches.filter(b=>b.status==='ready'&&b.crop===o.crop).reduce((a,b)=>a+b.units,0);return ready>=o.qty||S.day>=6;})():g.assign[hid]&&roles.some(r=>g.assign[hid][r]);})());
+      if(!cand.length)return;
+      cand.sort((a,b)=>Math.hypot(taskTile(a).x-n.x,taskTile(a).y-n.y)-Math.hypot(taskTile(b).x-n.x,taskTile(b).y-n.y));
+      t=cand[0];t.who=g.id;n.task=t.id;n.phase='walk';const tt=taskTile(t);n.path=findPath(Math.floor(n.x),Math.floor(n.y),tt.x,tt.y)||[];return;
+    }
+    if(n.phase==='walk'&&!n.path.length)n.phase='work';
+    if(n.phase==='work'){
+      const st=t.type==='fix'?g.eth:t.type==='load'?Math.max(g.eth,g.exp):g.hort;
+      t.prog+=dt*S.speed/(taskDur(t)*(1.4-st*.07));
+      if(t.prog>=1){n.task=null;completeTask(t);}
+    }
+  });
 }
 
 /* ================= plots ================= */
@@ -622,7 +757,6 @@ function drawablesList(now){
     if(h.building){L.push({d:g.x+g.y+g.w+g.h,f:()=>drawScaffold(g,h)});return;}
     L.push({d:g.x+g.y-1,f:()=>drawHouseBack(g,h,now)});
     g.cells.forEach((c,i)=>L.push({d:c.x+c.y+.5,f:()=>drawCell(h,g,c,i,now)}));
-    L.push({d:g.pwall.x+g.pwall.y+.6,f:()=>drawPanel(g,h,now)});
     L.push({d:g.x+g.w+g.y+g.h,f:()=>drawHouseFront(g,h,now)});
   });
   L.push({d:S.player.x+S.player.y,f:()=>drawPerson(S.player.x,S.player.y,'#2f7d3e','#e2c26a',now,moving)});
@@ -632,13 +766,13 @@ function drawablesList(now){
 }
 function drawOffice(){
   const {x,y,w,h}=OFFICE;
-  box(x,y,0,w,h,52,['#efe3c8','#e3d1ad','#cdb68b']);
-  poly([P(x-.15,y-.15,52),P(x+w+.15,y-.15,52),P(x+w+.15,y+h+.15,52),P(x-.15,y+h+.15,52)],'#a5462d');
-  box(x+.25,y+.25,52,w-.5,h-.5,14,['#b9553a','#9c412a','#86361f']);
-  poly([P(x+w,y+1.1,0),P(x+w,y+1.9,0),P(x+w,y+1.9,32),P(x+w,y+1.1,32)],'#7a5a3a');
+  box(x+.5,y+.5,0,w-1,h-1,34,['#efe3c8','#e3d1ad','#cdb68b']);
+  poly([P(x+.35,y+.35,34),P(x+w-.35,y+.35,34),P(x+w-.35,y+h-.35,34),P(x+.35,y+h-.35,34)],'#a5462d');
+  box(x+.6,y+.6,34,w-1.2,h-1.2,10,['#b9553a','#9c412a','#86361f']);
+  poly([P(x+w-.5,y+1.1,0),P(x+w-.5,y+1.9,0),P(x+w-.5,y+1.9,26),P(x+w-.5,y+1.1,26)],'#7a5a3a');
   const glow=S.orders.some(o=>o.status==='offer');
-  poly([P(x+w,y+2.2,18),P(x+w,y+2.8,18),P(x+w,y+2.8,34),P(x+w,y+2.2,34)],glow?'#ffe9a0':'#bfe3f2','#7a6a52');
-  poly([P(x+.6,y+h,18),P(x+1.6,y+h,18),P(x+1.6,y+h,34),P(x+.6,y+h,34)],'#bfe3f2','#7a6a52');
+  poly([P(x+w-.5,y+.7,14),P(x+w-.5,y+.95,14),P(x+w-.5,y+.95,26),P(x+w-.5,y+.7,26)],glow?'#ffe9a0':'#bfe3f2','#7a6a52');
+  poly([P(x+.9,y+h-.5,12),P(x+1.6,y+h-.5,12),P(x+1.6,y+h-.5,24),P(x+.9,y+h-.5,24)],'#bfe3f2','#7a6a52');
 }
 function drawTree(x,y){
   const se=season(Math.min(S.week,WEEKS)),leaf=['#6f8f64','#4f9a46','#3f8f3c','#c08a3a'][se],dark=['#5c7a52','#3f7d39','#327531','#a07030'][se];
@@ -663,6 +797,7 @@ function drawScaffold(g,h){
 const WH=56,RH=38;
 function hoop(g,x){const pts=[];for(let i=0;i<=10;i++){const t=i/10,y=g.y+t*g.h,z=WH+Math.sin(t*Math.PI)*RH;pts.push(P(x,y,z));}return pts;}
 function drawHouseBack(g,h,now){
+  const es=effSw(h);
   const glass='rgba(214,236,244,.5)',frame='#86a9b6';
   poly([P(g.x,g.y,0),P(g.x+g.w,g.y,0),P(g.x+g.w,g.y,WH),P(g.x,g.y,WH)],glass);
   poly([P(g.x,g.y,0),P(g.x,g.y+g.h,0),P(g.x,g.y+g.h,WH),P(g.x,g.y,WH)],'rgba(204,230,240,.55)');
@@ -670,11 +805,13 @@ function drawHouseBack(g,h,now){
   for(let y=g.y;y<=g.y+g.h;y++)line(P(g.x,y,0),P(g.x,y,WH),frame,1.2);
   const risk=houseWarn(h).find(x=>x.k==='cold'||x.k==='hot');
   if(risk){const a=.12+.08*Math.sin(now/300);poly([P(g.x+1,g.y+1),P(g.x+g.w-1,g.y+1),P(g.x+g.w-1,g.y+g.h-1),P(g.x+1,g.y+g.h-1)],risk.k==='cold'?`rgba(70,140,230,${a})`:`rgba(230,80,40,${a})`);}
-  if(h.sw.cool){poly([P(g.x,g.y+1.2,4),P(g.x,g.y+g.h-1.2,4),P(g.x,g.y+g.h-1.2,40),P(g.x,g.y+1.2,40)],'rgba(110,180,220,.75)','#5b9cc0');}
-  if(h.sw.heat){const hx=g.x+g.w-2,hy=g.y+1;box(hx+.2,hy+.2,0,.6,.5,22,['#a44a3a','#8c3b2f','#74302a']);const glow=h.sw.heat===2?'#ff8a3d':'#f2a65a';const c=P(hx+.5,hy+.7,14);cx.fillStyle=glow;cx.fillRect(c[0]-6*zoom,c[1]-3*zoom,12*zoom,6*zoom);
+  if(es.cool){poly([P(g.x,g.y+1.2,4),P(g.x,g.y+g.h-1.2,4),P(g.x,g.y+g.h-1.2,40),P(g.x,g.y+1.2,40)],'rgba(110,180,220,.75)','#5b9cc0');}
+  if(h.broken&&h.broken.heat){const hx=g.x+g.w-2,hy=g.y+1;box(hx+.2,hy+.2,0,.6,.5,22,['#6a6a6a','#555','#444']);}
+  if(es.heat){const hx=g.x+g.w-2,hy=g.y+1;box(hx+.2,hy+.2,0,.6,.5,22,['#a44a3a','#8c3b2f','#74302a']);const glow=h.sw.heat===2?'#ff8a3d':'#f2a65a';const c=P(hx+.5,hy+.7,14);cx.fillStyle=glow;cx.fillRect(c[0]-6*zoom,c[1]-3*zoom,12*zoom,6*zoom);
     for(let k=0;k<h.sw.heat+1;k++){const q=P(hx+.3+k*.2,hy+.45,30+((now/12+k*9)%14));cx.fillStyle=glow+'99';cx.beginPath();cx.arc(q[0],q[1],2.2*zoom,0,7);cx.fill();}}
 }
 function drawHouseFront(g,h,now){
+  const es=effSw(h);
   const frame='#7c9fad';
   line(P(g.x,g.y+g.h,0),P(g.x+g.w,g.y+g.h,0),frame,2);line(P(g.x+g.w,g.y,0),P(g.x+g.w,g.y+g.h,0),frame,2);
   poly([P(g.x,g.y+g.h,0),P(g.x+g.w,g.y+g.h,0),P(g.x+g.w,g.y+g.h,10),P(g.x,g.y+g.h,10)],'rgba(170,195,200,.55)');
@@ -682,26 +819,16 @@ function drawHouseFront(g,h,now){
   for(let x=g.x;x<=g.x+g.w;x+=1)line(P(x,g.y+g.h,0),P(x,g.y+g.h,WH),'rgba(124,159,173,.55)',1);
   for(let y=g.y;y<=g.y+g.h;y+=1)line(P(g.x+g.w,y,0),P(g.x+g.w,y,WH),'rgba(124,159,173,.55)',1);
   line(P(g.x,g.y+g.h,WH),P(g.x+g.w,g.y+g.h,WH),frame,2);line(P(g.x+g.w,g.y,WH),P(g.x+g.w,g.y+g.h,WH),frame,2);
-  const roofFill=h.sw.shade?'rgba(28,78,48,.42)':'rgba(225,242,248,.16)';
+  const roofFill=es.shade?'rgba(28,78,48,.42)':'rgba(225,242,248,.16)';
   for(let x=g.x;x<g.x+g.w;x++){const a=hoop(g,x),b=hoop(g,x+1);for(let i=0;i<10;i++)poly([a[i],b[i],b[i+1],a[i+1]],roofFill);}
   for(let x=g.x;x<=g.x+g.w;x+=1){const pts=hoop(g,x);cx.beginPath();pts.forEach((p,i)=>i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.strokeStyle=x%3===g.x%3?'#7c9fad':'rgba(124,159,173,.45)';cx.lineWidth=(x%3===g.x%3?2:1)*zoom;cx.stroke();}
   line(P(g.x,g.y+g.h/2,WH+RH),P(g.x+g.w,g.y+g.h/2,WH+RH),'#6f93a1',2);
-  if(h.sw.vent){for(let x=g.x+1;x<g.x+g.w-1;x+=3)poly([P(x,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.9,WH+RH+12),P(x,g.y+g.h/2-.9,WH+RH+12)],'rgba(228,244,250,.9)','#6f93a1');}
-  if(h.sw.cool){const c=P(g.x+g.w,g.y+g.h/2,28),r=9*zoom,a=now/90;cx.fillStyle='#55646a';cx.beginPath();cx.arc(c[0],c[1],r+3*zoom,0,7);cx.fill();cx.strokeStyle='#dfe8ec';cx.lineWidth=2.5*zoom;for(let k=0;k<3;k++){cx.beginPath();cx.moveTo(c[0],c[1]);cx.lineTo(c[0]+Math.cos(a+k*2.1)*r,c[1]+Math.sin(a+k*2.1)*r);cx.stroke();}}
+  if(es.vent){for(let x=g.x+1;x<g.x+g.w-1;x+=3)poly([P(x,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.1,WH+RH),P(x+1.6,g.y+g.h/2-.9,WH+RH+12),P(x,g.y+g.h/2-.9,WH+RH+12)],'rgba(228,244,250,.9)','#6f93a1');}
+  if(es.cool){const c=P(g.x+g.w,g.y+g.h/2,28),r=9*zoom,a=now/90;cx.fillStyle='#55646a';cx.beginPath();cx.arc(c[0],c[1],r+3*zoom,0,7);cx.fill();cx.strokeStyle='#dfe8ec';cx.lineWidth=2.5*zoom;for(let k=0;k<3;k++){cx.beginPath();cx.moveTo(c[0],c[1]);cx.lineTo(c[0]+Math.cos(a+k*2.1)*r,c[1]+Math.sin(a+k*2.1)*r);cx.stroke();}}
   const n=Math.round(h.pest/6);let sd=h.id*97+13;
   for(let k=0;k<n;k++){sd=(sd*16807)%2147483647;const fx=g.x+1+(sd%1000)/1000*(g.w-2);sd=(sd*16807)%2147483647;const fy=g.y+.5+(sd%1000)/1000*(g.h-1);const q=P(fx,fy,62+((sd>>3)%30)+Math.sin(now/240+k)*3);cx.fillStyle='#3e3322';cx.beginPath();cx.ellipse(q[0],q[1],3*zoom,2.2*zoom,0,0,7);cx.fill();}
   if(sprayFx&&sprayHouse===h.id){const t=(now-sprayFx)/1200;if(t<1){for(let k=0;k<24;k++){const fx=g.x+1+((k*37)%100)/100*(g.w-2),fy=g.y+1+((k*53)%100)/100*(g.h-2),q=P(fx,fy,20+t*50);cx.fillStyle=`rgba(255,255,255,${.7*(1-t)})`;cx.beginPath();cx.arc(q[0],q[1],(4+t*10)*zoom,0,7);cx.fill();}}else sprayFx=0;}
-  const c=P(g.appr.x+.5,g.appr.y+.5,0);hit(label([c[0],c[1]+14*zoom],`${h.name} \u00b7 controls`,'#14211a'),()=>goPanel(h));
-}
-function drawPanel(g,h,now){
-  const x=g.pwall.x+.72,y=g.pwall.y+.15,warn=houseWarn(h).length;
-  box(x+.08,y+.3,0,.1,.1,20,['#5a6a64','#4a5a54','#3a4a44']);
-  box(x,y,20,.26,.7,36,['#3b4a44','#2c3833','#24302b']);
-  const a=P(x+.26,y+.1,28),b=P(x+.26,y+.6,28),c2=P(x+.26,y+.6,50),d=P(x+.26,y+.1,50);
-  poly([a,b,c2,d],warn?(Math.sin(now/200)>0?'#ff7a4a':'#b33'):'#7fd08a');
-  const top=P(x+.13,y+.35,62);
-  hit({x0:Math.min(a[0],d[0])-14,y0:top[1]-6,x1:Math.max(b[0],c2[0])+14,y1:P(x+.13,y+.35,0)[1]+4},()=>goPanel(h));
-  hit(label([top[0],top[1]-12],'Controls',warn?'#ffffff':'#14211a',warn?'#c4542a':null),()=>goPanel(h));
+  const c=P(g.appr.x+.5,g.appr.y+.5,0);hit(label([c[0],c[1]+14*zoom],h.name,'#14211a'),()=>openTablet('h'+h.id));
 }
 function cellOf(h,i){return GEO[h.lot].cells[i];}
 function drawCell(h,g,c,i,now){
@@ -717,12 +844,12 @@ function drawCell(h,g,c,i,now){
   if(tint)poly([P(c.x+.06,c.y+.12,14),P(c.x+.94,c.y+.12,14),P(c.x+.94,c.y+.88,14),P(c.x+.06,c.y+.88,14)],tint);
   if(!b)return;
   const k=b.cells.indexOf(i),units=clamp(b.units-k*FPC,0,FPC),C=CROPS[b.crop];
-  const g01=b.status==='ready'?1:clamp(b.progress/C.grow,0,1),age=b.status==='ready'?Math.min(S.week,WEEKS)-b.readyWeek:0;
+  const dead=b.status==='dead',g01=b.status==='ready'||dead?1:clamp(b.progress/C.grow,0,1),age=b.status==='ready'?Math.min(S.week,WEEKS)-b.readyWeek:dead?C.shelf:0;
   for(let u=0;u<units;u++){
     const px=c.x+(u?.7:.3),py=c.y+.5;
     box(px-.11,py-.11,14,.22,.22,7,['#d77a4c','#c8693f','#a9552f']);
     const r=(2+g01*7)*zoom,q=P(px,py,21+r/zoom*.8);
-    let col=g01<.5?'#6aa84f':C.color;if(age>0)col=mix(C.color,'#a89a55',Math.min(.85,age/C.shelf));
+    let col=g01<.5?'#6aa84f':C.color;if(age>0)col=mix(C.color,'#a89a55',Math.min(.85,age/C.shelf));if(dead)col='#8a7a4a';
     cx.fillStyle=g01<1?'#4f8f3e':mixD(col);cx.beginPath();cx.ellipse(q[0],q[1]+r*.35,r*1.05,r*.65,0,0,7);cx.fill();
     cx.fillStyle=col;cx.beginPath();cx.arc(q[0],q[1]-r*.1,r*(g01<.5?.6:.8),0,7);cx.fill();
     if(b.status==='ready'&&age<=0){cx.fillStyle='rgba(255,255,255,.55)';cx.beginPath();cx.arc(q[0]-r*.25,q[1]-r*.35,r*.25,0,7);cx.fill();}
@@ -773,8 +900,30 @@ let bubbles=[];
 function drawBubbles(now){
   bubbles=[];
   const put=(p,kinds,act)=>{kinds.forEach((k,i)=>{const x=p[0]+(i-(kinds.length-1)/2)*34,y=p[1]+Math.sin(now/300+i)*3;bubble(x,y,k);bubbles.push({x,y,r:16,act});});};
-  if(S.orders.some(o=>o.status==='offer')&&S.phase==='run')put(P(OFFICE.x+1.5,OFFICE.y+1.5,110),['offer'],()=>goComputer('offers'));
-  activeH().forEach(h=>{const g=GEO[h.lot],ks=[...new Set(houseWarn(h).map(x=>x.k))];if(ks.length)put(P(g.x+g.w/2,g.y+g.h/2,WH+RH+44),ks,()=>goPanel(h));});
+  if(S.orders.some(o=>o.status==='offer')&&S.phase==='run')put(P(OFFICE.x+1.5,OFFICE.y+1.5,80),['offer'],()=>openTablet('offers'));
+  activeH().forEach(h=>{const g=GEO[h.lot],ks=[...new Set(houseWarn(h).map(x=>x.k))];if(ks.length)put(P(g.x+g.w/2,g.y+g.h/2,WH+RH+44),ks,()=>openTablet('h'+h.id));});
+  if(S.phase==='run')S.tasks.forEach(t=>{
+    if(t.type==='pot'&&!taskValid(t))return;
+    const tt=taskTile(t),p=P(tt.x+.5,tt.y+.5,t.type==='load'?70:46),y=p[1]+Math.sin(now/260+t.id)*2;
+    taskBubble(p[0],y,t,now);bubbles.push({x:p[0],y,r:18,act:()=>{if(t.who==='p')dequeue(t);else if(t.who==null)enqueue(t);else toast(`${(S.growers.find(g=>g.id===t.who)||{}).name||'Your crew'} is on it.`,'info');}});
+  });
+}
+function taskUrgent(t){const b=t.plotId!=null&&plotOf(t.plotId);if(t.type==='load')return S.day>=5;if(t.type==='pot')return b&&b.start<S.week;if(t.type==='fix')return true;if(t.type==='clear')return S.batches.some(x=>x.blocked&&x.house===taskHouse(t));return false;}
+function taskBubble(x,y,t,now){
+  const r=17,urg=taskUrgent(t),col=urg?'#c4542a':'#2f7d3e',mine=t.who==='p',crew=t.who&&t.who!=='p';
+  cx.fillStyle=mine?'#fff7d6':'#fff';cx.strokeStyle=col;cx.lineWidth=mine?4:3;cx.beginPath();cx.arc(x,y,r,0,7);cx.fill();cx.stroke();
+  cx.beginPath();cx.moveTo(x-5,y+r-2);cx.lineTo(x,y+r+7);cx.lineTo(x+5,y+r-2);cx.fillStyle=mine?'#fff7d6':'#fff';cx.fill();
+  if(t.prog>0){cx.strokeStyle='#e9b824';cx.lineWidth=5;cx.beginPath();cx.arc(x,y,r+5,-Math.PI/2,-Math.PI/2+t.prog*Math.PI*2);cx.stroke();}
+  cx.fillStyle=col;cx.strokeStyle=col;cx.lineWidth=2.2;cx.lineCap='round';
+  const g=TDEF[t.type].glyph;
+  if(g==='pot'){cx.beginPath();cx.moveTo(x-7,y-1);cx.lineTo(x+7,y-1);cx.lineTo(x+5,y+8);cx.lineTo(x-5,y+8);cx.closePath();cx.fill();cx.beginPath();cx.moveTo(x,y-1);cx.lineTo(x,y-8);cx.stroke();cx.beginPath();cx.ellipse(x+4,y-7,4,2.2,-.5,0,7);cx.fill();}
+  else if(g==='truck'){cx.fillRect(x-9,y-5,11,9);cx.fillRect(x+3,y-2,6,6);cx.fillStyle='#fff';cx.beginPath();cx.arc(x-5,y+5,2.6,0,7);cx.arc(x+5,y+5,2.6,0,7);cx.fill();cx.fillStyle=col;cx.beginPath();cx.arc(x-5,y+5,1.5,0,7);cx.arc(x+5,y+5,1.5,0,7);cx.fill();}
+  else if(g==='spray'){cx.fillRect(x-6,y-3,8,11);cx.fillRect(x-4,y-7,4,4);cx.beginPath();cx.moveTo(x+2,y-5);cx.lineTo(x+7,y-7);cx.stroke();for(let k=0;k<3;k++){cx.beginPath();cx.arc(x+9,y-9+k*3,1.2,0,7);cx.fill();}}
+  else if(g==='fix'){cx.lineWidth=3.4;cx.beginPath();cx.moveTo(x-6,y+6);cx.lineTo(x+3,y-3);cx.stroke();cx.lineWidth=2.4;cx.beginPath();cx.arc(x+5,y-5,4.5,Math.PI*.15,Math.PI*1.6);cx.stroke();}
+  else{cx.beginPath();cx.moveTo(x-6,y-6);cx.lineTo(x+6,y+6);cx.moveTo(x+6,y-6);cx.lineTo(x-6,y+6);cx.stroke();}
+  cx.lineCap='butt';
+  if(mine){const n=S.queue.indexOf(t.id)+1;cx.fillStyle='#e9b824';cx.beginPath();cx.arc(x+r-2,y-r+2,8,0,7);cx.fill();cx.fillStyle='#1f1a05';cx.font='700 11px Inter,sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(String(n),x+r-2,y-r+2.5);}
+  if(crew){const g2=S.growers.find(g=>g.id===t.who);cx.fillStyle='#3d6fa0';cx.beginPath();cx.arc(x+r-2,y-r+2,8,0,7);cx.fill();cx.fillStyle='#fff';cx.font='700 10px Inter,sans-serif';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(g2?g2.name[0]:'?',x+r-2,y-r+2.5);}
 }
 const BCOL={cold:'#3d7fd6',hot:'#d8502a',water:'#2f9bd0',bug:'#6b5530',age:'#c99a12',block:'#c4542a',offer:'#e9b824'};
 function bubble(x,y,k){
@@ -802,7 +951,7 @@ function draw(now){
   cx.fillStyle=mix(SEAS[season(Math.min(S.week,WEEKS))][0],'#2f4a2a',.3);cx.fillRect(0,0,VW,VH);
   hits=[];drawGround();drawPreviewPath();
   drawablesList(now).forEach(o=>o.f());
-  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);hit(label([og[0],og[1]+14*zoom],'Office computer','#14211a'),()=>goComputer());
+  const og=P(OFFICE.st.x+.5,OFFICE.st.y+.5,0);hit(label([og[0],og[1]+14*zoom],'Office','#14211a'),()=>openTablet());
   const dk=P(20.5,21.5,0);label([dk[0],dk[1]+12*zoom],'Loading dock','#14211a');
   drawFx(now);drawBubbles(now);
 }
@@ -816,7 +965,8 @@ function walkTo(tx,ty,then){
 }
 function movePlayer(dt){
   moving=false;if(!path.length)return;
-  let rem=dt*4.4;
+  if(S.paused)return;
+  let rem=dt*7*S.speed;
   while(rem>0&&path.length){
     const [tx,ty]=path[0],gx=tx+.5,gy=ty+.5,dx=gx-S.player.x,dy=gy-S.player.y,dist=Math.hypot(dx,dy);
     if(dist<=rem){S.player.x=gx;S.player.y=gy;rem-=dist;path.shift();}else{S.player.x+=dx/dist*rem;S.player.y+=dy/dist*rem;rem=0;}
@@ -827,19 +977,22 @@ function movePlayer(dt){
 let npcs=[];
 function syncNPCs(){
   const w=Math.min(S.week,WEEKS),act=S.phase==='run'?S.growers.filter(g=>g.from<=w&&w<=g.to&&gHours(g)>0):[];
+  npcs.filter(n=>!act.some(g=>g.id===n.id)).forEach(n=>{const t=n.task!=null&&S.tasks.find(x=>x.id===n.task);if(t){t.who=null;t.prog=0;}});
   npcs=npcs.filter(n=>act.some(g=>g.id===n.id));
   act.forEach(g=>{if(!npcs.some(n=>n.id===g.id))npcs.push({id:g.id,name:g.name,x:OFFICE.st.x+.5,y:OFFICE.st.y+.5,path:[],wait:0,moving:false});});
 }
 function moveNPCs(dt){
   npcs.forEach(n=>{
     n.moving=false;
+    if(S.paused)return;
+    if(n.task!=null&&!n.path.length)return;
     if(!n.path.length){n.wait-=dt;if(n.wait>0)return;
       const g=S.growers.find(x=>x.id===n.id);if(!g)return;
       const hs=Object.keys(g.assign).map(Number).map(houseOf).filter(h=>h&&!h.building&&TASKS.some(([k])=>g.assign[h.id][k]));
       if(!hs.length)return;const h=hs[Math.floor(Math.random()*hs.length)],G=GEO[h.lot];
       const aisles=[];for(let y=G.y+1;y<G.y+G.h-1;y++)for(let x=G.x+1;x<G.x+G.w-1;x++)if(MAP[y][x]===T.FLOOR)aisles.push([x,y]);
       const t=aisles[Math.floor(Math.random()*aisles.length)];const p=findPath(Math.floor(n.x),Math.floor(n.y),t[0],t[1]);n.path=p||[];n.wait=1+Math.random()*3;return;}
-    let rem=dt*2.6;
+    let rem=dt*5*S.speed;
     while(rem>0&&n.path.length){const [tx,ty]=n.path[0],gx=tx+.5,gy=ty+.5,dx=gx-n.x,dy=gy-n.y,d=Math.hypot(dx,dy);if(d<=rem){n.x=gx;n.y=gy;rem-=d;n.path.shift();}else{n.x+=dx/d*rem;n.y+=dy/d*rem;rem=0;}}
     n.moving=true;
   });
@@ -867,13 +1020,14 @@ function houseWarn(h){
   if(!h||h.building||S.phase!=='run')return[];
   const w=S.week,fc=S.fc,out=[],cf=comfort(houseCrops(h,w));
   if(fc&&cf){
-    const lo=climate(w,fc.fOut-5,h.sw,h),hi=climate(w,fc.fOut+5,h.sw,h);
+    const e=effSw(h),lo=climate(w,fc.fOut-5,e,h),hi=climate(w,fc.fOut+5,e,h);
     if(lo<cf.lo-1)out.push({k:'cold',t:`${h.name}: could drop to ${Math.round(lo)}°F this week; crops need ${Math.round(cf.lo)}°F or warmer.`});
     if(hi>cf.hi+1)out.push({k:'hot',t:`${h.name}: could reach ${Math.round(hi)}°F this week; crops want ${Math.round(cf.hi)}°F or cooler.`});
-    if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),h.sw,h);if(sh<cf.lo||sh>cf.hi)out.push({k:fc.warnKind==='cold'?'cold':'hot',t:`${h.name}: if the ${fc.warnKind==='cold'?'cold front':'heat wave'} hits, it could reach ${Math.round(sh)}°F.`});}
+    if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),e,h);if(sh<cf.lo||sh>cf.hi)out.push({k:fc.warnKind==='cold'?'cold':'hot',t:`${h.name}: if the ${fc.warnKind==='cold'?'cold front':'heat wave'} hits, it could reach ${Math.round(sh)}°F.`});}
     if(h.tin!=null&&(h.tin<cf.lo||h.tin>cf.hi))out.push({k:h.tin<cf.lo?'cold':'hot',t:`${h.name} is ${Math.round(h.tin)}°F right now, outside what its crops like.`});
-    const m=moisture(climate(w,fc.fOut,h.sw,h),h.sw);if(m.label!=='Good')out.push({k:'water',t:`${h.name}: watering looks ${m.label.toLowerCase()} at these settings.`});
+    const m=moisture(climate(w,fc.fOut,e,h),e);if(m.label!=='Good')out.push({k:'water',t:`${h.name}: watering looks ${m.label.toLowerCase()} at these settings.`});
   }
+  Object.keys(h.broken||{}).filter(k=>h.broken[k]).forEach(k=>out.push({k:'block',t:`${h.name}: the ${PARTS[k]}.`}));
   if(h.pest>=35)out.push({k:'bug',t:`${h.name}: pest pressure is ${h.pest>=60?'severe':'high'}.`});
   const aged=S.batches.filter(b=>b.house===h.id&&b.status==='ready'&&w-b.readyWeek>=1);
   if(aged.length)out.push({k:'age',t:`${h.name}: ${aged.reduce((a,b)=>a+b.units,0)} flats are past prime and losing value.`});
@@ -901,27 +1055,22 @@ function clickAt(mx,my){
     if(!b){toast('Click a bench inside a greenhouse to place this plot.','info');return;}
     const f=plotFit(b.h,b.i,hold.plan);
     if(!f.ok){hover={h:b.h.id,cells:f.cells,ok:false};toast(f.why,'alert');return;}
-    const c=cellOf(b.h,b.i),ay=MAP[c.y+1]&&MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1;
-    const inside=houseAtTile(Math.floor(S.player.x),Math.floor(S.player.y))===b.h;
-    if(inside)placePlot(b.h,b.i);else walkTo(c.x,ay,()=>{if(hold)placePlot(b.h,b.i);});
+    placePlot(b.h,b.i);
     return;
   }
   if(b){const pb=cellNow(b.h.id,b.i)||S.batches.find(z=>z.house===b.h.id&&z.status==='planned'&&z.cells.includes(b.i));
     if(pb){selPlot=pb.id;openPlot(pb);return;}
-    const c=cellOf(b.h,b.i);walkTo(c.x,MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1);return;}
+    const c=cellOf(b.h,b.i);walkManual(c.x,MAP[c.y+1][c.x]===T.FLOOR?c.y+1:c.y-1);return;}
   const [x,y]=toTile(mx,my,0),t=tileAt(x,y);
-  if(t===T.OFFICE||(x===OFFICE.st.x&&y===OFFICE.st.y)){goComputer();return;}
+  if(t===T.OFFICE){openTablet();return;}
   const h=houseAtTile(x,y);
   if(h&&!h.building){const g=GEO[h.lot];
-    if((x===g.pwall.x&&y===g.pwall.y)||(x===g.pst.x&&y===g.pst.y)){goPanel(h);return;}
     if(t===T.WALL){walkTo(g.door.x,g.door.y);return;}}
   const lot=lotAtTile(x,y);
-  if(lot&&(!h||h.building)){goLot(lot);return;}
-  if(walk(x,y))walkTo(x,y);
+  if(lot&&(!h||h.building)){openLot(lot);return;}
+  if(walk(x,y))walkManual(x,y);
 }
-function goComputer(tab){walkTo(OFFICE.st.x,OFFICE.st.y,()=>openComputer(tab));}
-function goPanel(h){const g=GEO[h.lot];walkTo(g.pst.x,g.pst.y,()=>openPanel(h));}
-function goLot(L){const g=GEO[L.key];walkTo(g.appr.x,g.appr.y,()=>openLot(L));}
+function walkManual(x,y){if(pw.task!=null){const t=S.tasks.find(z=>z.id===pw.task);if(t)t.prog=0;pw.task=null;}walkTo(x,y);}
 cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,cx:cam.x,cy:cam.y,moved:false};});
 cv.addEventListener('pointermove',e=>{
   const r=cv.getBoundingClientRect();hoverUpdate(e.clientX-r.left,e.clientY-r.top);
@@ -937,6 +1086,7 @@ window.addEventListener('keydown',e=>{
   if(e.key===' '){e.preventDefault();togglePlay();}
   else if(e.key==='Escape'){if(!$('modal').hidden)closeModal();else if(hold){hold=null;renderHold();endFraming();}}
   else if(['1','2','4'].includes(e.key)){S.speed=+e.key;hud();}
+  else if(e.key==='t'||e.key==='T'){if(!$('modal').hidden&&mKind==='tablet')closeModal();else openTablet();}
 });
 
 /* ================= HUD, toasts ================= */
@@ -952,7 +1102,8 @@ function hud(){
   $('hFc').textContent=fcText;$('hFc').hidden=!fcText;$('hFc').classList.toggle('warn',!!(fc&&(fc.warn||(fn&&fn.warn))));
   $('bPlay').textContent=S.paused?'Play':'Pause';$('bPlay').classList.toggle('play',S.paused);$('bPlay').disabled=S.phase==='done';
   document.querySelectorAll('#speed button').forEach(b=>b.classList.toggle('on',+b.dataset.sp===S.speed));
-  renderAlerts();
+  renderAlerts();renderQueue();
+  const no=S.orders.filter(o=>o.status==='offer').length;$('tabN').hidden=!no;$('tabN').textContent=no;
 }
 function pips(){
   const f=S.phase==='done'?1:(S.day+S.clock/(WEEK_SEC/DAYS))/DAYS;
@@ -961,6 +1112,12 @@ function pips(){
 }
 function togglePlay(){if(S.phase==='done')return;S.paused=!S.paused;if(!S.paused)S.welcomed=true;hud();}
 $('bPlay').addEventListener('click',togglePlay);
+$('bTab').addEventListener('click',()=>{if(!$('modal').hidden&&mKind==='tablet')closeModal();else openTablet();});
+function renderQueue(){
+  const q=S.queue.map(id=>S.tasks.find(t=>t.id===id)).filter(Boolean),crew=S.tasks.filter(t=>t.who&&t.who!=='p').length,open=S.tasks.filter(t=>t.who==null&&(t.type!=='pot'||taskValid(t))).length;
+  $('queue').innerHTML=(q.length||crew||open?`<b>${q.length?'Your list':'To do'}${open?` \u00b7 ${open} waiting`:''}${crew?` \u00b7 crew on ${crew}`:''}</b>`:'')+q.map((t,i)=>`<button type="button" data-q="${t.id}" class="${pw.task===t.id?'now':''}" aria-label="Remove ${esc(taskLabel(t))} from your list">${i+1}. ${esc(taskLabel(t))} <i>\u00d7</i></button>`).join('');
+}
+$('queue').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const t=S.tasks.find(x=>x.id===+b.dataset.q);if(t)dequeue(t);});
 $('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.speed=+b.dataset.sp;hud();}});
 function toast(t,k){
   const el=document.createElement('div');el.className='toast '+(k||'');el.textContent=t;
@@ -973,7 +1130,7 @@ function renderAlerts(){
   const list=[];activeH().forEach(h=>houseWarn(h).forEach(x=>list.push({...x,h})));
   const key=list.map(x=>x.k+x.h.id).join(',');if(key===alertsKey)return;alertsKey=key;
   $('alerts').innerHTML=list.slice(0,VW<600?5:3).map((x,i)=>`<button type="button" data-al="${i}" title="${esc(x.t)}" aria-label="${esc(x.t)}" class="${['cold','hot','bug','block'].includes(x.k)?'alert':''}"><i style="background:${BCOL[x.k]}">!</i><span class="at">${esc(x.t)}</span></button>`).join('');
-  $('alerts').onclick=e=>{const b=e.target.closest('[data-al]');if(b)goPanel(list[+b.dataset.al].h);};
+  $('alerts').onclick=e=>{const b=e.target.closest('[data-al]');if(b)openTablet('h'+list[+b.dataset.al].h.id);};
 }
 
 /* ================= modals ================= */
@@ -983,16 +1140,18 @@ function closeModal(){$('modal').hidden=true;mKind=null;selPlot=null;}
 $('mClose').addEventListener('click',closeModal);
 $('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal();});
 function tabs(list){$('mTabs').innerHTML=list.map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${k===mTab?'on':''}">${l}${n?`<span class="n">${n}</span>`:''}</button>`).join('');}
-function refreshModal(){if($('modal').hidden)return;if(mKind==='computer')renderComputer();else if(mKind==='panel')renderPanel();else if(mKind==='plot')renderPlot();}
+function refreshModal(){if($('modal').hidden)return;if(mKind==='tablet')renderTablet();else if(mKind==='plot')renderPlot();}
 
 /* ---- computer ---- */
 let cfg={};
-function openComputer(tab){mTab=tab||(S.orders.some(o=>o.status==='offer')?'offers':'orders');openModal('computer','Office computer');renderComputer();}
-function renderComputer(){
+function openTablet(tab){mTab=tab||(S.orders.some(o=>o.status==='offer')?'offers':'orders');openModal('tablet','Tablet');renderTablet();}
+function renderTablet(){
   const nOff=S.orders.filter(o=>o.status==='offer').length,nNeed=S.orders.filter(o=>o.status==='open'&&!S.batches.some(b=>b.orderId===o.id&&b.status!=='done')).length;
-  tabs([['offers','Offers',nOff],['orders','Orders',nNeed],['customers','Customers'],['crew','Crew'],['books','Books']]);
+  if(mTab&&mTab[0]==='h'&&!activeH().some(h=>'h'+h.id===mTab))mTab='orders';
+  tabs([['offers','Offers',nOff],['orders','Orders',nNeed],...activeH().map(h=>['h'+h.id,h.name,houseWarn(h).length]),['crew','Crew'],['customers','Customers'],['books','Books']]);
   const B=$('mBody');
-  if(mTab==='offers')B.innerHTML=offersHTML();
+  if(mTab[0]==='h'){mHouse=+mTab.slice(1);renderPanel();}
+  else if(mTab==='offers')B.innerHTML=offersHTML();
   else if(mTab==='orders')B.innerHTML=ordersHTML();
   else if(mTab==='customers')B.innerHTML=customersHTML();
   else if(mTab==='crew'){B.innerHTML=`<ul class="tasks"><li><b>Greenhouse management</b> runs on experience: they set the house's switches each week, and the most experienced read the forecast perfectly.</li><li><b>Crop management</b> runs on horticultural knowledge: lower pest pressure and fewer losses on crops waiting past prime.</li><li><b>Maintenance</b> runs on work ethic: when the weather breaks out of the forecast range, the house holds closer to good temperatures.</li></ul><div id="growers"></div>`;renderGrowers();}
@@ -1093,13 +1252,12 @@ function draftPreview(){
 }
 
 /* ---- control panel ---- */
-function openPanel(h){mHouse=h.id;mTab=null;$('mTabs').innerHTML='';openModal('panel',`${h.name} control panel`);renderPanel();}
 function renderPanel(){
-  const h=houseOf(mHouse);if(!h){closeModal();return;}
+  const h=houseOf(mHouse);if(!h){mTab='orders';renderTablet();return;}
   const w=Math.min(S.week,WEEKS),fc=S.fc,run=S.phase==='run';
   const mg=run?skill(h.id,'mgmt',w):0,crew=run?S.growers.filter(g=>g.from<=w&&w<=g.to&&g.assign[h.id]&&TASKS.some(([k])=>g.assign[h.id][k])):[];
   const cf=comfort(houseCrops(h,w)),P=h.pest,pc=P<15?'var(--leaf)':P<35?'var(--amber)':'var(--terra)';
-  const tin=h.tin!=null?h.tin:(fc?climate(w,fc.fOut,h.sw,h):70),bad=cf&&(tin<cf.lo||tin>cf.hi),m=fc?moisture(climate(w,fc.fOut,h.sw,h),h.sw):{label:'Good'};
+  const es=effSw(h),tin=h.tin!=null?h.tin:(fc?climate(w,fc.fOut,es,h):70),bad=cf&&(tin<cf.lo||tin>cf.hi),m=fc?moisture(climate(w,fc.fOut,es,h),es):{label:'Good'};
   const warns=houseWarn(h);
   $('mBody').innerHTML=`<p class="hint">${esc(h.desc)} Changes take effect right away and through the rest of the week.</p>
   <p class="crewl">${crew.length?`Crew today: ${crew.map(g=>`${esc(g.name)} (${TASKS.filter(([k])=>g.assign[h.id][k]).map(t=>t[1].toLowerCase()).join(', ')})`).join('; ')}.${mg?` <b>${esc(crewName(h.id,'mgmt',w))} runs these switches</b>; beneficial insects stay your call.`:''}`:'No grower on this house this week.'}</p>
@@ -1112,27 +1270,27 @@ function renderPanel(){
   <div class="pnl">
     <div>
       <b class="sh">Climate</b>
-      <div class="sw">${SW.filter(x=>x[0]!=='bugs').map(([k,l,opts])=>{const lock=mg&&k!=='bugs';return`<div class="swr"><span>${l}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
+      <div class="sw">${SW.filter(x=>x[0]!=='bugs').map(([k,l,opts])=>{const lock=mg&&k!=='bugs',br=h.broken&&h.broken[k];return`<div class="swr"><span>${l}${br?' <span class="chip short">Broken: fix it in the yard</span>':''}</span><div class="opts">${opts.map((o,i)=>`<button type="button" data-sw="${k}" data-v="${i}" class="${h.sw[k]===i?'on':''}" aria-pressed="${h.sw[k]===i}" ${lock||!run?'disabled':''}>${o}</button>`).join('')}</div></div>`;}).join('')}</div>
       <b class="sh" style="margin-top:16px">Pest control</b>
       <div class="sw"><div class="swr"><span>Beneficial insects (${fmt(8*K)}/wk)</span><div class="opts">${['Off','On'].map((o,i)=>`<button type="button" data-sw="bugs" data-v="${i}" class="${h.sw.bugs===i?'on':''}" aria-pressed="${h.sw.bugs===i}" ${run?'':'disabled'}>${o}</button>`).join('')}</div></div></div>
-      <p class="gcost" style="margin:8px 0">Sprays work right away. Each use builds resistance to that product, which fades over the months you don't use it. Alternate A and B to keep both working.${h.sw.bugs?'':' Beneficial insects keep pests down steadily, so you need far fewer sprays.'}</p>
-      <div class="sprays">${['a','b'].map(k=>{const r=h.res[k],kill=sprayKill(r);return`<div class="spr"><button class="btn red" type="button" data-spray="${k}" ${run?'':'disabled'}>${SPRAYS[k]} \u00b7 ${fmt(50*K)}</button><span class="gcost">Kills about ${Math.round(kill*100)}% now</span><i class="pm"><i style="width:${Math.round(r/RES_CAP*100)}%;background:${r>.3?'var(--terra)':r>.12?'var(--amber)':'var(--leaf)'}"></i></i><small class="gcost">Resistance ${Math.round(r/RES_CAP*100)}% of max</small></div>`;}).join('')}</div>
+      <p class="gcost" style="margin:8px 0">Spraying is a hands-on task: tap a spray to put it on the to-do list, and it works the moment someone sprays. Each use builds resistance to that product, which fades over the months you don't use it. Alternate A and B to keep both working.${h.sw.bugs?'':' Beneficial insects keep pests down steadily, so you need far fewer sprays.'}</p>
+      <div class="sprays">${['a','b'].map(k=>{const r=h.res[k],kill=sprayKill(r);return`<div class="spr"><button class="btn red" type="button" data-spray="${k}" ${run?'':'disabled'}>${S.tasks.some(t=>t.type==='spray'&&t.house===h.id&&t.kind===k)?'Queued: ':''}${SPRAYS[k]} \u00b7 ${fmt(50*K)}</button><span class="gcost">Kills about ${Math.round(kill*100)}% now</span><i class="pm"><i style="width:${Math.round(r/RES_CAP*100)}%;background:${r>.3?'var(--terra)':r>.12?'var(--amber)':'var(--leaf)'}"></i></i><small class="gcost">Resistance ${Math.round(r/RES_CAP*100)}% of max</small></div>`;}).join('')}</div>
       <p class="gcost" style="margin-top:12px">Running cost at these settings: about ${fmt(weekCost(h,fc?fc.fOut:60))}/wk</p>
     </div>
-    <div>${forecastChart(h)}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
+    <div>${forecastChart(h)}${(()=>{const ts=S.tasks.filter(t=>taskHouse(t)===h.id);return ts.length?`<b class="sh" style="margin-top:12px">Hands-on tasks here</b><ul class="warnlist" style="color:var(--ink)">${ts.map(t=>`<li>${esc(taskLabel(t))} \u00b7 ${t.who==='p'?'on your list':t.who?esc((S.growers.find(g=>g.id===t.who)||{}).name||'crew')+' is on it':'not started'}</li>`).join('')}</ul>`:'';})()}${warns.length?`<ul class="warnlist">${warns.map(x=>`<li>${esc(x.t)}</li>`).join('')}</ul>`:'<p class="gcost" style="margin-top:8px">No warnings for this house.</p>'}</div>
   </div>`;
-  document.querySelectorAll('[data-spray]').forEach(b=>b.onclick=()=>{const k=b.dataset.spray,kill=sprayKill(h.res[k]);spray(h,k);renderPanel();const o=k==='a'?'b':'a',tip=h.res[k]>=.3&&h.res[o]<h.res[k]-.1?` ${SPRAYS[o]} would hit harder next time.`:'';toast(`${SPRAYS[k]} knocked out about ${Math.round(kill*100)}% of the pests in the ${h.name.toLowerCase()}.${tip}`,'good');});
+  document.querySelectorAll('[data-spray]').forEach(b=>b.onclick=()=>{const k=b.dataset.spray,kill=sprayKill(h.res[k]);const t=addTask({type:'spray',house:h.id,kind:k});if(t&&!crewFor(t))enqueue(t);renderPanel();return;const o=k==='a'?'b':'a',tip=h.res[k]>=.3&&h.res[o]<h.res[k]-.1?` ${SPRAYS[o]} would hit harder next time.`:'';toast(`${SPRAYS[k]} knocked out about ${Math.round(kill*100)}% of the pests in the ${h.name.toLowerCase()}.${tip}`,'good');});
 }
 function forecastChart(h){
   const fc=S.fc;if(!fc||S.phase!=='run')return'';
   const w=S.week,cf=comfort(houseCrops(h,w)),Y0=20,Y1=110,y=t=>clamp((Y1-t)/(Y1-Y0)*100,0,100),X=d=>d/DAYS*700;
   const now=(S.day+S.clock/(WEEK_SEC/DAYS));
-  const pLo=climate(w,fc.fOut-5,h.sw,h),pHi=climate(w,fc.fOut+5,h.sw,h);
+  const es=effSw(h),pLo=climate(w,fc.fOut-5,es,h),pHi=climate(w,fc.fOut+5,es,h);
   let s=`<svg viewBox="0 0 700 100" preserveAspectRatio="none" aria-hidden="true">`;
   if(cf)s+=`<rect x="0" y="${y(cf.hi)}" width="700" height="${y(cf.lo)-y(cf.hi)}" fill="rgba(80,180,90,.22)"/>`;
   s+=`<rect x="0" y="${y(fc.fOut+5)}" width="700" height="${y(fc.fOut-5)-y(fc.fOut+5)}" fill="rgba(120,130,140,.22)"/>`;
   s+=`<rect x="${X(now)}" y="${y(Math.max(pLo,pHi))}" width="${Math.max(0,700-X(now))}" height="${Math.abs(y(pLo)-y(pHi))+.8}" fill="rgba(233,140,40,.35)"/>`;
-  if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),h.sw,h);s+=`<line x1="${X(now)}" x2="700" y1="${y(sh)}" y2="${y(sh)}" stroke="#c4542a" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/>`;}
+  if(fc.warn){const sh=climate(w,fc.fOut+(fc.warnKind==='cold'?-16:9),es,h);s+=`<line x1="${X(now)}" x2="700" y1="${y(sh)}" y2="${y(sh)}" stroke="#c4542a" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"/>`;}
   const op=S.outDays.map((t,i)=>`${X(i+.5)},${y(t)}`).join(' ');if(S.outDays.length>1)s+=`<polyline points="${op}" fill="none" stroke="#56636b" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
   const ip=(h.tday||[]).map((t,i)=>t==null?'':`${X(i+.5)},${y(t)}`).filter(Boolean).join(' ');if((h.tday||[]).length>1)s+=`<polyline points="${ip}" fill="none" stroke="#c4542a" stroke-width="2.5" vector-effect="non-scaling-stroke"/>`;
   s+=`<line id="nowLine" x1="${X(now)}" x2="${X(now)}" y1="0" y2="100" stroke="#e9b824" stroke-width="3" vector-effect="non-scaling-stroke"/></svg>`;
@@ -1147,13 +1305,13 @@ function renderPlot(){
   const b=S.batches.find(z=>z.id===mPlot);if(!b||b.status==='done'){closeModal();return;}
   const C=CROPS[b.crop],o=b.orderId!=null?order(b.orderId):null,h=houseOf(b.house),w=Math.min(S.week,WEEKS);
   const age=b.status==='ready'?w-b.readyWeek:0;
-  let st=b.status==='planned'?(b.blocked?'Blocked: old plants are still on these benches.':`Pots in week ${b.start}.`):b.status==='growing'?`Growing: ${Math.round(clamp(b.progress/C.grow,0,1)*100)}% grown, ready about week ${readyAt(b)}.`:age<=0?'Ready and in prime condition.':`Ready, ${age} wk past prime: selling at ${Math.round(qual(age)*100)}% value. Too big after week ${b.readyWeek+C.shelf}.`;
+  let st=b.status==='dead'?'Too big to sell. Clear these flats so the bench can be used again.':b.status==='planned'?(b.blocked?'Blocked: old plants are still on these benches.':`Pots in week ${b.start}.`):b.status==='growing'?`Growing: ${Math.round(clamp(b.progress/C.grow,0,1)*100)}% grown, ready about week ${readyAt(b)}.`:age<=0?'Ready and in prime condition.':`Ready, ${age} wk past prime: selling at ${Math.round(qual(age)*100)}% value. Too big after week ${b.readyWeek+C.shelf}.`;
   $('mBody').innerHTML=`<div class="figs"><div><b>${b.status==='planned'?b.qty:b.units}</b><span>flats ${b.status==='planned'?'planned':'on the bench'}</span></div><div><b>${b.lost||0}</b><span>flats lost</span></div><div><b>${C.lo}–${C.hi}°F</b><span>what it likes</span></div></div>
   <p>${esc(st)}</p>
   <p class="hint">${o?`For ${esc(o.cust)}: ${o.qty} flats, pickup week ${dueW(o)}${o.status==='shipped'?' (already shipped; these are leftovers)':''}.`:'No order attached.'} In the ${esc(h.name.toLowerCase())}.</p>
-  <div class="grow">${b.status==='planned'?`<button class="btn line" type="button" id="plotCancel">Cancel this plot</button>`:''}${b.status==='ready'||(b.status==='growing'&&o&&o.status!=='open')?`<button class="btn red" type="button" id="plotToss">Toss remaining flats</button>`:''}</div>`;
+  <div class="grow">${b.status==='planned'?`<button class="btn line" type="button" id="plotCancel">Cancel this plot</button>`:''}${b.status==='ready'||b.status==='dead'||(b.status==='growing'&&o&&o.status!=='open')?`<button class="btn red" type="button" id="plotToss">Clear these flats</button>`:''}</div>`;
   const pc=$('plotCancel');if(pc)pc.onclick=()=>{b.status='done';b.cancelled=true;say(`Cancelled the ${C.name.toLowerCase()} plot${o?` for ${o.cust}; the order needs a new plot`:''}.`,'warn');closeModal();dirty=true;};
-  const pt=$('plotToss');if(pt)pt.onclick=()=>{cs(b.crop).wasted+=b.units;b.wasted=(b.wasted||0)+b.units;say(`Tossed ${b.units} ${C.name.toLowerCase()} ${fl(b.units)} to free the bench.`,'warn');b.units=0;b.status='done';b.endW=w;closeModal();dirty=true;};
+  const pt=$('plotToss');if(pt)pt.onclick=()=>{const t=addTask({type:'clear',plotId:b.id})||S.tasks.find(x=>x.type==='clear'&&x.plotId===b.id);if(t&&t.who==null&&!crewFor(t))enqueue(t);toast(`Clearing the ${C.name.toLowerCase()} is on the to-do list.`,'info');closeModal();dirty=true;};
 }
 
 /* ---- lots ---- */
@@ -1166,10 +1324,10 @@ function openLot(L){mTab=null;$('mTabs').innerHTML='';const h=S.houses.find(z=>z
 /* ---- welcome and report ---- */
 function openWelcome(){
   mTab=null;$('mTabs').innerHTML='';openModal('welcome',`Year ${S.year}: welcome to your nursery`);
-  $('mBody').innerHTML=`<p class="hint">Click or tap anywhere to walk. Drag to look around. Time runs about 15 seconds a week; pause any time with the space bar.</p>
-  <ul class="how"><li><b>Office computer</b>Take orders, plan their plots, hire growers, check customers and the books.</li><li><b>Benches</b>Place each order's plot on a bench. It only fits if the spots are free for those weeks.</li><li><b>Control panels</b>Set heat, vents, shade, fans, water and pest control. Watch the live forecast.</li><li><b>For sale lots</b>Build another greenhouse when you're ready for more space.</li></ul>
-  <p><button class="btn go" type="button" id="wGo">Head to the office</button></p>`;
-  $('wGo').onclick=()=>{closeModal();goComputer('offers');};
+  $('mBody').innerHTML=`<p class="hint">Open the tablet (button at the top, or T) for orders, each house's controls, crew, customers and the books. Tap task bubbles in the yard to add them to your to-do list, and your grower runs over and does them. Time runs about 15 seconds a week; space bar pauses.</p>
+  <ul class="how"><li><b>Tablet</b>Take orders and drop their plots on a bench, set each house's climate, hire crew, check the books.</li><li><b>Hands-on tasks</b>Pot plots on their start week, load trucks before the week ends, spray, fix breakdowns and clear old stock. Growers pick up tasks in their houses.</li><li><b>Control</b>Each house's tab shows its live forecast. Settings apply right away, no walking needed.</li><li><b>For sale lots</b>Build another greenhouse when you're ready for more space.</li></ul>
+  <p><button class="btn go" type="button" id="wGo">Open the tablet</button></p>`;
+  $('wGo').onclick=()=>{closeModal();openTablet('offers');};
 }
 function openReport(){
   mTab=null;$('mTabs').innerHTML='';
@@ -1188,14 +1346,14 @@ function openReport(){
 }
 
 /* ---- modal events ---- */
-$('mTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){mTab=b.dataset.tab;renderComputer();}});
+$('mTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){mTab=b.dataset.tab;renderTablet();}});
 $('mBody').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
-  if(t.dataset.buf){const [id,v]=t.dataset.buf.split('|');cfgOf(order(+id)).buf=+v;renderComputer();}
-  else if(t.dataset.early){const [id,v]=t.dataset.early.split('|');cfgOf(order(+id)).early=+v;renderComputer();}
+  if(t.dataset.buf){const [id,v]=t.dataset.buf.split('|');cfgOf(order(+id)).buf=+v;renderTablet();}
+  else if(t.dataset.early){const [id,v]=t.dataset.early.split('|');cfgOf(order(+id)).early=+v;renderTablet();}
   else if(t.dataset.take){const card=t.closest('.ticket');if(card&&!still){card.animate([{transform:'none'},{transform:'scale(1.04) rotate(-2deg)'},{transform:'translateY(40px) scale(.6)',opacity:0}],{duration:320,easing:'ease-in'}).onfinish=()=>takeOrder(+t.dataset.take);}else takeOrder(+t.dataset.take);}
   else if(t.dataset.decline){const o=order(+t.dataset.decline),card=t.closest('.ticket');
-    const fin=()=>{o.status='declined';bump(o.custId,-2);say(`Declined ${o.cust}'s ${CROPS[o.crop].name.toLowerCase()} offer. Goodwill −2.`,'warn');renderComputer();};
+    const fin=()=>{o.status='declined';bump(o.custId,-2);say(`Declined ${o.cust}'s ${CROPS[o.crop].name.toLowerCase()} offer. Goodwill −2.`,'warn');renderTablet();};
     if(card&&!still){const dir=Math.random()<.5?-1:1;card.animate([{transform:'none',opacity:1},{transform:`translate(${dir*50}px,-30px) rotate(${dir*8}deg)`,offset:.3},{transform:`translate(${dir*700}px,-300px) rotate(${dir*70}deg)`,opacity:0}],{duration:650,easing:'cubic-bezier(.5,0,.8,.4)',fill:'forwards'}).onfinish=fin;}else fin();}
   else if(t.dataset.sw){const h=houseOf(mHouse);h.sw[t.dataset.sw]=+t.dataset.v;renderPanel();dirty=true;}
   else if(t.dataset.hire){if(S.phase==='done')return;const w=Math.min(S.week,WEEKS);draft={pid:+t.dataset.hire,from:w,to:Math.min(WEEKS,w+11),assign:{[S.houses[0].id]:{mgmt:true,crop:true,maint:true}}};renderGrowers();}
@@ -1234,14 +1392,14 @@ function frame(now){
     if(S.paused)S.clock=Math.min(S.clock,dl*.999);
   }
   if(S.week!==lastWeekSeen){lastWeekSeen=S.week;syncNPCs();}
-  movePlayer(dt);moveNPCs(dt);updateCam(dt);
+  movePlayer(dt);moveNPCs(dt);workPlayer(dt);workCrew(dt);updateCam(dt);
   draw(now);pips();
-  if(mKind==='panel'&&!$('modal').hidden){const nl=document.getElementById('nowLine');if(nl){const x=(S.day+S.clock/(WEEK_SEC/DAYS))/DAYS*700;nl.setAttribute('x1',x);nl.setAttribute('x2',x);}}
+  if(mKind==='tablet'&&mTab&&mTab[0]==='h'&&!$('modal').hidden){const nl=document.getElementById('nowLine');if(nl){const x=(S.day+S.clock/(WEEK_SEC/DAYS))/DAYS*700;nl.setAttribute('x1',x);nl.setAttribute('x2',x);}}
   hudT+=dt;if(hudT>.5){hudT=0;hud();}
   requestAnimationFrame(frame);
 }
 function start(d){
-  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;S.houses.forEach(h=>{if(!h.res)h.res={a:Math.min(RES_CAP,h.resist||0),b:0};});buildMap();}
+  if(d&&d.v===VER&&Array.isArray(d.orders)){S=d;S.paused=true;S.houses.forEach(h=>{if(!h.res)h.res={a:Math.min(RES_CAP,h.resist||0),b:0};h.broken=h.broken||{};});S.tasks=S.tasks||[];S.queue=[];S.tasks.forEach(t=>{t.who=null;t.prog=0;});buildMap();}
   else freshGame();
   resize();zoom=clamp(VW/1150,.55,1);
   cam.x=wx(S.player.x,S.player.y);cam.y=wy(S.player.x,S.player.y,0)-40;
