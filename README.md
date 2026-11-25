@@ -1,6 +1,8 @@
 # Greenhouse Year
 
-A live, isometric greenhouse management game in a single HTML file. Run one greenhouse through the year: take orders, plan plots on the benches, keep each house's climate in line with the forecast, and keep your customers happy year over year.
+A greenhouse management game in a single HTML file. The year runs in eight periods: between periods you plan orders and contracts on a bench-by-period board, and during each period you and your crew pot, water, spray, fix and load trucks in a chunky isometric greenhouse that can grow to three floors.
+
+The earlier quarterly version lives in `classic/`.
 
 ## Play
 
