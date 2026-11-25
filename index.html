@@ -41,6 +41,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .uprow .rn{flex:1;min-width:0}.uprow .rn b{display:block;font-size:17px}.uprow .rn span{font-size:14px;color:var(--mute)}
 .pips3{display:flex;gap:4px;margin-top:4px}.pips3 i{width:22px;height:8px;border-radius:4px;background:#e4e0d3}.pips3 i.on{background:var(--go)}
 .uprow .btn{padding:10px 14px;font-size:15px;white-space:nowrap}
+.toasts.low{left:8px;transform:none;width:calc(100vw - 96px);align-items:flex-start}
+.toasts.low .toast{font-size:15px;padding:6px 12px 6px 6px}
 .toast.out{opacity:0;transform:translateY(-8px);transition:.3s}
 @keyframes tin{from{opacity:0;transform:translateY(-10px)}}
 .ic{display:inline-grid;place-items:center;border-radius:50%;flex:none}
@@ -975,10 +977,12 @@ function renderCrewPop(){
 addEventListener('pointerdown',e=>{if(crewPop&&!e.target.closest('#crewPop,#qC .av')){crewPop=null;renderCrewPop();}});
 function toast(k,text,onTap){
   if(window.__quiet)return;
-  const box=$('toasts');box.style.top=($('hud').offsetHeight+8)+'px';
+  const box=$('toasts'),tall=innerHeight>innerWidth*1.2;
+  if(tall){box.classList.add('low');box.style.top='auto';box.style.bottom=($('tray').offsetHeight+8)+'px';}
+  else{box.classList.remove('low');box.style.bottom='auto';box.style.top=($('hud').offsetHeight+8)+'px';}
   const el=document.createElement('div');el.className='toast'+(onTap?' tap':'');el.innerHTML=svgIcon(k,34)+`<span>${text}</span>`+(onTap?'<b class="go">Open ›</b>':'');box.prepend(el);
   if(onTap)el.addEventListener('click',()=>{el.remove();onTap();});
-  while(box.children.length>3)box.lastChild.remove();
+  while(box.children.length>(tall?2:3))box.lastChild.remove();
   setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320);},onTap?4500:2600);
 }
 
@@ -1252,7 +1256,15 @@ cv.addEventListener('pointerup',e=>{
   if(sheetOpen()&&S.phase==='run'){closeSheet();return;}
   let best=null,bd=1e9;for(const h of iconHits){const d=Math.hypot(e.clientX-h.x,e.clientY-h.y);if(d<=h.r&&d<bd){bd=d;best=h;}}
   if(best){best.tasks.forEach(enqueue);return;}
-  for(const b of BENCH.slice(viewF*8,viewF*8+8)){const a=P(b.x,b.y,22+ZB()),c=P(b.x+3,b.y+1,22+ZB()),m=[(a[0]+c[0])/2,(a[1]+c[1])/2];if(Math.abs(e.clientX-m[0])<1.6*TW/2*sc&&Math.abs(e.clientY-m[1])<TH*.6*sc){benchInfo(b);return;}}
+  if(S.phase==='run'){
+    const near=(p,rx,ry)=>Math.abs(e.clientX-p[0])<rx&&Math.abs(e.clientY-p[1])<ry;
+    // heater or fans on this floor
+    if(near(P(UNIT.x+.5,UNIT.y+.5,24+ZB()),TW*.45*sc,TH*1.1*sc)){const t=S.tasks.find(t=>t.type==='fix'&&t.f===viewF);if(t)enqueue(t);else toast('good',`${unitName(S.period)} is running fine`);return;}
+    // any truck on the road, or the dock pad
+    const tr=S.trucks.filter(k=>(k.state==='line'||k.state==='dock')&&k.x!=null);
+    if(tr.some(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc))||near(P(4.5,-.75,4),TW*.9*sc,TH*.6*sc)){const t=S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');return;}
+  }
+  for(const b of BENCH.slice(viewF*8,viewF*8+8)){const a=P(b.x,b.y,22+ZB()),c=P(b.x+3,b.y+1,22+ZB()),m=[(a[0]+c[0])/2,(a[1]+c[1])/2];if(Math.abs(e.clientX-m[0])<1.6*TW/2*sc&&Math.abs(e.clientY-m[1])<TH*.6*sc){const ts=S.phase==='run'?S.tasks.filter(t=>t.type!=='load'&&t.type!=='fix'&&(t.bench===b.i||(t.rows&&t.rows.includes(b.i)))):[];if(ts.length)ts.forEach(enqueue);else benchInfo(b);return;}}
 });
 function benchInfo(b){
   const pl=liveAt(b.i,S.period)||S.plots.find(p=>!p.done&&p.rows.includes(b.i)&&p.s>S.period);
