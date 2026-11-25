@@ -327,6 +327,13 @@ button{font:inherit;color:inherit;cursor:pointer}
 .mini{display:flex;align-items:center;gap:6px}
 .mini .shp i{background:rgba(255,255,255,.9)!important}
 @media(max-width:520px){.hmain{flex-direction:column}.forms{align-self:stretch;justify-content:flex-start}}
+
+.board .ch.due{color:var(--ink);font-weight:800}.board .ch.due span{border:2px solid var(--ink);border-radius:8px;padding:0 5px;background:#fff}
+.board .ch .pk{position:absolute;left:4px;right:4px;bottom:1px;height:4px;border-radius:2px}
+.board .vs{position:absolute;display:grid;place-items:center;font-size:11px;font-weight:700;color:#14402a;border-radius:6px}
+.board .cell.late{background:repeating-linear-gradient(135deg,#f6f3ea 0 5px,#efebe0 5px 10px);border-color:transparent}
+.bd{flex-basis:100%;font-size:13px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 8px}.bd b{color:var(--ink)}
+.bd .up{color:var(--go)}.bd .dn{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -474,6 +481,16 @@ let me=mkWorker('me','me',4.5,3.5),staff=[],viewF=0;
 const crop=c=>CROPS[c];
 const orderOf=pl=>S.orders.find(o=>o.id===pl.oid);
 const have=pl=>pl.alive.reduce((a,b)=>a+b,0);
+const PEAK={petunia:[2,3],vinca:[4,5],geranium:[2,3],begonia:[3,4],pothos:[0,1,7],mum:[5,6],poinsettia:[7],fern:[2,3,4],kale:[6,7],hydrangea:[3,4]};
+const seasF=(k,d)=>{const dist=Math.min(...(PEAK[k]||CROPS[k].sell).map(p=>Math.abs(p-d)));return dist===0?1.15:dist===1?1:.85;};
+const EARLY=[1,.75,.5,.3,.15,.05];
+const earlyF=k=>EARLY[clamp(k,0,EARLY.length-1)];
+const flexible=x=>!!x&&x.base!=null&&x.cid==null&&!x.popup;
+const dueOf=x=>x.d??x.p;
+const unitAt=(x,d)=>flexible(x)?x.base*seasF(x.crop,d)*earlyF(x.p-d):x.price;
+const valAt=(x,d)=>Math.round(x.qty*unitAt(x,d)*(1+.1*upLv('pots')));
+const dMin=x=>minStart()+formOf(x).g-1;
+const kfmt=v=>v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v;
 const baseNeed=of=>Math.min(3,Math.ceil(Math.round(of.qty*(1+S.buf))/CAP));
 function forms(of){
   const h0=baseNeed(of),g0=crop(of.crop).g,out=[{h:h0,g:g0,n:'Standard',d:`${h0} bench${h0>1?'es':''} for ${g0} period${g0>1?'s':''}.`}];
@@ -483,7 +500,7 @@ function forms(of){
 }
 const formOf=of=>{const f=forms(of);return f[clamp(of.fm||0,0,f.length-1)];};
 const need=of=>formOf(of).h;
-const startOf=of=>of.p-formOf(of).g+1;
+const startOf=of=>dueOf(of)-formOf(of).g+1;
 const plotAt=(r,c)=>S.plots.find(pl=>pl.rows.includes(r)&&c>=pl.s&&c<=pl.e);
 const liveAt=(r,c)=>S.plots.find(pl=>!pl.done&&pl.rows.includes(r)&&c>=pl.s&&c<=pl.e);
 const plotF=pl=>BENCH[pl.rows[0]].f;
@@ -494,7 +511,7 @@ const crewCost=()=>S.crew.reduce((a,r)=>a+r.wage,0);
 const upkeep=()=>OVERHEAD+FLOOR_OH*(S.floors-1);
 
 // ---------------- placement ----------------
-function piece(x){return x.oid!=null?{plot:x,crop:x.crop,h:x.rows.length,s:x.s,e:x.e}:{offer:x,crop:x.crop,h:need(x),s:startOf(x),e:x.p};}
+function piece(x){return x.oid!=null?{plot:x,crop:x.crop,h:x.rows.length,s:x.s,e:x.e}:{offer:x,crop:x.crop,h:need(x),s:startOf(x),e:dueOf(x)};}
 function fitsP(pp,top){
   if(top<0||top+pp.h>S.floors*8||pp.s<minStart())return false;
   if(Math.floor(top/8)!==Math.floor((top+pp.h-1)/8))return false;
@@ -506,10 +523,10 @@ function firstFit(of){const pp=piece(of);for(let r=0;r<S.floors*8;r++)if(fitsP(p
 function place(of,top){
   if(!owns(of.crop)||!fits(of,top))return false;
   const F=formOf(of),h=F.h,total=Math.min(baseNeed(of)*CAP,Math.round(of.qty*(1+S.buf)));
-  const o={id:S.nid++,crop:of.crop,qty:of.qty,p:of.p,price:of.price,cust:of.cust,status:'open',contract:of.cid,k:of.k};
+  const d=dueOf(of),o={id:S.nid++,crop:of.crop,qty:of.qty,p:d,ideal:of.p,price:Math.round(unitAt(of,d)*10)/10,cust:of.cust,status:'open',contract:of.cid,k:of.k};
   const rows=[],flats=[];let left=total;
   for(let i=0;i<h;i++){rows.push(top+i);const f=Math.ceil(left/(h-i));flats.push(f);left-=f;}
-  const pl={id:S.nid++,oid:o.id,crop:of.crop,s:startOf(of),e:of.p,g:F.g,rows,flats,alive:flats.slice(),potted:rows.map(()=>false),done:false,taken:roundKey(),of};
+  const pl={id:S.nid++,oid:o.id,crop:of.crop,s:startOf(of),e:d,g:F.g,rows,flats,alive:flats.slice(),potted:rows.map(()=>false),done:false,taken:roundKey(),of};
   o.plot=pl.id;S.orders.push(o);S.plots.push(pl);S.offers=S.offers.filter(x=>x!==of);
   return true;
 }
@@ -520,13 +537,14 @@ function candidates(c,minS,maxP,pref){
   for(const k in CROPS){const C=CROPS[k];for(const p of C.sell){const s=p-C.g+1;if(s>=minS&&p<=maxP&&p<=7&&p>=c)out.push({k,p,w:pref&&pref.includes(k)?4:1});}}
   return out;
 }
-function mkOffer(cd,mult){const C=CROPS[cd.k],cust=pickCust(false);return{id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(C.price*(mult||1)*tierOf(cust).pm*(.92+rnd()*.22)),cust};}
+function mkOffer(cd,mult,fixed){const C=CROPS[cd.k],cust=pickCust(false),base=C.price*(mult||1)*tierOf(cust).pm*(.92+rnd()*.22),of={id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(base*(fixed?1:seasF(cd.k,cd.p))),cust};if(!fixed)of.base=base;return of;}
+function candFlex(c){const out=[];for(const k in CROPS){const C=CROPS[k];for(let p=c+C.g-1;p<=Math.min(7,c+4);p++){const f=seasF(k,p);out.push({k,p,w:f>1.1?3:f>=1?2:1});}}return out;}
 function wpick(list){const t=list.reduce((a,x)=>a+x.w,0);let r=rnd()*t;for(const x of list){r-=x.w;if(r<=0)return x;}return list[list.length-1];}
 function genOffers(){
   const c=S.period;S.offers=[];genContracts();
-  const cand=candidates(c,c,c+2);if(!cand.length)return;
+  const cand=candFlex(c);if(!cand.length)return;
   const mine=cand.filter(x=>owns(x.k));
-  const base=clamp(2+Math.floor(S.rep/30)+(rnd()<.5?1:0),2,6),n=Math.round(base*S.floors);
+  const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.round(base*S.floors);
   const theirs=cand.filter(x=>!owns(x.k)),sure=mine.length?Math.min(n,Math.max(2,Math.ceil(n*.5))):0;
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
@@ -586,7 +604,7 @@ function autoAccept(of){
 }
 function genPopup(){
   const c=S.period,cand=candidates(c,c+1,c+3,['vinca','pothos','mum']);if(!cand.length)return;
-  const of=mkOffer(wpick(cand),1.25);of.popup=true;S.offers.push(of);
+  const of=mkOffer(wpick(cand),1.25,true);of.popup=true;S.offers.push(of);
   toast('pop',`Pop-up: ${of.qty} ${crop(of.crop).name.toLowerCase()} for ${PN[of.p].toLowerCase()}`,()=>{if(S.offers.includes(of))S.offers=[of,...S.offers.filter(x=>x!==of)];openSheet('orders');});
   renderSheet();
 }
@@ -1351,7 +1369,18 @@ function aimGhost(){
 }
 const queue=()=>S.phase==='plan'?S.offers:S.offers.filter(o=>o.popup);
 function ensureHand(){if(placing)return;const q=queue();if(q.length&&offerOwned(q[0]))startPlacing(q[0],true);}
-function autoPv(){pv=null;if(!sel)return;let t=firstFitOn(sel,boardF);if(t<0)for(let f=0;f<S.floors&&t<0;f++){t=firstFitOn(sel,f);if(t>=0){boardF=f;viewF=f;renderFloors();}}if(t>=0)pv={top:t};}
+function autoPv(){
+  pv=null;if(!sel)return;const x=placing&&placing.cur;
+  const ds=[];if(flexible(x)){for(let d=x.p;d>=dMin(x);d--)ds.push(d);}else ds.push(x?dueOf(x):sel.e);
+  let best=null;
+  for(const d of ds){if(flexible(x))x.d=d;const pp=x?piece(x):sel;
+    for(let k=0;k<S.floors;k++){const f=(boardF+k)%S.floors,t=firstFitOn(pp,f);if(t>=0){const v=x?valAt(x,d):0;if(!best||v>best.v)best={d,t,f,v};break;}}}
+  if(flexible(x))x.d=best?best.d:x.p;
+  if(x)sel=piece(x);
+  if(best){if(best.f!==boardF){boardF=best.f;viewF=best.f;renderFloors();}pv={top:best.t};}
+}
+function colAt(clientX){const B=$('board');if(!B)return -1;const r=B.getBoundingClientRect(),m=boardMetrics(),x=clientX-r.left-m.lab;return x<0||x>=m.cw*8?-1:Math.floor(x/m.cw);}
+function aimCol(c){const x=placing&&placing.cur;if(!flexible(x)||c<0)return false;const g=formOf(x).g,d=clamp(c-Math.floor((g-1)/2)+g-1,dMin(x),x.p);if(d===dueOf(x))return false;x.d=d;sel=piece(x);return true;}
 function startPlacing(of,quiet){
   if(!offerOwned(of)){toast('bad',`You don't grow ${crop(lockedCrop(of)).name.toLowerCase()} yet`);return;}
   if(placing&&placing.of!==of)cancelPlacing(true);
@@ -1410,7 +1439,7 @@ function removePlot(pl){
     sel=null;ghostRow=-1;renderSheet();hud();});
 }
 const potM=()=>1+.1*upLv('pots');
-const ppVal=pp=>{const o=pp.offer;return Math.round(o.qty*o.price*potM());};
+const ppVal=pp=>valAt(pp.offer,pp.e);
 const plVal=pl=>{const o=orderOf(pl);return Math.round(o.qty*o.price*potM());};
 const booked=()=>Math.round(S.orders.filter(o=>o.status!=='failed').reduce((a,o)=>a+(o.status==='shipped'?(o.sent||0):o.qty)*o.price,0)*potM());
 function evalPv(top){
@@ -1428,10 +1457,11 @@ function evalPv(top){
   const G=[...gone];
   return{ok:true,hit:[...hit],gone:G,ctr:[...ctr],rep,gain:ppVal(pp),loss:G.reduce((a,p)=>a+plVal(p),0)};
 }
-function boardTap(r){
+function boardTap(r,c){
   if(!placing||r<0)return;
-  if(pv&&r>=pv.top&&r<pv.top+sel.h){confirmPv();return;}
-  pv={top:topFor(sel,r)};renderSheet();
+  const inCols=c==null||c<0||!flexible(placing.cur)||(c>=sel.s&&c<=sel.e);
+  if(pv&&inCols&&r>=pv.top&&r<pv.top+sel.h){confirmPv();return;}
+  if(c!=null)aimCol(c);pv={top:topFor(sel,r)};renderSheet();
 }
 function confirmPv(){
   if(!placing||!pv)return;const top0=pv.top,ev=evalPv(top0);if(!ev.ok){toast('bad',ev.reason);return;}
@@ -1471,13 +1501,13 @@ function formsHTML(x){
 }
 const HOVER=matchMedia('(hover:hover) and (pointer:fine)').matches;
 function refreshPv(){renderBoard();const ro=$('ro');if(ro)ro.innerHTML=readoutHTML();const pg=$('pvGo');if(pg)pg.onclick=confirmPv;}
-function livePv(e){if(!placing||!sel||!$('modal').hidden||!sheetOpen()||tab!=='orders')return;const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r<0)return;const t=topFor(sel,r);if(pv&&pv.top===t)return;pv={top:t};refreshPv();}
+function livePv(e){if(!placing||!sel||!$('modal').hidden||!sheetOpen()||tab!=='orders')return;const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r<0)return;const moved=aimCol(colAt(e.clientX)),t=topFor(sel,r);if(!moved&&pv&&pv.top===t)return;pv={top:t};refreshPv();}
 let slide=null;
 function setForm(i){
   if(!placing)return;const x=placing.cur,fs=forms(x),ms=minStart();
   if(i==null){for(let k=1;k<=fs.length;k++){const j=((x.fm||0)+k)%fs.length;if(x.p-fs[j].g+1>=ms){i=j;break;}}}
   if(i==null||x.p-fs[i].g+1<ms)return;
-  x.fm=i;sel=piece(x);
+  x.fm=i;if(flexible(x))x.d=clamp(dueOf(x),dMin(x),x.p);sel=piece(x);
   if(pv){const base=Math.floor(pv.top/8)*8;pv={top:clamp(pv.top,base,base+8-sel.h)};}else autoPv();
   renderSheet();
 }
@@ -1492,7 +1522,7 @@ function handHTML(of){
   }
   const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,F=mine?formsHTML(of):null,f0=forms(of)[0];
   return`<div class="hcard" style="--c:${C.color}">${of.popup?'<span class="htag">Pop-up</span>':''}${head}
-  <div class="hmain"><div class="hinfo"><span class="crop" style="background:${C.color}">${C.name}</span> <b>${of.qty} flats</b><div class="hval">${fmt(of.qty*of.price*potM())}</div><div class="hship">Ships ${PN[of.p].toLowerCase()}</div></div>${F?F.btns:`<div class="forms"><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Shape</small></span></div>`}</div>
+  <div class="hmain"><div class="hinfo"><span class="crop" style="background:${C.color}">${C.name}</span> <b>${of.qty} flats</b><div class="hval">${fmt(valAt(of,of.p))}</div><div class="hship">${flexible(of)?`Wants it by ${PN[of.p].toLowerCase()}<br>Peak season ${(PEAK[of.crop]||[]).map(p=>PSH[p]).join(', ')}`:`Ships ${PN[of.p].toLowerCase()}`}</div></div>${F?F.btns:`<div class="forms"><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Shape</small></span></div>`}</div>
   ${F?`<div class="fdesc">${F.desc}</div>`:''}${lk?unlockBtn(of.crop):''}</div>`;
 }
 function readoutHTML(){
@@ -1501,7 +1531,8 @@ function readoutHTML(){
   const ev=evalPv(pv.top);
   if(!ev.ok)return`<div class="readout"><b class="neg">${ev.reason}.</b><span>Tap another row.</span></div>`;
   const net=ev.gain-ev.loss,reps=ev.rep.map(x=>{const dr=tierDrops([x])[0];return`<span class="rchip">${x.d} with ${esc(short1(x.cust))}${dr?` · to ${dr.to.n}`:''}</span>`;}).join('');
-  return`<div class="readout"><b class="pos">+${fmt(ev.gain)}</b><span>on ${span(pv.top,sel.h)}${S.floors>1?' ('+floorName(Math.floor(pv.top/8)).toLowerCase()+')':''}</span>${ev.gone.length?`<b class="neg">−${fmt(ev.loss)}</b><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''}</span>${reps}<span class="net">Net ${net>=0?'+':''}${fmt(net)}</span>`:''}<button class="btn go" type="button" id="pvGo">Place</button></div>`;
+  const x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd),bd=flexible(x)?`<div class="bd"><span>Ships <b>${PN[dd].toLowerCase()}</b></span><span class="${ke?'dn':''}">${ke?`${ke} period${ke>1?'s':''} early ×${earlyF(ke)}`:'On the customer’s date'}</span><span class="${sf>1.1?'up':sf<1?'dn':''}">${sf>1.1?'Peak season ×1.15':sf<1?'Off season ×0.85':'Near peak season'}</span></div>`:'';
+  return`<div class="readout"><b class="pos">+${fmt(ev.gain)}</b><span>on ${span(pv.top,sel.h)}${S.floors>1?' ('+floorName(Math.floor(pv.top/8)).toLowerCase()+')':''}</span>${ev.gone.length?`<b class="neg">−${fmt(ev.loss)}</b><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''}</span>${reps}<span class="net">Net ${net>=0?'+':''}${fmt(net)}</span>`:''}<button class="btn go" type="button" id="pvGo">Place</button>${bd}</div>`;
 }
 function tkHTML(of){
   const C=crop(of.crop),h=need(of),g=C.g,st=startOf(of),isSel=sel&&sel.offer===of,lk=!offerOwned(of);
@@ -1622,7 +1653,7 @@ function buildFloor(){
   layout();tab='orders';renderSheet();hud();
 }
 function boardMetrics(){
-  const W=$('board').parentElement.clientWidth,lab=30,cw=Math.min(62,(W-lab)/8),rh=Math.max(34,Math.round(cw)),hh=28;
+  const W=$('board').parentElement.clientWidth,lab=30,cw=Math.min(62,(W-lab)/8),rh=Math.max(34,Math.round(cw)),hh=placing&&flexible(placing.cur)?50:28;
   return{W,lab,cw,rh,hh,H:hh+rh*8};
 }
 function blkInner(wide,text){return`${wide?`<span class="bi">${glyph('pot',15)}</span>`:''}<span class="bt">${text}</span>${wide?`<span class="bi">${glyph('load',15)}</span>`:''}`;}
@@ -1638,10 +1669,13 @@ function renderBoard(){
   B.style.height=m.H+'px';B.style.width=(m.lab+8*m.cw)+'px';B.style.setProperty('--cw',m.cw+'px');B.style.setProperty('--rh',m.rh+'px');
   const live=drag&&drag.on?drag.pp:sel,nowX=m.lab+(c+(S.phase==='run'?S.t/PSEC:0))*m.cw,hand=placing&&sel&&!(drag&&drag.on),ev=hand&&pv?evalPv(pv.top):null;
   let h='';
-  for(let i=0;i<8;i++)h+=`<div class="ch${i===c?' now':''}${i<c?' gone':''}" style="left:${m.lab+i*m.cw}px;top:0;width:${m.cw}px;height:${m.hh}px">${i===c?'<b>Now</b>':PSH[i]}</div>`;
+  const fx=placing&&flexible(placing.cur)?placing.cur:null,fc=fx?crop(fx.crop).color:'',fv=fx?PSH.map((_,i)=>i>=dMin(fx)&&i<=fx.p?valAt(fx,i):0):[],fmax=Math.max(1,...fv);
+  for(let i=0;i<8;i++){const due=fx&&i===fx.p,pk=fx&&seasF(fx.crop,i)>1.1;
+    h+=`<div class="ch${i===c?' now':''}${i<c?' gone':''}${due?' due':''}" style="left:${m.lab+i*m.cw}px;top:0;width:${m.cw}px;height:28px">${i===c?'<b>Now</b>':due?'<span>Due</span>':PSH[i]}${pk?`<i class="pk" style="background:${fc}"></i>`:''}</div>`;
+    if(fx&&fv[i])h+=`<div class="vs" style="left:${m.lab+i*m.cw+2}px;top:29px;width:${m.cw-4}px;height:19px;background:rgba(46,125,74,${(.1+.55*fv[i]/fmax).toFixed(2)})">${kfmt(fv[i])}</div>`;}
   for(let r=0;r<8;r++){const g=base+r;h+=`<div class="rh" style="left:0;top:${m.hh+r*m.rh}px;width:${m.lab}px;height:${m.rh}px">${LETTERS[g]}</div>`;
     for(let i=0;i<8;i++){
-      let cls=i<c?' past':i===c?' cur':'';
+      let cls=i<c?' past':i===c?' cur':'';if(fx&&i>fx.p)cls+=' late';
       if(hand){if(i>=sel.s&&i<=sel.e&&i>=ms){const o=plotAt(g,i);cls+=!o?' ok':movable(o)&&!(placing.cid&&orderOf(o).contract===placing.cid)?' sw':' no';}}
       else if(live&&i>=live.s&&i<=live.e&&i>=ms){const o=plotAt(g,i);cls+=o&&o!==live.plot?' no':' ok';}
       h+=`<div class="cell${cls}" style="left:${m.lab+i*m.cw+1.5}px;top:${m.hh+r*m.rh+1.5}px;width:${m.cw-3}px;height:${m.rh-3}px"></div>`;}}
@@ -1721,7 +1755,7 @@ addEventListener('pointercancel',()=>{if(drag&&drag.el)drag.el.remove();drag=nul
 $('sheet').addEventListener('click',e=>{
   if(suppressClick){suppressClick=false;return;}
   if(!sel||tab!=='orders')return;const B=$('board');if(!B||!B.contains(e.target))return;
-  if(placing){if(e.target.closest('[data-rm]'))return;boardTap(rowAt(e.clientY));return;}
+  if(placing){if(e.target.closest('[data-rm]'))return;boardTap(rowAt(e.clientY),colAt(e.clientX));return;}
   if(e.target.closest('.blk.mv,[data-nud],[data-rm]'))return;
   const r=rowAt(e.clientY);if(r>=0)dropPiece(sel,r);
 });
