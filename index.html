@@ -154,7 +154,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hires{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .hire{display:flex;align-items:center;gap:10px;text-align:left;background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 10px}
 .hire:disabled{opacity:.5}.hire b{display:block;font-size:15px}.hire small{font-size:13px;color:var(--mute)}
-.rqb{display:flex;gap:6px}.rqb .btn{padding:9px 12px;font-size:15px}
+.rqb{display:flex;gap:6px}.role.qr{flex-wrap:wrap}.role.qr .rn{flex:1}.role.qr .rqb{flex-basis:100%;justify-content:flex-end;flex-wrap:wrap}.rqb .btn{padding:9px 12px;font-size:15px}
 .chip .fb{display:inline-block;background:var(--hud);color:#fff;border-radius:6px;font-size:11px;padding:0 5px;margin-left:2px;vertical-align:1px}
 .rail{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px 8px;overflow:visible;padding:8px 2px 10px;touch-action:auto}
 .tk{width:auto;padding:6px 8px 8px;border-radius:14px;touch-action:none}
@@ -194,6 +194,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stat .cred{display:block;font-size:11px;color:#ffd59a;opacity:1}
 .stat .cred:empty{display:none}
 .oc{display:block;font-size:11px;font-weight:600;opacity:.8}
+.bank{border:2px solid var(--line);border-radius:16px;padding:12px 14px;margin:10px 0 14px;background:#f7fbf4}
+.bank .bk1{display:flex;gap:12px;align-items:flex-start}.bank .bk1 .rn{display:flex;flex-direction:column;gap:2px}.bank .bk1 .rn span{color:var(--mute);font-size:14px;line-height:1.35}
+.bank .bk2{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:14px;color:var(--mute)}.bank .bk2 b{color:var(--ink)}
+.bank .bk3{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rn .neg,.mbox .neg,.role .neg{color:var(--bad)}
+.opt:disabled{opacity:.5;cursor:not-allowed}
 .credit{margin:12px 2px 0;font-size:14px;color:var(--mute);line-height:1.4}
 .stmt{background:#fff;border:2px solid var(--line);border-radius:14px;padding:8px 12px;margin-bottom:10px;font-size:15px}
 .stmt summary{cursor:pointer}.stmt .neg{color:var(--bad);font-weight:700}.stmt .pos{color:var(--go);font-weight:700}
@@ -573,8 +579,8 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{},owned:STARTERS.slice(),contracts:[],credit:0,negRun:0,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
-    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
+    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
+    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
 const mkWorker=(id,role,x,y)=>({id,role,x,y,f:0,path:[],task:null,work:0,leg:null,ride:0});
@@ -774,7 +780,7 @@ function ship(pl,truckId){
   pl.done=true;
   S.tasks.filter(t=>t.plot===pl.id).forEach(dropTask);
   if(short>0&&!window.__quiet){askBuy(pl,short,truckId);return;}
-  finishShip(pl,window.__buyIn?short:0,truckId);
+  finishShip(pl,window.__buyIn&&S.cash>=short*Math.round(crop(pl.crop).price*1.2)?short:0,truckId);
 }
 function finishShip(pl,bought,truckId){
   const o=orderOf(pl),C=crop(pl.crop),alive=have(pl)+bought,sent=Math.min(alive,o.qty),extra=alive-sent;
@@ -793,7 +799,7 @@ function askBuy(pl,short,truckId){
   ask={pl,short,truckId};
   modal(`<h2>${esc(short1(o.cust))}'s truck is ${short} short</h2>
     <div class="role">${custAv(o.cust,44)}<div class="rn"><b>${esc(o.cust)} ${tierChip(o.cust)}</b><span>Ordered ${o.qty} ${C.name.toLowerCase()}. You have ${sent} ready.</span></div></div>
-    <div class="opts"><button class="opt" id="askBuy" type="button"><b>Buy in ${short} flat${short>1?'s':''} · ${fmt(cost)}</b><span>Ships full. No reputation change.</span></button>
+    <div class="opts"><button class="opt" id="askBuy" type="button"${S.cash<cost?' disabled':''}><b>Buy in ${short} flat${short>1?'s':''} · ${fmt(cost)}</b><span>${S.cash<cost?`Not enough cash: you have ${fmt(Math.max(0,S.cash))}`:'Ships full. No reputation change.'}</span></button>
     <button class="opt" id="askShort" type="button"><b>Ship ${sent} of ${o.qty}</b><span>Paid for ${sent} · ${d} reputation with ${esc(short1(o.cust))}</span>${drop?`<em>Drops them to ${drop.to.n}: ${PERK[drop.ti].toLowerCase()}</em>`:''}</button></div>`);
   $('askBuy').onclick=()=>resolveAsk(short);$('askShort').onclick=()=>resolveAsk(0);
 }
@@ -891,7 +897,7 @@ function startPeriod(){
   S.broken=Array(12).fill(false);S.dmgT=Array(12).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
-  const cc=crewCost();S.cash-=upkeep()+cc;S.ys.overhead+=upkeep();S.ys.crew+=cc;
+  payday();const up=upkeep();S.cash-=up;S.ys.overhead+=up;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>addTask({type:'pot',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),born:0,due:PSEC*POT_BY}));
   S.plots.filter(pl=>pl.e===c&&!pl.done).forEach(pl=>{const at=PSEC*(.14+rnd()*.36);S.trucks.push({id:S.nid++,plot:pl.id,at,state:'coming'});S.events.push({at,k:'truck',plot:pl.id});});
   const thirst=[.5,.55,.75,.85,1,1,.75,.55][c];
@@ -942,6 +948,7 @@ function tick(dt){
     }
   }
   for(let f=0;f<S.floors;f++)if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
+  checkRed();
   if(S.t>=PSEC)endPeriod();
 }
 function simStep(dt){
@@ -950,12 +957,14 @@ function simStep(dt){
   tick(dt);
 }
 function settleBooks(){
-  let bill=0,int=0,od=0;
-  if(S.credit>0){int=Math.round(S.credit*CREDIT_RATE);bill=S.credit;S.cash-=bill+int;S.ys.interest+=int;S.credit=0;}
+  let lp=0,li=0,od=0;
+  S.loans.forEach(l=>{const i=Math.round(l.left*LOAN_RATE),pr=Math.min(l.left,Math.ceil(l.orig/LOAN_N));l.left-=pr;lp+=pr;li+=i;});
+  S.loans=S.loans.filter(l=>l.left>0);
+  if(lp+li){S.cash-=lp+li;S.ys.interest+=li;S.ys.loanP=(S.ys.loanP||0)+lp;}
   if(S.cash<0){od=Math.round(-S.cash*OVERDRAFT_RATE);S.cash-=od;S.ys.interest+=od;}
   const a=S.snap||S.ys,y=S.ys;
-  S.stmt={sales:y.rev-a.rev,plugs:y.plugs-a.plugs,upkeep:y.overhead-a.overhead,crew:y.crew-a.crew,buyin:y.buy-a.buy,build:(y.build||0)-(a.build||0)-bill,credit:bill,interest:int,overdraft:od,cash:S.cash,start:a.cash??S.cash};
-  if(bill)toast('cash',`Credit bill paid: ${fmt(bill)} plus ${fmt(int)} interest`);
+  S.stmt={sales:y.rev-a.rev,plugs:y.plugs-a.plugs,upkeep:y.overhead-a.overhead,crew:y.crew-a.crew,buyin:y.buy-a.buy,build:(y.build||0)-(a.build||0),loanIn:(y.loanIn||0)-(a.loanIn||0),loanP:lp,interest:li,overdraft:od,cash:S.cash,start:a.cash??S.cash};
+  if(lp)toast('cash',`Loan payment: ${fmt(lp)} plus ${fmt(li)} interest`);
 }
 function endPeriod(){
   if(ask)resolveAsk(0);
@@ -976,13 +985,7 @@ function endPeriod(){
   if(S.period>7){yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){S.phase='plan';S.t=0;genOffers();payCheck();S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();}
-function payCheck(){
-  if(S.cash<0)S.negRun=(S.negRun||0)+1;else S.negRun=0;
-  if(S.negRun<2||!S.crew.length)return;
-  const p=Math.min(.6,.15*(S.negRun-1)),gone=S.crew.filter(()=>rnd()<p);
-  gone.forEach(r=>{fireCrew(r.id);toast('bad',`${r.name} quit over late paychecks`);});
-}
+function beginPlan(){S.phase='plan';S.t=0;genOffers();S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();}
 function askRaises(){
   const reqs=S.crew.filter(r=>r.n>0&&r.n<VET&&rnd()<.25).map(r=>({r,to:Math.round(r.wage*(1.08+rnd()*.07)/5)*5}));
   if(!reqs.length)return;
@@ -1001,12 +1004,12 @@ function yearEnd(){
   S.phase='done';S.period=7;S.t=PSEC;save();hud();if(window.__quiet)return;
   const y=S.ys,cost=y.plugs+y.overhead+y.crew+y.buy+(y.build||0)+(y.interest||0),prof=y.rev-cost;
   modal(`<h2>Year ${S.year} is in the books</h2>
-  <div class="kv"><span>Sales</span><b>${fmt(y.rev)}</b><span>Plugs and pots</span><b>${fmt(-y.plugs)}</b>${y.buy?`<span>Bought in</span><b>${fmt(-y.buy)}</b>`:''}${y.interest?`<span>Interest</span><b>${fmt(-y.interest)}</b>`:''}<span>Upkeep</span><b>${fmt(-y.overhead)}</b>${y.build?`<span>Building and upgrades</span><b>${fmt(-y.build)}</b>`:''}${y.crew?`<span>Crew</span><b>${fmt(-y.crew)}</b>`:''}<span style="font-weight:700">Profit</span><b style="color:${prof<0?'var(--bad)':'var(--go)'}">${fmt(prof)}</b>
+  <div class="kv"><span>Sales</span><b>${fmt(y.rev)}</b><span>Plugs and pots</span><b>${fmt(-y.plugs)}</b>${y.buy?`<span>Bought in</span><b>${fmt(-y.buy)}</b>`:''}${y.interest?`<span>Loan and overdraft interest</span><b>${fmt(-y.interest)}</b>`:''}<span>Upkeep</span><b>${fmt(-y.overhead)}</b>${y.build?`<span>Building and upgrades</span><b>${fmt(-y.build)}</b>`:''}${y.crew?`<span>Crew</span><b>${fmt(-y.crew)}</b>`:''}<span style="font-weight:700">Profit</span><b style="color:${prof<0?'var(--bad)':'var(--go)'}">${fmt(prof)}</b>
   <span>Orders shipped full</span><b>${y.full}</b><span>Shipped short</span><b>${y.short}</b><span>Missed</span><b>${y.failed}</b><span>Reputation</span><b>${Math.round(S.rep)}</b></div>
   <button class="btn go" id="nyBtn" type="button">Start year ${S.year+1}</button>`);
   $('nyBtn').onclick=()=>{nextYear();closeModal();beginPlan();};
 }
-function nextYear(){if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0};}
+function nextYear(){if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -1393,7 +1396,7 @@ function hud(){
   $('hWhen').textContent=S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':''}`;
   $('hYr').innerHTML=PN.map((_,i)=>`<i><b style="width:${i<c?100:i===c?(S.phase==='run'?S.t/PSEC*100:0):0}%"></b></i>`).join('');
   $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
-  $('hCred').textContent=S.credit>0?`${fmt(S.credit)} on credit`:S.cash<0&&S.negRun>0?`In the red ${S.negRun} period${S.negRun>1?'s':''}`:'';
+  $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
   $('bGo').hidden=S.phase!=='plan';$('bGo').textContent=`Start ${PN[c].toLowerCase()}`;
   $('bBoard').hidden=S.phase==='plan'&&!sheetOpen();
@@ -1460,7 +1463,7 @@ function renderCrewPop(){
   if(!w){crewPop=null;el.hidden=true;return;}
   const r=w.rec,av=document.querySelector(`#qC .av[data-w="${w.id}"]`);
   el.hidden=false;
-  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
     <div class="cpt">Now: <b id="cpTask">${w.task?taskLabel(w.task):'Idle'}</b></div>
     ${w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-cpf="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</div>`:''}`;
   const tr=$('tray').getBoundingClientRect(),a=av?av.getBoundingClientRect():tr;
@@ -1642,7 +1645,7 @@ function setForm(i){
   if(pv){const base=Math.floor(pv.top/8)*8;pv={top:clamp(pv.top,base,base+8-sel.h)};}else autoPv();
   renderSheet();
 }
-const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' on credit':''}</button>`;
+const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' · need a loan':''}</button>`;
 const TICO={orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>'};
 const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
 function handHTML(of,noShapes){
@@ -1733,8 +1736,8 @@ function renderSheet(){
   let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
-    const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
-        <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Paid in cash</span><b>${fmt(-st.build)}</b>`:''}${st.credit?`<span>Credit bill</span><b>${fmt(-st.credit)}</b>`:''}${st.interest?`<span>Credit interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
+    const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.crew.some(r=>r.missed)?' · <span class="neg">payroll missed</span>':''}</summary><div class="kv">
+        <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Building and upgrades</span><b>${fmt(-st.build)}</b>`:''}${st.loanIn?`<span>Loans taken</span><b>${fmt(st.loanIn)}</b>`:''}${st.loanP?`<span>Loan payments</span><b>${fmt(-st.loanP)}</b>`:''}${st.interest?`<span>Loan interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
     const q=queue(),hof=placing?placing.of:q[0],inQ=placing&&placing.of.contract,peek=(inQ?q:q.slice(1)).slice(0,2),left=q.length+(inQ?1:0);
     const okNow=placing&&pv&&evalPv(pv.top).ok;
     const nxt=`<div class="nx"><div class="h"><span>NEXT UP</span><span>${left} offer${left===1?'':'s'} left</span></div><div class="g">${peek.length?peek.map(nxHTML).join(''):'<div class="m"><span><small>Nothing after this one</small></span></div>'}</div></div>`;
@@ -1757,21 +1760,22 @@ function renderSheet(){
       <div class="cs"><div class="panel"><b>Tiers</b>${TIERS.slice().reverse().map((t,k)=>`<div class="tierrow"><span class="tchip" style="background:${t.c}">${t.n}</span>${PERK[4-k]} · from ${t.min}</div>`).join('')}</div>
       <div class="panel"><b>Last period</b>${log.length?log.map(e=>{const d=Math.round(e.d);return`<div class="lg"><b class="${d>0?'p':d<0?'n':''}">${d>0?'+':''}${d}</b><span>${esc(short1(e.n))}: ${esc(e.why)}</span></div>`;}).join(''):'<span style="font-size:14px;color:var(--mute)">No changes yet. Ship some trucks!</span>'}<span style="background:#f6f3ea;border-radius:12px;padding:10px 12px;font-size:13px;color:#33463a">Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</span></div></div></div>`;
   }else if(tab==='crew'){
-    body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
-      <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
+    body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
+      <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire${plan?'':' <span class="paused">Between periods</span>'}</h3>
       <div class="hires">${Object.entries(ROLES).map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
-      <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.</p>`;
+      <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work in every greenhouse, last for good and show up in the houses. You can buy them any time.</small></h2></div>
-      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">on credit</small>':''}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
-      <p class="credit">Short on cash? Anything here can go on credit, up to ${fmt(CREDIT_LIMIT)}. The bill plus ${CREDIT_RATE*100}% interest comes due at the end of the period. If your cash stays below zero for two periods in a row, crew start to quit.${S.credit?` <b>On credit now: ${fmt(S.credit)}.</b>`:''}</p>
+      ${bankHTML(plan)}
+      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
+      
       <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}"><span class="crop" style="background:${C.color}">${C.name}</span><span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">on credit</small>':''}</button>`}</div>`).join('')}</div>
+      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}"><span class="crop" style="background:${C.color}">${C.name}</span><span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
-      ${next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?' on credit (due at the end of the period, plus 10%)':' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
+      ${next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
@@ -1794,9 +1798,10 @@ function renderSheet(){
   el.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const r=fireCrew(b.dataset.fire);if(r)toast('bad',`You let ${r.name} go`);renderSheet();traySig='';renderTray();});
   el.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{setHome(b.dataset.home,+b.dataset.f);renderSheet();traySig='';renderTray();});
   const x=$('shX');if(x)x.onclick=closeSheet;
-  const go=$('goB');if(go)go.onclick=()=>{if(placing)cancelPlacing(true);sel=null;startPeriod();};
+  const go=$('goB');if(go)go.onclick=()=>{if(placing)cancelPlacing(true);sel=null;tryStart();};
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
+  el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
   const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();openSheet();toast('good','Fresh start: year 1, three varieties');}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
   el.querySelectorAll('[data-gen]').forEach(b=>b.onclick=e=>{e.stopPropagation();buyGen(b.dataset.gen);});
   const gu=$('gUp');if(gu)gu.onclick=()=>growPlot(sel.plot,1);
@@ -1804,11 +1809,90 @@ function renderSheet(){
   el.querySelectorAll('[data-dx]').forEach(b=>b.onclick=e=>{e.stopPropagation();const of=S.offers.find(o=>o.id==b.dataset.dx);S.offers=S.offers.filter(o=>o!==of);if(sel&&sel.offer===of)sel=null;renderSheet();hud();});
   el.querySelectorAll('.tk').forEach(t=>t.addEventListener('click',e=>{if(e.target.closest('[data-dx],[data-gen]'))return;const of=S.offers.find(o=>o.id==t.dataset.of);if(of)startPlacing(of);}));
 }
-const CREDIT_LIMIT=6000,CREDIT_RATE=.1,OVERDRAFT_RATE=.05;
 function spend(cost,what){
   if(S.cash>=cost){S.cash-=cost;return true;}
-  if(S.credit+cost>CREDIT_LIMIT){toast('bad',`That would put you over your ${fmt(CREDIT_LIMIT)} credit line`);return false;}
-  S.credit+=cost;toast('cash',`${what} on credit: ${fmt(cost)} plus ${CREDIT_RATE*100}% due when the period ends`);return true;
+  if(S.phase==='plan'&&loanRoom()>0){loanModal('short',cost-S.cash,what);return false;}
+  toast('bad',`Not enough cash for ${what}. ${S.phase==='plan'?'You are at your loan limit.':'Loans are only taken between periods.'}`);return false;
+}
+// ---------------- money: loans and payday ----------------
+const LOAN_RATE=.06,LOAN_N=4,OVERDRAFT_RATE=.05,QUIT_P=.5;
+const loanLeft=()=>S.loans.reduce((a,l)=>a+l.left,0);
+const loanCap=()=>4000+2000*S.floors;
+const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
+const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*LOAN_RATE),0);
+const payroll=()=>S.crew.reduce((a,r)=>a+r.wage+(r.owed||0),0);
+const rushWage=r=>Math.max(r.wage+10,Math.round(r.wage*1.35/5)*5);
+function takeLoan(amt){
+  amt=Math.min(amt,loanRoom());if(amt<=0)return false;
+  S.loans.push({id:'L'+S.nid++,orig:amt,left:amt});S.cash+=amt;S.ys.loanIn=(S.ys.loanIn||0)+amt;
+  toast('cash',`Borrowed ${fmt(amt)}. First payment at the end of this period`);hud();return true;
+}
+const loanOpts=need=>{const room=loanRoom(),o=[2000,5000,10000].filter(a=>a<=room);if(need>0){const n=Math.ceil(need/500)*500;if(n<=room&&!o.includes(n))o.push(n);}if(!o.length&&room>=500)o.push(Math.floor(room/500)*500);return o.sort((a,b)=>a-b);};
+const loanLine=a=>`${fmt(Math.ceil(a/LOAN_N)+Math.round(a*LOAN_RATE))} first payment, ${LOAN_N} periods, about ${fmt(Math.round(a*LOAN_RATE*2.5))} interest in all`;
+function bankHTML(plan){
+  const left=loanLeft(),room=loanRoom();
+  return`<div class="bank"><div class="bk1">${svgIcon('cash',40)}<div class="rn"><b>Bank</b><span>Loans are paid back over ${LOAN_N} periods, plus ${LOAN_RATE*100}% interest a period on what's left. Borrow between periods; mid-period the bank only calls if you go into the red. Cash below zero at the end of a period costs ${OVERDRAFT_RATE*100}% overdraft.</span></div></div>
+    <div class="bk2"><span>Owed <b>${fmt(left)}</b></span>${left?`<span>Next payment <b>${fmt(loanPay())}</b></span>`:''}<span>Can borrow <b>${fmt(room)}</b></span></div>
+    ${plan&&room?`<div class="bk3">${loanOpts(0).map(a=>`<button class="btn" type="button" data-loan="${a}">Borrow ${fmt(a)}</button>`).join('')}</div>`:''}</div>`;
+}
+let loanCb=null;
+function loanModal(why,need,what,after){
+  const opts=loanOpts(need||0);loanCb=after||null;
+  if(window.__quiet){if(window.__autoLoan&&opts.length)takeLoan(opts.find(a=>a>=(need||0))||opts[opts.length-1]);const f=loanCb;loanCb=null;if(f)f();return;}
+  const head=why==='neg'?'You’re in the red':why==='pay'?'Payroll is short':`Not enough cash${what?' for '+esc(what):''}`;
+  const sub=why==='neg'?`Cash is ${fmt(S.cash)}. Below zero at the end of the period costs ${OVERDRAFT_RATE*100}% overdraft, and next payday your crew could go unpaid. The bank will lend now, once this period.`
+    :why==='pay'?`Wages${payroll()>crewCost()?' and back pay':''} come to ${fmt(payroll())} and you have ${fmt(Math.max(0,S.cash))}. Start without it and nobody gets paid this period.${S.crew.some(r=>r.missed)?' Anyone who already missed a payday may quit.':''}`
+    :`You're ${fmt(need)} short.`;
+  modal(`<h2>${head}</h2><p>${sub}</p>
+    <div class="opts">${opts.map(a=>`<button class="opt" type="button" data-ln="${a}"><b>Borrow ${fmt(a)}</b><span>${loanLine(a)}</span></button>`).join('')||'<p class="neg">You’re at your loan limit.</p>'}
+    <button class="opt" type="button" id="lnNo"><b>${why==='pay'?'Start without paying':why==='neg'?'Keep going':'Not now'}</b><span>${why==='pay'?'Everyone misses this payday':why==='neg'?'Ride it out':'Back to planning'}</span></button></div>
+    ${left0()}`);
+  const done=()=>{closeModal();const f=loanCb;loanCb=null;if(f)f();else{traySig='';if(sheetOpen())renderSheet();hud();}};
+  $('mbox').querySelectorAll('[data-ln]').forEach(b=>b.onclick=()=>{takeLoan(+b.dataset.ln);done();});
+  $('lnNo').onclick=done;
+  if(why==='pay'){const bk=document.createElement('button');bk.className='btn';bk.type='button';bk.textContent='Back to planning';bk.style.marginTop='10px';bk.onclick=()=>{loanCb=null;closeModal();};$('mbox').appendChild(bk);}
+}
+const left0=()=>loanLeft()?`<p class="credit">Already owed: ${fmt(loanLeft())}. Limit ${fmt(loanCap())}.</p>`:`<p class="credit">Loan limit ${fmt(loanCap())}, more with more houses.</p>`;
+function tryStart(){
+  if(S.phase!=='plan')return;
+  if(S.crew.length&&S.cash<payroll()){loanModal('pay',payroll()-S.cash,'',startPeriod);return;}
+  startPeriod();
+}
+function payday(){
+  if(!S.crew.length)return;
+  const due=payroll();
+  if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});return;}
+  S.crew.forEach(r=>{r.owed=(r.owed||0)+r.wage;r.missed=(r.missed||0)+1;});
+  const warn=S.crew.filter(r=>r.missed===1),risk=S.crew.filter(r=>r.missed>=2),gone=risk.filter(()=>rnd()<QUIT_P),stay=risk.filter(r=>!gone.includes(r));
+  gone.forEach(r=>fireCrew(r.id));
+  S.ys.missed=(S.ys.missed||0)+1;
+  if(window.__quiet){if(window.__rushHire)gone.forEach(rushHire);return;}
+  missedModal(warn,stay,gone,due);
+}
+function rushHire(o){
+  const used=S.crew.map(r=>r.name),name=NAMES.find(n=>!used.includes(n)&&n!==o.name)||('Hand '+(S.crew.length+1));
+  const r={id:'s'+S.nid++,name,role:o.role,home:o.home,n:0,wage:rushWage(o),rush:true,missed:0,owed:rushWage(o)};
+  S.crew.push(r);syncStaff();return r;
+}
+function missedModal(warn,stay,gone,due){
+  const row=(r,txt,cls)=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="${cls||''}">${txt}</span></div></div>`;
+  modal(`<h2>${gone.length?(gone.length>1?`${gone.length} of your crew quit`:`${esc(gone[0].name)} quit`):'Payday missed'}</h2>
+    <p>You had ${fmt(Math.max(0,S.cash))} and payroll was ${fmt(due)}, so nobody got paid. ${gone.length?'Unpaid twice in a row, they walked. Anyone else who misses the next payday may walk too.':'Everyone keeps working and is owed the back pay. Miss the next payday too and people may quit.'}</p>
+    <div class="roles">${gone.map((r,i)=>`<div class="role qr" id="gq${i}">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="neg">Quit. Was ${fmt(r.wage)}/period${r.owed?`, walked off owed ${fmt(r.owed)}`:''}</span></div><span class="rqb"><button class="btn sun" type="button" data-rh="${i}">Hire on the spot · ${fmt(rushWage(r))}/period</button><button class="btn" type="button" data-rx="${i}">Leave it</button></span></div>`).join('')}
+    ${stay.map(r=>row(r,`Missed ${r.missed} paydays in a row. Stayed, for now. Owed ${fmt(r.owed)}.`,'neg')).join('')}
+    ${warn.map(r=>row(r,`Missed this payday. Owed ${fmt(r.owed)}.`)).join('')}</div>
+    ${gone.length?`<p class="credit">On-the-spot hires cost more than the people they replace, start slow, and still quit if they go unpaid. Their first period's wage is added to the next payday.</p>`:''}
+    <button class="btn go" type="button" id="mmGo">Back to work</button>`);
+  const doneRow=(i,html)=>{const el=$('gq'+i);if(el&&!el.dataset.done){el.dataset.done=1;el.querySelector('.rqb').innerHTML=html;}};
+  $('mbox').querySelectorAll('[data-rh]').forEach(b=>b.onclick=()=>{const r=rushHire(gone[+b.dataset.rh]);doneRow(+b.dataset.rh,`<b style="color:var(--go)">${esc(r.name)} hired</b>`);traySig='';renderTray();});
+  $('mbox').querySelectorAll('[data-rx]').forEach(b=>b.onclick=()=>doneRow(+b.dataset.rx,'<b style="color:var(--mute)">Left empty</b>'));
+  $('mmGo').onclick=()=>{closeModal();traySig='';renderTray();hud();};
+}
+function checkRed(){
+  if(S.phase!=='run'||S.cash>=0||!$('modal').hidden||ask)return;
+  const key=S.year+'-'+S.period;if(S.loanAsk===key)return;S.loanAsk=key;
+  if(loanRoom()<500)return;
+  loanModal('neg',-S.cash);
 }
 function buyGen(k){
   if(owns(k))return;const cost=GEN[k];
@@ -1969,7 +2053,7 @@ function benchInfo(b){
 }
 $('bBoard').onclick=()=>sheetOpen()?closeSheet():openSheet();
 $('hRepB').onclick=()=>openSheet('cust');
-$('bGo').onclick=()=>startPeriod();
+$('bGo').onclick=()=>tryStart();
 let speed=1;
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
 
@@ -1977,7 +2061,7 @@ $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.credit=d.credit||0;d.negRun=d.negRun||0;d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
   <div class="steps">
