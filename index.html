@@ -264,6 +264,50 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip .bar{position:absolute;left:8px;right:8px;bottom:3px;height:4px;border-radius:2px;background:#e9e5d8;overflow:hidden}
 .chip .bar i{display:block;height:100%;width:0;background:var(--go)}
 .lane.crew{min-height:54px}
+
+.hand{display:flex;gap:10px;align-items:stretch;margin:4px 0 8px}
+.hcard{flex:1;min-width:0;background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:16px;padding:8px 12px 10px;position:relative}
+.hcard.empty{border-color:var(--line);color:var(--mute)}.hcard.empty b{display:block;color:var(--ink);font-size:17px}
+.hc1{display:flex;align-items:center;gap:8px}.hcn{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;min-width:0}.hcn b{font-size:16px}
+.hc2{margin-top:6px;font-size:15px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.hc2 .crop{color:#fff;font-weight:700;font-size:14px;border-radius:8px;padding:2px 8px}
+.hc2 .ctag{background:#6b4fc8;color:#fff;font-weight:700;font-size:13px;border-radius:8px;padding:2px 8px}
+.hval{font-size:24px;font-weight:700;margin-top:4px}
+.hcur{margin-top:8px;font-size:14px;background:#f4f1e6;border-radius:10px;padding:6px 9px}
+.htag{position:absolute;top:-11px;left:12px;background:var(--sun);color:#2b2104;font-size:12px;font-weight:700;border-radius:8px;padding:1px 7px}
+.hcard .unl{display:block;width:100%;margin-top:8px;border:0;border-radius:10px;background:var(--sun);color:#2b2104;font-weight:700;font-size:15px;padding:9px 6px}
+.hside{display:flex;flex-direction:column;gap:6px;width:118px;flex:none}
+.peek{background:#f4f1e6;border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:4px;flex:1}
+.peek small{font-size:12px;color:var(--mute);font-weight:700}
+.mini{display:block;color:#fff;font-size:12px;font-weight:700;border-radius:7px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini.none{background:#ddd8ca;color:var(--mute)}
+.left{font-size:13px;color:var(--mute);text-align:center;font-weight:600}
+.bin{border:0;border-radius:12px;background:#3b2f2a;color:#fff;font-weight:700;font-size:15px;padding:10px 8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.readout{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;background:#fff;border-radius:14px;border:2px solid var(--line);padding:8px 10px 8px 12px;margin-bottom:6px;font-size:15px;min-height:30px}
+.readout .pos{color:var(--go);font-size:19px}.readout .neg{color:var(--bad);font-size:17px}.readout .net{font-weight:700}
+.readout .btn{padding:10px 20px;margin-left:auto}
+.nhint{margin:0 2px 8px;font-size:13px;color:var(--mute)}
+.rchip{display:inline-flex;gap:4px;align-items:center;background:#fbe4df;color:var(--bad);border-radius:8px;padding:2px 8px;font-size:13px;font-weight:700}
+.board .cell.sw{background:#fff0c9}
+.blk.bump{opacity:.4;box-shadow:0 0 0 3px var(--bad)}
+.blk.later{background-color:rgba(255,255,255,.6)!important;border:2px dashed #5d6b62;color:#16231b}
+.blk.ghost{z-index:3}
+.nud{position:absolute;z-index:5;width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:#16231b;color:#fff;font-size:14px;font-weight:700;padding:0;display:grid;place-items:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.nud:disabled{opacity:.25}
+.cav{display:inline-grid;place-items:center;border-radius:50%;color:#fff;font-weight:700;flex:none;letter-spacing:.02em}
+.tchip{display:inline-block;color:#fff!important;font-size:12px;font-weight:700;border-radius:7px;padding:1px 7px;vertical-align:middle;line-height:1.5}
+.custs{display:flex;flex-direction:column;gap:8px}
+.cust{display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;border:2px solid var(--line);padding:8px 12px}
+.cust .rn{flex:1;min-width:0}.cust .rn>b{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:16px}.cust .rn>span{display:block;font-size:14px;color:var(--mute)}
+.meter{position:relative;display:block;height:10px;border-radius:5px;background:#ece8dc;margin-top:6px;overflow:hidden}.meter i{display:block;height:100%;border-radius:5px}.meter b{position:absolute;top:0;bottom:0;width:2px;background:#fff}
+.cust .rv{font-size:20px;min-width:30px;text-align:right}
+.opts{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.opt{border:3px solid var(--line);background:#fff;border-radius:16px;padding:12px 14px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.opt b{display:block;font-size:19px}.opt span{font-size:15px;color:var(--mute)}.opt em{display:block;color:var(--bad);font-style:normal;font-weight:700;margin-top:2px}
+#askBuy{border-color:var(--sun);background:#fff9e3}
+.ab2{display:flex;gap:10px;margin-top:14px}.ab2 .btn{flex:1}
+.stat.tap{cursor:pointer}
+@media(max-width:520px){.tabs{flex-wrap:nowrap;gap:4px;overflow-x:auto}.tabs button{padding:8px 8px;font-size:14px;flex:none}}
 </style>
 </head>
 <body>
@@ -271,7 +315,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <header class="hud" id="hud">
   <div class="when"><b id="hWhen">Year 1</b><div class="yr" id="hYr"></div></div>
   <div class="stat"><small>Cash</small><b id="hCash">$0</b><small class="cred" id="hCred"></small></div>
-  <div class="stat"><small>Reputation</small><b id="hRep">50</b></div>
+  <div class="stat tap" id="hRepB"><small>Reputation</small><b id="hRep">50</b></div>
   <div class="sp"></div>
   <button class="hb" id="bBoard" type="button">Board <span class="n" id="bN"></span></button>
   <button class="hb go" id="bGo" type="button">Start</button>
@@ -330,6 +374,33 @@ const STARTERS=['pothos','petunia','mum'];
 const owns=k=>!S.owned||S.owned.includes(k);
 for(const k in CROPS)CROPS[k].cost=Math.round(CROPS[k].price*.3);
 const CUST=['Red Dirt Landscaping','Caprock Home and Garden','Sunrise Grocery','Pecan Street Market','Windmill Hardware','Hillside Garden Center','Mesa Florist','Big Country Feed'];
+const TIERS=[{n:'Lost',min:0,pm:.9,w:0,c:'#8a958d'},{n:'Wary',min:20,pm:.94,w:.5,c:'#c8402f'},{n:'Steady',min:40,pm:1,w:1,c:'#5d6b62'},{n:'Loyal',min:65,pm:1.06,w:1.6,c:'#2e7d4a'},{n:'Partner',min:85,pm:1.12,w:2.2,c:'#c98a00'}];
+const PERK=['Sends no orders','Prices −6%, no contracts','Regular prices','Prices +6%, more orders','Prices +12%, the most orders'];
+const CCOL=['#b5532f','#7a4fb0','#d08a17','#3a7fc2','#56606b','#2e7d5b','#c2427f','#8a6a2c'];
+const BUMP_REP=10,CANCEL_REP=15;
+const tierIx=r=>{let i=0;TIERS.forEach((t,k)=>{if(r>=t.min)i=k;});return i;};
+const custR=n=>(S&&S.cust&&S.cust[n]?S.cust[n].r:50);
+const tierOf=n=>TIERS[tierIx(custR(n))];
+const short1=n=>n.split(' ')[0];
+const initials=n=>n.split(' ').filter(w=>w!=='and').slice(0,2).map(w=>w[0]).join('');
+const avgRep=()=>CUST.reduce((a,n)=>a+custR(n),0)/CUST.length;
+function custRep(n,d){
+  if(!S.cust||!S.cust[n]||!d)return 0;
+  const c=S.cust[n],r0=c.r;if(d>0)d*=clamp((100-r0)/40,.15,1);
+  c.r=clamp(r0+d,0,100);S.rep=avgRep();
+  const t0=tierIx(r0),t1=tierIx(c.r);
+  if(t1!==t0)toast(t1>t0?'good':'bad',`${n} is now ${TIERS[t1].n}: ${PERK[t1].toLowerCase()}`);
+  return c.r-r0;
+}
+function tierDrops(ch){const agg={};ch.forEach(x=>agg[x.cust]=(agg[x.cust]||0)+x.d);const out=[];for(const n in agg){const r=custR(n),t0=tierIx(r),t1=tierIx(clamp(r+agg[n],0,100));if(t1<t0)out.push({n,from:TIERS[t0],to:TIERS[t1],ti:t1});}return out;}
+function custAv(n,size){const i=CUST.indexOf(n);return`<span class="cav" style="width:${size}px;height:${size}px;background:${CCOL[i]||'#56606b'};font-size:${Math.round(size*.36)}px">${initials(n)}</span>`;}
+const tierChip=n=>{const T=tierOf(n);return`<span class="tchip" style="background:${T.c}">${T.n}</span>`;};
+function pickCust(contract){const l=CUST.map(n=>{const i=tierIx(custR(n));return{n,w:contract&&i<2?0:TIERS[i].w};}).filter(x=>x.w>0);return l.length?wpick(l).n:(contract?null:pick(CUST));}
+function guardRep(ch,what,ok){
+  const drops=tierDrops(ch);if(!drops.length||window.__quiet){ok();return;}
+  modal(`<h2>${drops.length>1?'Customers will cool off':'A customer will cool off'}</h2><p>${esc(what)}</p><div class="roles">${drops.map(x=>`<div class="role">${custAv(x.n,44)}<div class="rn"><b>${esc(x.n)}</b><span>${x.from.n} → <b style="display:inline;color:var(--bad)">${x.to.n}</b>. ${PERK[x.ti]}.</span></div></div>`).join('')}</div><div class="ab2"><button class="btn" id="gNo" type="button">Keep them happy</button><button class="btn sun" id="gOk" type="button">Do it anyway</button></div>`);
+  $('gNo').onclick=closeModal;$('gOk').onclick=()=>{closeModal();ok();};
+}
 const LETTERS='ABCDEFGHIJKLMNOPQRSTUVWX';
 const BENCH=[...LETTERS].map((L,i)=>{const k=i%8,x=k%2?5:1,y=[1,2,4,5][k>>1];return{L,i,f:Math.floor(i/8),x,y,ax:x+1,ay:y===1?0:y===5?6:3};});
 const UNIT={x:8,y:3,ax:7,ay:3},DOCK={x:4,y:-1,f:0},LIFT={x:0,y:6};
@@ -376,7 +447,7 @@ let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
     up:{pots:0,soil:0,hose:0},owned:STARTERS.slice(),contracts:[],credit:0,negRun:0,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:[false,false,false],dmgT:[0,0,0],nid:1,
-    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0},welcomed:false};
+    ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
 const mkWorker=(id,role,x,y)=>({id,role,x,y,f:0,path:[],task:null,work:0,leg:null,ride:0});
@@ -422,7 +493,7 @@ function candidates(c,minS,maxP,pref){
   for(const k in CROPS){const C=CROPS[k];for(const p of C.sell){const s=p-C.g+1;if(s>=minS&&p<=maxP&&p<=7&&p>=c)out.push({k,p,w:pref&&pref.includes(k)?4:1});}}
   return out;
 }
-function mkOffer(cd,mult){const C=CROPS[cd.k];return{id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(C.price*(mult||1)*(.92+rnd()*.22)),cust:pick(CUST)};}
+function mkOffer(cd,mult){const C=CROPS[cd.k],cust=pickCust(false);return{id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(C.price*(mult||1)*tierOf(cust).pm*(.92+rnd()*.22)),cust};}
 function wpick(list){const t=list.reduce((a,x)=>a+x.w,0);let r=rnd()*t;for(const x of list){r-=x.w;if(r<=0)return x;}return list[list.length-1];}
 function genOffers(){
   const c=S.period;S.offers=[];genContracts();
@@ -433,7 +504,8 @@ function genOffers(){
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
   for(let i=0;i<rest;i++)S.offers.push(mkOffer(wpick(theirs.length?theirs:cand)));
-  S.offers.sort((a,b)=>offerOwned(b)-offerOwned(a));
+  for(let i=S.offers.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[S.offers[i],S.offers[j]]=[S.offers[j],S.offers[i]];}
+  const fo=S.offers.findIndex(offerOwned);if(fo>0)S.offers.unshift(...S.offers.splice(fo,1));
 }
 function genContracts(){
   const c=S.period;const n=(S.rep>=35?1:0)+(rnd()<S.rep/140?1:0)+(S.floors-1);
@@ -442,6 +514,7 @@ function genContracts(){
 const okAt=(k,p,c)=>{const C=CROPS[k];return p>=0&&p<=7&&C.sell.includes(p)&&p-C.g+1>=c;};
 const cPrice=k=>Math.round(CROPS[k].price*1.1*(.95+rnd()*.15));
 function makeContract(c){
+  const cust=pickCust(true);if(!cust)return null;const tpm=tierOf(cust).pm;
   const keys=Object.keys(CROPS),cands={steady:[],alt:[],ramp:[],long:[],mix:[]};
   for(const k of keys){const C=CROPS[k];for(let p0=c+C.g-1;p0<=c+C.g+1;p0++){
     const run=(step,max)=>{const out=[];for(let p=p0;p<=7&&out.length<max&&okAt(k,p,c);p+=step)out.push(p);return out;};
@@ -461,8 +534,8 @@ function makeContract(c){
     const cd=wpick(cands[kind].map(x=>({...x,w:owns(x.k)?3:1})));
     dl=cd.ps.map((p,i)=>({crop:cd.k,p,qty:kind==='ramp'?Math.min(22,Math.round(q*(1+.4*i))):kind==='long'?Math.max(5,q-3):q}));
   }
-  dl.forEach(d=>d.price=cPrice(d.crop));
-  return{id:S.nid++,contract:true,kind,label:LABEL[kind],dl,n:dl.length,crop:dl[0].crop,p:dl[0].p,qty:dl[0].qty,price:dl[0].price,cust:pick(CUST)};
+  dl.forEach(d=>d.price=Math.round(cPrice(d.crop)*tpm));
+  return{id:S.nid++,contract:true,kind,label:LABEL[kind],dl,n:dl.length,crop:dl[0].crop,p:dl[0].p,qty:dl[0].qty,price:dl[0].price,cust};
 }
 const offerOwned=of=>of.contract&&of.dl?of.dl.every(d=>owns(d.crop)):owns(of.crop);
 const lockedCrop=of=>of.contract&&of.dl?(of.dl.find(d=>!owns(d.crop))||{}).crop:(owns(of.crop)?null:of.crop);
@@ -473,9 +546,9 @@ function contractFail(cid){
   const c=contractOf(cid);if(!c||c.broken)return;c.broken=true;
   const rest=S.plots.filter(p=>{const o=orderOf(p);return o&&o.contract===cid&&!p.done&&!p.potted.some(Boolean);});
   rest.forEach(p=>{S.orders=S.orders.filter(o=>o.id!==p.oid);S.plots=S.plots.filter(x=>x!==p);});
-  S.rep=clamp(S.rep-4,0,100);toast('bad',`${c.cust.split(' ')[0]} cancelled the rest of the contract`);
+  custRep(c.cust,-8);toast('bad',`${c.cust.split(' ')[0]} cancelled the rest of the contract`);
 }
-function contractShipped(cid){const c=contractOf(cid);if(!c||c.broken)return;c.done++;if(c.done>=c.n){S.rep=clamp(S.rep+4,0,100);toast('good',`Contract with ${c.cust.split(' ')[0]} complete`);}}
+function contractShipped(cid){const c=contractOf(cid);if(!c||c.broken)return;c.done++;if(c.done>=c.n){custRep(c.cust,4);toast('good',`Contract with ${c.cust.split(' ')[0]} complete`);}}
 function autoAccept(of){
   if(!offerOwned(of))return false;
   if(!of.contract){const r=firstFit(of);return r>=0&&place(of,r);}
@@ -487,7 +560,7 @@ function autoAccept(of){
 function genPopup(){
   const c=S.period,cand=candidates(c,c+1,c+3,['vinca','pothos','mum']);if(!cand.length)return;
   const of=mkOffer(wpick(cand),1.25);of.popup=true;S.offers.push(of);
-  toast('pop',`Pop-up: ${of.qty} ${crop(of.crop).name.toLowerCase()} for ${PN[of.p].toLowerCase()}`,()=>{openSheet('orders');if(owns(of.crop))startPlacing(of);});
+  toast('pop',`Pop-up: ${of.qty} ${crop(of.crop).name.toLowerCase()} for ${PN[of.p].toLowerCase()}`,()=>{if(S.offers.includes(of))S.offers=[of,...S.offers.filter(x=>x!==of)];openSheet('orders');});
   renderSheet();
 }
 
@@ -537,7 +610,7 @@ function truckLeaves(k,missed){
   k.state='gone';k.leftAt=performance.now();
   if(missed){
     const pl=S.plots.find(p=>p.id===k.plot);
-    if(pl&&!pl.done){pl.done=true;pl.fail=true;orderOf(pl).status='failed';S.rep=clamp(S.rep-6,0,100);S.ys.failed++;const cid=orderOf(pl).contract;if(cid)contractFail(cid);
+    if(pl&&!pl.done){pl.done=true;pl.fail=true;orderOf(pl).status='failed';custRep(orderOf(pl).cust,-12);S.ys.failed++;const cid=orderOf(pl).contract;if(cid)contractFail(cid);
       S.tasks.filter(t=>t.plot===pl.id).forEach(dropTask);toast('bad',`${orderOf(pl).cust.split(' ')[0]}'s truck gave up waiting`);}
   }
   dockNext();
@@ -560,20 +633,24 @@ function finishShip(pl,bought,truckId){
   const o=orderOf(pl),C=crop(pl.crop),alive=have(pl)+bought,sent=Math.min(alive,o.qty),extra=alive-sent;
   const pm=1+.1*upLv('pots'),buyCost=bought*Math.round(C.price*1.2),rev=Math.round(sent*o.price*pm),clear=extra*Math.round(o.price*.35*pm);
   S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;S.ys.buy+=buyCost;o.status='shipped';o.sent=sent;if(o.contract)contractShipped(o.contract);
-  if(sent>=o.qty){S.rep=clamp(S.rep+(bought?1:3),0,100);S.ys.full++;toast('cash',`${sent} ${C.name.toLowerCase()} shipped, +${fmt(rev+clear-buyCost)}`);}
-  else{S.rep=clamp(S.rep-(1+5*(1-sent/o.qty)),0,100);S.ys.short++;toast('bad',`Short: ${sent} of ${o.qty} ${C.name.toLowerCase()}, +${fmt(rev+clear)}`);}
-  const k=truckById(truckId);if(k&&k.state!=='gone')truckLeaves(k,false);
+  const k=truckById(truckId),waited=k&&k.arrived!=null?(S.t-k.arrived)-((k.deadline-k.arrived)-TRUCK_WAIT):0,slow=waited>TRUCK_WAIT*.5;
+  if(sent>=o.qty){if(!bought&&!pl.hurt&&!slow)custRep(o.cust,2);if(slow)custRep(o.cust,-1);S.ys.full++;toast('cash',`${sent} ${C.name.toLowerCase()} shipped${slow?' (kept them waiting)':''}, +${fmt(rev+clear-buyCost)}`);}
+  else{custRep(o.cust,-shortRep(sent,o.qty));S.ys.short++;toast('bad',`Short: ${sent} of ${o.qty} ${C.name.toLowerCase()}, +${fmt(rev+clear)}`);}
+  if(k&&k.state!=='gone')truckLeaves(k,false);
 }
+const shortRep=(sent,qty)=>Math.round(2+8*(1-sent/qty));
+let askQ=[];
 function askBuy(pl,short,truckId){
-  const o=orderOf(pl),C=crop(pl.crop),cost=short*Math.round(C.price*1.2);
-  if(ask)resolveAsk(0);
-  ask={pl,short,truckId,t0:performance.now()};
-  const el=$('ask');el.hidden=false;
-  el.innerHTML=`<div class="aq">${svgIcon('load',44)}<div><b>${short} short for ${esc(o.cust)}</b><span>${have(pl)} of ${o.qty} ${C.name.toLowerCase()} on the truck</span></div></div>
-    <div class="ab"><button class="btn sun" type="button" id="askBuy">Buy in ${short} · ${fmt(cost)}</button><button class="btn" type="button" id="askShort">Ship short</button></div><i class="at"><i id="askT"></i></i>`;
+  if(ask){askQ.push([pl,short,truckId]);return;}
+  const o=orderOf(pl),C=crop(pl.crop),cost=short*Math.round(C.price*1.2),sent=Math.min(have(pl),o.qty),d=-shortRep(sent,o.qty),drop=tierDrops([{cust:o.cust,d}])[0];
+  ask={pl,short,truckId};
+  modal(`<h2>${esc(short1(o.cust))}'s truck is ${short} short</h2>
+    <div class="role">${custAv(o.cust,44)}<div class="rn"><b>${esc(o.cust)} ${tierChip(o.cust)}</b><span>Ordered ${o.qty} ${C.name.toLowerCase()}. You have ${sent} ready.</span></div></div>
+    <div class="opts"><button class="opt" id="askBuy" type="button"><b>Buy in ${short} flat${short>1?'s':''} · ${fmt(cost)}</b><span>Ships full. No reputation change.</span></button>
+    <button class="opt" id="askShort" type="button"><b>Ship ${sent} of ${o.qty}</b><span>Paid for ${sent} · ${d} reputation with ${esc(short1(o.cust))}</span>${drop?`<em>Drops them to ${drop.to.n}: ${PERK[drop.ti].toLowerCase()}</em>`:''}</button></div>`);
   $('askBuy').onclick=()=>resolveAsk(short);$('askShort').onclick=()=>resolveAsk(0);
 }
-function resolveAsk(bought){if(!ask)return;const a=ask;ask=null;$('ask').hidden=true;finishShip(a.pl,bought,a.truckId);}
+function resolveAsk(bought){if(!ask)return;const a=ask;ask=null;closeModal();finishShip(a.pl,bought,a.truckId);hud();if(askQ.length)askBuy(...askQ.shift());}
 
 // ---------------- crew ----------------
 function syncStaff(){
@@ -691,16 +768,16 @@ function tick(dt){
   while(S.events.length&&S.events[0].at<=S.t)fire(S.events.shift());
   for(const k of S.trucks)if((k.state==='line'||k.state==='dock')&&S.t>=k.deadline&&!(ask&&ask.truckId===k.id))truckLeaves(k,true);
   for(const t of S.tasks.slice()){
-    if(t.type==='water'&&S.t>=t.due){const pl=S.plots.find(p=>p.id===t.plot);if(pl){let n=0;pl.rows.forEach(r=>n+=hurt(pl,r,.25*(1-.2*upLv('soil')),1));if(n)float(BENCH[t.bench],`${n} wilted`,'#c8402f');}dropTask(t);}
+    if(t.type==='water'&&S.t>=t.due){const pl=S.plots.find(p=>p.id===t.plot);if(pl){let n=0;pl.rows.forEach(r=>n+=hurt(pl,r,.25*(1-.2*upLv('soil')),1));if(n)pl.hurt=1;if(n)float(BENCH[t.bench],`${n} wilted`,'#c8402f');}dropTask(t);}
     if(t.type==='pest'&&S.t>=t.due){
-      const pl=S.plots.find(p=>p.id===t.plot);if(pl){const n=hurt(pl,t.bench,.25*(1-.2*upLv('soil')),1);if(n)float(BENCH[t.bench],`${n} lost to pests`,'#c8402f');}
+      const pl=S.plots.find(p=>p.id===t.plot);if(pl){const n=hurt(pl,t.bench,.25*(1-.2*upLv('soil')),1);if(n)pl.hurt=1;if(n)float(BENCH[t.bench],`${n} lost to pests`,'#c8402f');}
       t.born=S.t;t.due=S.t+24;
       const f=BENCH[t.bench].f;
       const nb=S.plots.filter(p=>!p.done&&plotF(p)===f).flatMap(p=>p.rows.filter((r,k)=>p.potted[k]&&Math.abs(r-t.bench)<=2&&r!==t.bench&&!S.tasks.some(x=>x.type==='pest'&&x.bench===r)).map(r=>[p,r]));
       if(nb.length){const [p2,r2]=pick(nb);addTask({type:'pest',bench:r2,plot:p2.id,due:S.t+24});toast('pest',`Pests spread to ${LETTERS[r2]}`);}
     }
   }
-  for(let f=0;f<S.floors;f++)if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1))float(BENCH[r],'−1','#c8402f');}));}}
+  for(let f=0;f<S.floors;f++)if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
   if(S.t>=PSEC)endPeriod();
 }
 function simStep(dt){
@@ -722,12 +799,12 @@ function endPeriod(){
   S.trucks.filter(k=>k.state==='line'||k.state==='dock'||k.state==='coming').forEach(k=>truckLeaves(k,true));
   let fails=0;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>{
-    if(!pl.potted.some(Boolean)){pl.done=true;pl.fail=true;pl.e=c;orderOf(pl).status='failed';fails++;if(orderOf(pl).contract)contractFail(orderOf(pl).contract);}
+    if(!pl.potted.some(Boolean)){pl.done=true;pl.fail=true;pl.e=c;orderOf(pl).status='failed';fails++;custRep(orderOf(pl).cust,-12);if(orderOf(pl).contract)contractFail(orderOf(pl).contract);}
     else pl.potted.forEach((v,k)=>{if(!v){pl.alive[k]=0;pl.flats[k]=0;}});
   });
   S.tasks.filter(t=>t.type==='pest').forEach(t=>{const pl=S.plots.find(p=>p.id===t.plot);if(pl&&!pl.done)hurt(pl,t.bench,.2,1);});
   S.plots.filter(pl=>!pl.done&&pl.s<=c).forEach(pl=>pl.rows.forEach(r=>hurt(pl,r,crop(pl.crop).loss*(.5+rnd()))));
-  if(fails){S.rep=clamp(S.rep-6*fails,0,100);S.ys.failed+=fails;toast('bad',fails>1?`${fails} orders never got potted`:'An order never got potted');}
+  if(fails){S.ys.failed+=fails;toast('bad',fails>1?`${fails} orders never got potted`:'An order never got potted');}
   S.tasks=[];S.queue=[];me.task=null;me.path=[];staff.forEach(w=>{w.task=null;w.path=[];});
   S.crew.forEach(r=>{if(r.n<VET)r.n++;});
   settleBooks();
@@ -765,7 +842,7 @@ function yearEnd(){
   <button class="btn go" id="nyBtn" type="button">Start year ${S.year+1}</button>`);
   $('nyBtn').onclick=()=>{nextYear();closeModal();beginPlan();};
 }
-function nextYear(){S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0};}
+function nextYear(){if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,full:0,short:0,failed:0};}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -1229,7 +1306,7 @@ function toast(k,text,onTap){
 }
 
 // ---------------- sheet: orders, crew, build ----------------
-let sel=null,ghostRow=-1,drag=null,tab='orders',boardF=0,suppressClick=false,placing=null,ordersView='offers';
+let sel=null,ghostRow=-1,drag=null,tab='orders',boardF=0,suppressClick=false,placing=null,ordersView='offers',pv=null;
 const sheetOpen=()=>!$('sheet').hidden;
 function openSheet(t){if(window.__quiet)return;$('sheet').hidden=false;if(placing)cancelPlacing(true);sel=null;ghostRow=-1;tab=t||'orders';ordersView='offers';boardF=viewF;renderSheet();hud();}
 function closeSheet(){if(placing)cancelPlacing(true);$('sheet').hidden=true;sel=null;hud();}
@@ -1245,32 +1322,40 @@ function aimGhost(){
   if(f<0)for(let ff=0;ff<S.floors&&f<0;ff++){f=firstFitOn(sel,ff);if(f>=0){boardF=ff;viewF=ff;renderFloors();}}
   ghostRow=f<0?-1:f+Math.floor(sel.h/2);
 }
-function startPlacing(of){
+const queue=()=>S.phase==='plan'?S.offers:S.offers.filter(o=>o.popup);
+function ensureHand(){if(placing)return;const q=queue();if(q.length&&offerOwned(q[0]))startPlacing(q[0],true);}
+function autoPv(){pv=null;if(!sel)return;let t=firstFitOn(sel,boardF);if(t<0)for(let f=0;f<S.floors&&t<0;f++){t=firstFitOn(sel,f);if(t>=0){boardF=f;viewF=f;renderFloors();}}if(t>=0)pv={top:t};}
+function startPlacing(of,quiet){
   if(!offerOwned(of)){toast('bad',`You don't grow ${crop(lockedCrop(of)).name.toLowerCase()} yet`);return;}
+  if(placing&&placing.of!==of)cancelPlacing(true);
+  S.offers=[of,...S.offers.filter(x=>x!==of)];
   placing={of,k:0,placed:[],cid:null};
   if(of.contract){const cid=S.nid++;placing.cid=cid;S.contracts.push({id:cid,cust:of.cust,crop:of.crop,n:of.n,done:0,broken:false,round:roundKey(),of});S.offers=S.offers.filter(x=>x!==of);placing.cur=delivery(of,0,cid);}
   else placing.cur=of;
-  sel=piece(placing.cur);aimGhost();renderSheet();
+  sel=piece(placing.cur);autoPv();if(!quiet)renderSheet();
 }
 function cancelPlacing(quiet){
-  if(!placing)return;const P0=placing;placing=null;sel=null;ghostRow=-1;
-  if(P0.of.contract){P0.placed.forEach(pl=>{S.plots=S.plots.filter(x=>x!==pl);S.orders=S.orders.filter(o=>o.id!==pl.oid);});S.contracts=S.contracts.filter(c=>c.id!==P0.cid);S.offers.push(P0.of);}
+  if(!placing)return;const P0=placing;placing=null;sel=null;ghostRow=-1;pv=null;
+  if(P0.of.contract){dropOrders(P0.placed);S.contracts=S.contracts.filter(c=>c.id!==P0.cid);S.offers.unshift(P0.of);}
   if(!quiet){renderSheet();hud();}
 }
 function advancePlacing(){
   const P0=placing;P0.placed.push(S.plots[S.plots.length-1]);
-  if(P0.of.contract&&P0.k<P0.of.n-1){P0.k++;P0.cur=delivery(P0.of,P0.k,P0.cid);sel=piece(P0.cur);aimGhost();return;}
-  placing=null;sel=null;ghostRow=-1;
+  if(P0.of.contract&&P0.k<P0.of.n-1){P0.k++;P0.cur=delivery(P0.of,P0.k,P0.cid);sel=piece(P0.cur);autoPv();return;}
+  placing=null;sel=null;ghostRow=-1;pv=null;
   toast('good',P0.of.contract?`Contract signed: ${P0.of.n} deliveries for ${P0.of.cust.split(' ')[0]}`:`${crop(P0.of.crop).name} placed`);
   ordersView='offers';
 }
+function dropOrders(pls){pls.forEach(p=>{S.plots=S.plots.filter(x=>x!==p);S.orders=S.orders.filter(o=>o.id!==p.oid);});}
+function contractUnpotted(cid){return S.plots.filter(p=>{const o=orderOf(p);return o&&o.contract===cid&&!p.done&&!p.potted.some(Boolean);});}
 function removeContract(cid){
   const c=contractOf(cid);if(!c)return;
-  const mine=S.plots.filter(p=>{const o=orderOf(p);return o&&o.contract===cid&&!p.done&&!p.potted.some(Boolean);});
-  mine.forEach(p=>{S.plots=S.plots.filter(x=>x!==p);S.orders=S.orders.filter(o=>o.id!==p.oid);});
-  if(c.round===roundKey()&&!S.plots.some(p=>orderOf(p)?.contract===cid)){S.contracts=S.contracts.filter(x=>x!==c);S.offers.push(c.of);toast('good','Contract back on the offers list');}
-  else{c.broken=true;S.rep=clamp(S.rep-6,0,100);toast('bad','Contract cancelled, reputation −6');}
-  sel=null;ghostRow=-1;renderSheet();hud();
+  const isNew=c.round===roundKey(),d=isNew?0:-CANCEL_REP;
+  guardRep(d?[{cust:c.cust,d}]:[],`Cancelling this contract costs ${CANCEL_REP} reputation with ${c.cust}.`,()=>{
+    dropOrders(contractUnpotted(cid));
+    if(isNew&&!S.plots.some(p=>orderOf(p)?.contract===cid))S.contracts=S.contracts.filter(x=>x!==c);else c.broken=true;
+    if(d){custRep(c.cust,d);toast('bad',`Contract cancelled, ${d} with ${short1(c.cust)}`);}else toast('good','Contract binned');
+    sel=null;ghostRow=-1;renderSheet();hud();});
 }
 function dropPiece(pp,row){
   const t=nearestFit(pp,row);
@@ -1291,10 +1376,87 @@ function growPlot(pl,d){
 }
 function removePlot(pl){
   const o=orderOf(pl);if(o&&o.contract){removeContract(o.contract);return;}
-  S.plots=S.plots.filter(p=>p!==pl);S.orders=S.orders.filter(x=>x!==o);
-  if(pl.taken===roundKey()&&pl.of){S.offers.push(pl.of);toast('good','Back on the rail');}
-  else{S.rep=clamp(S.rep-3,0,100);toast('bad','Order cancelled, reputation −3');}
-  sel=null;ghostRow=-1;renderSheet();hud();
+  const isNew=pl.taken===roundKey(),d=isNew?0:-BUMP_REP;
+  guardRep(d?[{cust:o.cust,d}]:[],`Dropping this order costs ${BUMP_REP} reputation with ${o.cust}.`,()=>{
+    dropOrders([pl]);
+    if(d){custRep(o.cust,d);toast('bad',`Order dropped, ${d} with ${short1(o.cust)}`);}else toast('good','Order binned');
+    sel=null;ghostRow=-1;renderSheet();hud();});
+}
+const potM=()=>1+.1*upLv('pots');
+const ppVal=pp=>{const o=pp.offer;return Math.round(o.qty*o.price*potM());};
+const plVal=pl=>{const o=orderOf(pl);return Math.round(o.qty*o.price*potM());};
+const booked=()=>Math.round(S.orders.filter(o=>o.status!=='failed').reduce((a,o)=>a+(o.status==='shipped'?(o.sent||0):o.qty)*o.price,0)*potM());
+function evalPv(top){
+  const pp=sel;if(!pp)return{ok:false,reason:''};
+  if(pp.s<minStart())return{ok:false,reason:'Too late to pot this one'};
+  const hit=new Set();
+  for(let r=top;r<top+pp.h;r++)for(let c=pp.s;c<=pp.e;c++){const o=plotAt(r,c);if(o)hit.add(o);}
+  for(const pl of hit){
+    if(placing&&placing.cid&&orderOf(pl)?.contract===placing.cid)return{ok:false,reason:'This contract already has a delivery there'};
+    if(!movable(pl))return{ok:false,reason:pl.potted.some(Boolean)?'Plants are already growing there':'That spot is locked'};}
+  const gone=new Set(hit),ctr=new Set(),rep=[];
+  for(const pl of hit){const o=orderOf(pl);
+    if(o.contract){if(!ctr.has(o.contract)){ctr.add(o.contract);const c=contractOf(o.contract);contractUnpotted(o.contract).forEach(p=>gone.add(p));if(c&&c.round!==roundKey())rep.push({cust:c.cust,d:-CANCEL_REP});}}
+    else if(pl.taken!==roundKey())rep.push({cust:o.cust,d:-BUMP_REP});}
+  const G=[...gone];
+  return{ok:true,hit:[...hit],gone:G,ctr:[...ctr],rep,gain:ppVal(pp),loss:G.reduce((a,p)=>a+plVal(p),0)};
+}
+function boardTap(r){
+  if(!placing||r<0)return;
+  if(pv&&r>=pv.top&&r<pv.top+sel.h){confirmPv();return;}
+  pv={top:topFor(sel,r)};renderSheet();
+}
+function confirmPv(){
+  if(!placing||!pv)return;const ev=evalPv(pv.top);if(!ev.ok){toast('bad',ev.reason);return;}
+  const what=`This swap costs ${ev.rep.map(x=>`${-x.d} reputation with ${x.cust}`).join(' and ')}.`;
+  guardRep(ev.rep,what,()=>{
+    if(!placing||!pv)return;
+    ev.ctr.forEach(cid=>{const c=contractOf(cid);if(!c)return;if(c.round===roundKey()&&!S.plots.some(p=>orderOf(p)?.contract===cid&&!ev.gone.includes(p)))S.contracts=S.contracts.filter(x=>x!==c);else c.broken=true;});
+    dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d));
+    if(ev.gone.length)toast(ev.rep.length?'bad':'good',`Swapped out ${ev.gone.length} order${ev.gone.length>1?'s':''}${ev.rep.length?': '+ev.rep.map(x=>`${x.d} with ${short1(x.cust)}`).join(', '):''}`);
+    if(!place(placing.cur,pv.top)){toast('bad','No room there');renderSheet();return;}
+    pv=null;advancePlacing();renderSheet();hud();
+  });
+}
+function binHand(){
+  if(placing){const P0=placing;placing=null;sel=null;pv=null;
+    if(P0.of.contract){dropOrders(P0.placed);S.contracts=S.contracts.filter(c=>c.id!==P0.cid);}
+    S.offers=S.offers.filter(x=>x!==P0.of);}
+  else{const q=queue();if(q[0])S.offers=S.offers.filter(x=>x!==q[0]);}
+  renderSheet();hud();
+}
+function canNudge(pl,d,avoid){
+  const s=pl.s+d,e=pl.e+d;if(s<minStart()||e>7||e<0)return false;
+  for(const r of pl.rows)for(let c=s;c<=e;c++){const o=plotAt(r,c);if(o&&o!==pl)return false;if(avoid&&r>=avoid.top&&r<avoid.top+avoid.h&&c>=avoid.s&&c<=avoid.e)return false;}
+  return true;
+}
+function nudge(pl,d){
+  const o=orderOf(pl),cut=Math.round(o.qty*o.price*potM()*.1),rp=d>0?-3:0;
+  const go=()=>{pl.s+=d;pl.e+=d;o.p+=d;o.price=Math.round(o.price*.9);if(rp)custRep(o.cust,rp);toast(d<0?'cash':'bad',`${short1(o.cust)} takes it a period ${d<0?'early':'late'}: ${fmt(-cut)}${rp?`, ${rp} reputation`:''}`);renderSheet();hud();};
+  if(rp)guardRep([{cust:o.cust,d:rp}],`Asking ${o.cust} to wait costs ${-rp} reputation with them.`,go);else go();
+}
+function miniHTML(of){const C=crop(of.crop);return`<span class="mini" style="background:${C.color}">${of.contract?`Contract ×${of.n}`:`${of.qty} ${C.name.toLowerCase()}`} · ${PSH[of.p]}</span>`;}
+const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' on credit':''}</button>`;
+function handHTML(of){
+  const head=`<div class="hc1">${custAv(of.cust,32)}<span class="hcn"><b>${esc(of.cust)}</b>${tierChip(of.cust)}</span></div>`;
+  if(of.contract){
+    const dl=of.dl,crops=[...new Set(dl.map(d=>d.crop))],cur=placing&&placing.of===of?placing.cur:null,C0=crop(dl[0].crop),lc=lockedCrop(of);
+    return`<div class="hcard" style="--c:#6b4fc8">${head}<div class="hc2"><span class="ctag">Contract · ${of.label}</span>${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}</div>
+    <div class="hc2">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]} · <b>${fmt(offerValue(of)*potM())}</b></div>
+    ${cur?`<div class="hcur">Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, pot ${PSH[startOf(cur)]}, ship ${PSH[cur.p]}</div>`:''}${lc?unlockBtn(lc):''}</div>`;
+  }
+  const C=crop(of.crop),lk=!owns(of.crop),h=need(of);
+  return`<div class="hcard" style="--c:${C.color}">${of.popup?'<span class="htag">Pop-up</span>':''}${head}
+  <div class="hc2"><span class="crop" style="background:${C.color}">${C.name}</span><b>${of.qty} flats</b><span>pot ${PSH[startOf(of)]}, ship ${PSH[of.p]} · ${h} bench${h>1?'es':''}</span></div>
+  <div class="hval">${fmt(of.qty*of.price*potM())}</div>${lk?unlockBtn(of.crop):''}</div>`;
+}
+function readoutHTML(){
+  if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`<div class="readout"><span>You don't grow ${crop(lc).name.toLowerCase()} yet. Unlock it, or bin this offer.</span></div>`:'';}
+  if(!pv)return`<div class="readout"><span>${firstFit(sel)<0?'No free spot for this one. Tap the board to swap orders out, or bin it.':'Tap a row on the board to try it there.'}</span></div>`;
+  const ev=evalPv(pv.top);
+  if(!ev.ok)return`<div class="readout"><b class="neg">${ev.reason}.</b><span>Tap another row.</span></div>`;
+  const net=ev.gain-ev.loss,reps=ev.rep.map(x=>{const dr=tierDrops([x])[0];return`<span class="rchip">${x.d} with ${esc(short1(x.cust))}${dr?` · to ${dr.to.n}`:''}</span>`;}).join('');
+  return`<div class="readout"><b class="pos">+${fmt(ev.gain)}</b><span>on ${span(pv.top,sel.h)}${S.floors>1?' ('+floorName(Math.floor(pv.top/8)).toLowerCase()+')':''}</span>${ev.gone.length?`<b class="neg">−${fmt(ev.loss)}</b><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''}</span>${reps}<span class="net">Net ${net>=0?'+':''}${fmt(net)}</span>`:''}<button class="btn go" type="button" id="pvGo">Place</button></div>${ev.hit.length?'<p class="nhint">Arrows ask a bumped customer to take theirs a period early (−10% price) or late (−10% price, −3 reputation).</p>':''}`;
 }
 function tkHTML(of){
   const C=crop(of.crop),h=need(of),g=C.g,st=startOf(of),isSel=sel&&sel.offer===of,lk=!offerOwned(of);
@@ -1322,28 +1484,26 @@ function sortedOffers(list){
 function renderSheet(){
   const el=$('sheet');if(el.hidden)return;
   const plan=S.phase==='plan',c=S.period;
+  if(tab==='orders')ensureHand();
   if(placing)sel=piece(placing.cur);
   else if(sel&&sel.offer&&!S.offers.includes(sel.offer))sel=null;
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
-  const tabs=`<div class="tabs">${[['orders','Orders'],['crew',`Crew${staffCount()?' · '+staffCount():''}`],['build','Upgrades']].map(([k,l])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}${plan?'':'<span style="flex:1"></span><button class="xbtn" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const tabs=`<div class="tabs">${[['orders','Orders'],['cust','Customers'],['crew',`Crew${staffCount()?' · '+staffCount():''}`],['build','Upgrades']].map(([k,l])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${l}</button>`).join('')}${plan?'':'<span style="flex:1"></span><button class="xbtn" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='';
   if(tab==='orders'){
-    const offers=plan?S.offers:S.offers.filter(o=>o.popup),view=placing?'board':ordersView;
-    const toggle=placing?'':`<div class="vtog"><button type="button" data-ov="offers" class="${view==='offers'?'on':''}">${plan?'Offers':'Pop-ups'}${offers.length?` <span class="n">${offers.length}</span>`:''}</button><button type="button" data-ov="board" class="${view==='board'?'on':''}">Board</button></div>`;
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
-    if(view==='offers'){
-      const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
+    const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.negRun>1?' · <span class="neg">crew may quit if you stay in the red</span>':''}</summary><div class="kv">
         <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Paid in cash</span><b>${fmt(-st.build)}</b>`:''}${st.credit?`<span>Credit bill</span><b>${fmt(-st.credit)}</b>`:''}${st.interest?`<span>Credit interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
-      body=stHTML+`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Pop-up orders'} ${plan?'':'<span class="paused">Paused</span>'}<small>Pick an order or a contract, then place it on the board. Contracts are a run of deliveries you place one after another, on any benches and floors.</small></h2>
-        ${offers.length>1?`<span class="pill">Sort <span class="s2"><button type="button" data-sort="start" class="${sortBy==='start'?'on':''}">Pot date</button><button type="button" data-sort="value" class="${sortBy==='value'?'on':''}">Value</button></span></span>`:''}${lossPill}</div>${toggle}
-        ${offers.length?`<div class="rail" id="rail">${sortedOffers(offers).map(tkHTML).join('')}</div>`:`<div class="norail">${plan?'No new orders this period. Your benches carry on.':'No pop-up orders right now.'}</div>`}`;
-    }else{
-      const cur=placing&&placing.cur,C=cur&&crop(cur.crop);
-      body=(placing?`<div class="placing" style="border-color:${C.color}"><div><b>${placing.of.contract?`Delivery ${placing.k+1} of ${placing.of.n}: `:''}${cur.qty} ${C.name.toLowerCase()} for ${esc(cur.cust)}</b><span>Pots ${PSH[startOf(cur)]}, ships ${PSH[cur.p]}. Tap a row to place it${S.floors>1?' on any floor':''}.</span></div><button class="btn" type="button" id="plX">Cancel</button></div>`
-        :`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Board'} ${plan?'':'<span class="paused">Paused</span>'}<small>Rows are benches, columns are periods. A block starts when you pot it and ends when its truck comes. Drag blocks around until they're potted.</small></h2>${lossPill}</div>${toggle}`)+`
+    const q=queue(),hof=placing?placing.of:q[0],inQ=placing&&placing.of.contract,peek=(inQ?q:q.slice(1)).slice(0,2),left=q.length+(inQ?1:0);
+    const hand=hof?`<div class="hand">${handHTML(hof)}<div class="hside"><div class="peek"><small>Next up</small>${peek.length?peek.map(miniHTML).join(''):'<span class="mini none">Nothing</span>'}</div><span class="left">${left} offer${left>1?'s':''} left</span><button class="bin" type="button" id="binB">${glyph('bad',14)} Bin</button></div></div>${readoutHTML()}`
+      :`<div class="hand"><div class="hcard empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div></div>`;
+    body=stHTML+`<div class="bhead"><h2>${plan?`Plan ${PN[c].toLowerCase()}`:'Pop-up orders'} ${plan?'':'<span class="paused">Paused</span>'}<small>Booked this year: ${fmt(booked())}</small></h2>${lossPill}</div>${hand}
       ${S.floors>1?`<div class="ftabs">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-bf="${f}" class="${boardF===f?'on':''}">${floorName(f)} · ${floorSpan(f)}</button>`).join('')}</div>`:''}
       <div class="board" id="board"></div>`;
-    }
+  }else if(tab==='cust'){
+    body=`<div class="bhead"><h2>Customers<small>Each customer remembers how you treat them. Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier.</small></h2></div>
+      <div class="custs">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,44)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span>${PERK[ti]}</span><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span></div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
+      <p class="hint" style="margin:12px 2px 0;color:var(--mute);font-size:14px">Tiers: Wary from 20, Steady from 40, Loyal from 65, Partner from 85. Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</p>`;
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Each one works a single floor; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
       <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">Floor ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
@@ -1362,13 +1522,15 @@ function renderSheet(){
       ${next?`<h3>Add ${floorName(S.floors).toLowerCase()}</h3><p>${fmt(next)}${S.cash<next?' on credit (due at the end of the period, plus 10%)':' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. One person can't keep up with two floors, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>The greenhouse is as tall as it gets</h3>'}</div>
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
   }
-  const hint=tab==='orders'?(placing?'Green cells are free for this delivery. Tap a row to place it.':(ordersView==='offers'?'Tap a card to place it on the board.':sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
+  const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?'Green is free, amber can be swapped out. Tap a row to preview, then tap it again or press Place.':(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
   el.innerHTML=tabs+body+`<div class="bfoot"><span class="hint">${hint}</span>${plan?`<button class="btn sun" type="button" id="goB">Start ${PN[c].toLowerCase()}</button>`:''}</div>`;
   if(tab==='orders'&&$('board'))renderBoard();
   el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(placing)cancelPlacing(true);tab=b.dataset.tab;sel=null;renderSheet();});
   el.querySelectorAll('[data-ov]').forEach(b=>b.onclick=()=>{ordersView=b.dataset.ov;sel=null;ghostRow=-1;renderSheet();});
   const plx=$('plX');if(plx)plx.onclick=()=>cancelPlacing();
-  el.querySelectorAll('[data-bf]').forEach(b=>b.onclick=()=>{boardF=+b.dataset.bf;viewF=boardF;renderFloors();ghostRow=-1;if(sel&&sel.offer){const f=firstFitOn(sel,boardF);ghostRow=f<0?-1:f+Math.floor(sel.h/2);}renderSheet();});
+  el.querySelectorAll('[data-bf]').forEach(b=>b.onclick=()=>{boardF=+b.dataset.bf;viewF=boardF;renderFloors();ghostRow=-1;if(placing){const f=firstFitOn(sel,boardF);pv=f<0?null:{top:f};}renderSheet();});
+  const bn=$('binB');if(bn)bn.onclick=binHand;
+  const pg=$('pvGo');if(pg)pg.onclick=confirmPv;
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
   el.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;hire(b.dataset.hire);const r=S.crew[S.crew.length-1];toast('good',`${r.name} joins as a ${ROLES[r.role].name.toLowerCase()}`);renderSheet();traySig='';renderTray();});
@@ -1428,13 +1590,14 @@ function blkHTML(o){
 function renderBoard(){
   const B=$('board');if(!B)return;const m=boardMetrics(),c=S.period,ms=minStart(),base=boardF*8;
   B.style.height=m.H+'px';
-  const live=drag&&drag.on?drag.pp:sel,nowX=m.lab+(c+(S.phase==='run'?S.t/PSEC:0))*m.cw;
+  const live=drag&&drag.on?drag.pp:sel,nowX=m.lab+(c+(S.phase==='run'?S.t/PSEC:0))*m.cw,hand=placing&&sel&&!(drag&&drag.on),ev=hand&&pv?evalPv(pv.top):null;
   let h='';
   for(let i=0;i<8;i++)h+=`<div class="ch${i===c?' now':''}${i<c?' gone':''}" style="left:${m.lab+i*m.cw}px;top:0;width:${m.cw}px;height:${m.hh}px">${i===c?'<b>Now</b>':PSH[i]}</div>`;
   for(let r=0;r<8;r++){const g=base+r;h+=`<div class="rh" style="left:0;top:${m.hh+r*m.rh}px;width:${m.lab}px;height:${m.rh}px">${LETTERS[g]}</div>`;
     for(let i=0;i<8;i++){
       let cls=i<c?' past':i===c?' cur':'';
-      if(live&&i>=live.s&&i<=live.e&&i>=ms){const o=plotAt(g,i);cls+=o&&o!==live.plot?' no':' ok';}
+      if(hand){if(i>=sel.s&&i<=sel.e&&i>=ms){const o=plotAt(g,i);cls+=!o?' ok':movable(o)&&!(placing.cid&&orderOf(o).contract===placing.cid)?' sw':' no';}}
+      else if(live&&i>=live.s&&i<=live.e&&i>=ms){const o=plotAt(g,i);cls+=o&&o!==live.plot?' no':' ok';}
       h+=`<div class="cell${cls}" style="left:${m.lab+i*m.cw}px;top:${m.hh+r*m.rh}px;width:${m.cw}px;height:${m.rh}px"></div>`;}}
   for(const pl of S.plots){
     if(plotF(pl)!==boardF)continue;
@@ -1445,10 +1608,18 @@ function renderBoard(){
     const fut=(st==='grow'||st==='ready')?Math.round(clamp((left+bw-nowX)/bw,0,1)*100):0;
     const ct=o.contract?contractOf(o.contract):null,ctag=ct?`${o.k+1}/${ct.n} `:'';
     const val=ctag+(st==='done'?fmt(Math.round((o.sent||0)*o.price*(1+.1*upLv('pots')))):fmt(Math.round(o.qty*o.price*(1+.1*upLv('pots')))));
-    h+=blkHTML({cls:`${mv?' mv':''}${isSel?' picked':''}${lifted?' lift':''}`,color:C.color,left,top:m.hh+top*m.rh+2,w:bw,h:h2*m.rh-4,st,name:C.name,count:`${hv}/${o.qty}`,short:hv<o.qty&&!pl.done,val,fut,rm:mv,id:pl.id});
+    h+=blkHTML({cls:`${mv?' mv':''}${isSel?' picked':''}${lifted?' lift':''}${ev&&ev.ok&&ev.gone.includes(pl)?' bump':''}`,color:C.color,left,top:m.hh+top*m.rh+2,w:bw,h:h2*m.rh-4,st,name:C.name,count:`${hv}/${o.qty}`,short:hv<o.qty&&!pl.done,val,fut,rm:mv,id:pl.id});
   }
   h+=`<div class="nowline" style="left:${nowX-1.5}px;top:${m.hh-6}px;height:${m.rh*8+6}px"></div>`;
-  if(live&&ghostRow>=0){
+  if(hand){
+    if(placing.of.contract)for(let k=placing.k+1;k<placing.of.n;k++){const d=delivery(placing.of,k,placing.cid),pp=piece(d),r=firstFit(d);if(r<0||Math.floor(r/8)!==boardF)continue;h+=blkHTML({cls:' later',color:crop(d.crop).color,left:m.lab+pp.s*m.cw+2,top:m.hh+(r-base)*m.rh+2,w:(pp.e-pp.s+1)*m.cw-4,h:pp.h*m.rh-4,st:'ghost',name:'',count:`#${k+1}`,val:crop(d.crop).name,ghost:true});}
+    if(pv&&Math.floor(pv.top/8)===boardF){
+      h+=blkHTML({cls:' ghost'+(ev.ok?'':' bad'),color:crop(sel.crop).color,left:m.lab+sel.s*m.cw+2,top:m.hh+(pv.top-base)*m.rh+2,w:(sel.e-sel.s+1)*m.cw-4,h:sel.h*m.rh-4,st:'ghost',name:'',count:ev.ok?span(pv.top,sel.h):'Blocked',val:ev.ok?'+'+fmt(ev.gain):'',ghost:true});
+      if(ev.ok){const avoid={top:pv.top,h:sel.h,s:sel.s,e:sel.e};for(const pl of ev.hit){if(plotF(pl)!==boardF)continue;const tp=m.hh+(Math.min(...pl.rows)-base)*m.rh+2,hh=pl.rows.length*m.rh-4,lf=m.lab+pl.s*m.cw+2,w=(pl.e-pl.s+1)*m.cw-4;
+        h+=`<button class="nud" type="button" data-nud="${pl.id}" data-d="-1" style="left:${lf-6}px;top:${tp+hh/2-17}px"${canNudge(pl,-1,avoid)?'':' disabled'} aria-label="Ship a period early">◀</button><button class="nud" type="button" data-nud="${pl.id}" data-d="1" style="left:${lf+w-28}px;top:${tp+hh/2-17}px"${canNudge(pl,1,avoid)?'':' disabled'} aria-label="Ship a period late">▶</button>`;}}
+    }
+  }
+  else if(live&&ghostRow>=0){
     const t=nearestFit(live,ghostRow),top=(t>=0?t:topFor(live,ghostRow))-base,C=crop(live.crop),w=(live.e-live.s+1)*m.cw;
     const of=live.offer,qty=of?of.qty:orderOf(live.plot).qty,price=of?of.price:orderOf(live.plot).price;
     h+=blkHTML({cls:' ghost'+(t>=0?'':' bad'),color:C.color,left:m.lab+live.s*m.cw+2,top:m.hh+top*m.rh+2,w:w-4,h:live.h*m.rh-4,st:'ghost',name:'',count:t>=0?span(t,live.h):'No room',val:fmt(Math.round(qty*price*(1+.1*upLv('pots')))),ghost:true});
@@ -1456,6 +1627,7 @@ function renderBoard(){
   B.innerHTML=h;
   B.querySelectorAll('.blk.mv').forEach(b=>b.addEventListener('pointerdown',pieceDown));
   B.querySelectorAll('[data-rm]').forEach(b=>b.onclick=e=>{e.stopPropagation();const pl=S.plots.find(p=>p.id==b.dataset.rm);if(pl)removePlot(pl);});
+  B.querySelectorAll('[data-nud]').forEach(b=>b.onclick=e=>{e.stopPropagation();const pl=S.plots.find(p=>p.id==b.dataset.nud);if(pl)nudge(pl,+b.dataset.d);});
 }
 function rowAt(clientY){const B=$('board');if(!B)return -1;const r=B.getBoundingClientRect(),m=boardMetrics(),y=clientY-r.top-m.hh;return y<0||y>m.rh*8?-1:boardF*8+Math.floor(y/m.rh);}
 function overBoard(x,y){const B=$('board');if(!B)return false;const r=B.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
@@ -1483,7 +1655,7 @@ addEventListener('pointermove',e=>{
     }
     return;
   }
-  if(sel&&e.pointerType==='mouse'&&sheetOpen()&&tab==='orders'){const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r!==ghostRow){ghostRow=r;renderBoard();}}
+  if(sel&&!placing&&e.pointerType==='mouse'&&sheetOpen()&&tab==='orders'){const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r!==ghostRow){ghostRow=r;renderBoard();}}
 });
 addEventListener('pointerup',e=>{
   if(!drag||e.pointerId!==drag.id)return;
@@ -1491,6 +1663,7 @@ addEventListener('pointerup',e=>{
   const quiet=()=>{suppressClick=true;setTimeout(()=>suppressClick=false,60);};
   if(d.on){const r=overBoard(e.clientX,e.clientY)?rowAt(e.clientY):-1;if(r>=0)dropPiece(d.pp,r);else{ghostRow=-1;sel=null;renderSheet();}quiet();return;}
   if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<10){
+    if(placing){quiet();boardTap(rowAt(e.clientY));return;}
     sel=samePiece(sel,d.pp)?null:d.pp;
     if(sel&&sel.offer){let f=firstFitOn(sel,boardF);if(f<0){for(let ff=0;ff<S.floors&&f<0;ff++){f=firstFitOn(sel,ff);if(f>=0){boardF=ff;viewF=ff;renderFloors();}}}ghostRow=f<0?-1:f+Math.floor(sel.h/2);}else ghostRow=-1;
     renderSheet();quiet();
@@ -1500,8 +1673,8 @@ addEventListener('pointercancel',()=>{if(drag&&drag.el)drag.el.remove();drag=nul
 $('sheet').addEventListener('click',e=>{
   if(suppressClick){suppressClick=false;return;}
   if(!sel||tab!=='orders')return;const B=$('board');if(!B||!B.contains(e.target))return;
-  if(e.target.closest('.blk.mv'))return;
-  const r=rowAt(e.clientY);if(r>=0)dropPiece(sel,r);
+  if(e.target.closest('.blk.mv,[data-nud],[data-rm]'))return;
+  const r=rowAt(e.clientY);if(placing){boardTap(r);return;}if(r>=0)dropPiece(sel,r);
 });
 
 // ---------------- canvas input ----------------
@@ -1532,6 +1705,7 @@ function benchInfo(b){
 }
 $('bBoard').onclick=()=>sheetOpen()?closeSheet():openSheet();
 $('bSet').onclick=openSettings;
+$('hRepB').onclick=()=>openSheet('cust');
 $('bGo').onclick=()=>startPeriod();
 let speed=1;
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -1540,11 +1714,11 @@ $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.credit=d.credit||0;d.negRun=d.negRun||0;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.credit=d.credit||0;d.negRun=d.negRun||0;if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
   <div class="steps">
-  <div>${svgIcon('pop',40)}<span><b>Plan:</b> between periods, drag orders onto the board. Bigger orders take more benches, slower crops take more periods.</span></div>
+  <div>${svgIcon('pop',40)}<span><b>Plan:</b> between periods, offers come up one at a time. Place each on the board or bin it. Bigger orders take more benches, slower crops take more periods.</span></div>
   <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build up to three floors.</span></div></div>
@@ -1559,7 +1733,6 @@ function frame(now){
   const paused=sheetOpen()||!$('modal').hidden;
   if(S.phase==='run'&&!paused){
     simStep(dt*speed*3);
-    if(ask){ask.el=(ask.el||0)+dt;const f=ask.el/7;const b=$('askT');if(b)b.style.width=clamp(1-f,0,1)*100+'%';if(f>=1)resolveAsk(0);}
     if((uiT+=dt)>.15){uiT=0;hud();}
   }
   if(S.phase==='run'&&sheetOpen())renderSheetLite();
