@@ -1160,9 +1160,41 @@ function catWander(c){
   if(!walkable(tx,ty)||ty<0){c.mode='sit';c.t=1;return;}
   const [x,y]=catTile(c);c.path=route(x,y,tx,ty);c.mode=c.path.length?'walk':'sit';if(!c.path.length)c.t=1.5;
 }
+let mouse=null,mouseT=35+Math.random()*50;
+function mouseTarget(){const H=HOUSES[Math.floor(Math.random()*Math.min(4,S.floors))];for(let k=0;k<20;k++){const tx=H.ox+Math.floor(Math.random()*9),ty=H.oy+Math.floor(Math.random()*7);if(walkable(tx,ty))return[tx,ty];}return null;}
+function spawnMouse(){
+  let t=null;for(let k=0;k<30;k++){const q=mouseTarget();if(q&&CATS.every(c=>Math.hypot(c.x-q[0]-.5,c.y-q[1]-.5)>4)){t=q;break;}}if(!t)return;
+  mouse={x:t[0]+.5,y:t[1]+.5,f:0,path:[],face:1,t:0};
+  const c=CATS.slice().sort((a,b)=>Math.hypot(a.x-mouse.x,a.y-mouse.y)-Math.hypot(b.x-mouse.x,b.y-mouse.y))[Math.random()<.7?0:1];
+  c.chase=true;c.rp=0;c.mode='walk';c.path=[];
+}
+function stepMouse(dt){
+  if(!mouse){mouseT-=dt;if(mouseT<=0){spawnMouse();mouseT=60+Math.random()*90;}return;}
+  mouse.t+=dt;
+  if(mouse.t>30){mouse=null;CATS.forEach(c=>{if(c.chase){c.chase=false;c.mode='sit';c.t=3;}});return;}
+  if(!mouse.path.length){const t=mouseTarget();if(t)mouse.path=route(Math.floor(mouse.x),Math.floor(mouse.y),t[0],t[1]);}
+  const n=mouse.path[0];if(!n)return;
+  const dx=n.x-mouse.x,dy=n.y-mouse.y,d=Math.hypot(dx,dy),st=2.2*dt;
+  if(Math.abs(dx-dy)>.01)mouse.face=dx-dy>0?1:-1;
+  if(d<=st){mouse.x=n.x;mouse.y=n.y;mouse.path.shift();}else{mouse.x+=dx/d*st;mouse.y+=dy/d*st;}
+}
+function catchMouse(c){
+  floats.push({x:c.x,y:c.y,f:0,text:'Gotcha!',color:'#c96f2c',t0:performance.now()});
+  toast('cat',[`${c.name} caught a mouse!`,`${c.name} pounces. Mouse caught!`,`${c.name} is very proud of herself`][Math.floor(Math.random()*3)]);
+  mouse=null;c.chase=false;c.mode='sit';c.t=5+Math.random()*3;c.path=[];
+}
 function stepCats(dt){
+  stepMouse(dt);
   for(const c of CATS){
     c.f=0;
+    if(c.chase&&mouse){
+      if(Math.hypot(c.x-mouse.x,c.y-mouse.y)<.45){catchMouse(c);continue;}
+      c.rp-=dt;if(c.rp<=0||!c.path.length){c.rp=.4;c.path=route(Math.floor(c.x),Math.floor(c.y),Math.floor(mouse.x),Math.floor(mouse.y));if(c.path.length)c.path[c.path.length-1]={x:mouse.x,y:mouse.y};else c.path=[{x:mouse.x,y:mouse.y}];}
+      const n=c.path[0],dx=n.x-c.x,dy=n.y-c.y,d=Math.hypot(dx,dy),st=2.7*dt;
+      if(Math.abs(dx-dy)>.01)c.face=dx-dy>0?1:-1;if(d>.01)c.dir=[dx/d,dy/d];
+      if(d<=st){c.x=n.x;c.y=n.y;c.path.shift();}else{c.x+=dx/d*st;c.y+=dy/d*st;}
+      continue;
+    }
     if(c.mode==='walk'){
       const n=c.path[0];if(!n){c.mode='rest';continue;}
       const dx=n.x-c.x,dy=n.y-c.y,d=Math.hypot(dx,dy),st=1.05*dt;
@@ -1181,9 +1213,10 @@ function sprFlip(id,u,v,z,flip){
 }
 function drawCat(c,now){
   const z=c.f*FH,walking=c.mode==='walk';
-  const pose=walking?'walk'+(Math.floor(now/180)%2):c.mode==='sleep'?'sleep':'sit';
+  const pose=walking||c.chase?'walk'+(Math.floor(now/(c.chase?100:180))%2):c.mode==='sleep'?'sleep':'sit';
   sprFlip(`cat_${c.id}_${pose}`,c.x-.5,c.y-.5,z+6,c.face<0);
 }
+function drawMouse(now){if(!mouse||viewF!==0)return;sprFlip('mouse_'+(Math.floor(now/90)%2),mouse.x-.5,mouse.y-.5,6,mouse.face<0);}
 function petCat(c){
   floats.push({x:c.x,y:c.y,f:c.f,text:'♥',color:'#e2552f',t0:performance.now()});
   if(c.mode==='walk'){c.path=[];}c.mode='sit';c.t=3+Math.random()*2;
@@ -1278,6 +1311,7 @@ function draw(now){
   if(viewF===0){
     for(const w of [me,...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
     for(const c of CATS)if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
+    if(mouse&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   drawLabels();drawCounts();drawFloats(now);drawIcons();
@@ -1291,6 +1325,7 @@ function drawHouse(H,now){
   if(S.floors>4&&(H.L>0||S.floors>H.h+4))L.push({d:lf.x+lf.y+1.2,f:()=>drawLift(H)});
   for(const w of [me,...staff]){if(w.y>=0&&inH(w.x,w.y,w.f)&&!((w.leg==='lift'||w.leg==='home')&&w.ride>0))L.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});}
   for(const c of CATS)if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
+  if(mouse&&inH(mouse.x,mouse.y,0))L.push({d:mouse.x+mouse.y-.02,f:()=>drawMouse(now)});
   L.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   drawUpgrades(H,now);
 }

@@ -504,6 +504,19 @@ def vcat(name, pose):
         b += head(39, 45, True)
         b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
     return b
+def vmouse(frame):
+    b = ell(32, 50, 7, 1.8, '#1d3a24', 'opacity=".18"')
+    b += f'<path d="M25,47 q-6,1 -8,-3 q-1,-3 2,-3" fill="none" stroke="#c98b8b" stroke-width="1.1" stroke-linecap="round"/>'
+    for fx in ((28, 35) if frame == 0 else (29.5, 33.5)):
+        b += ell(fx, 49.2, 1.3, .8, '#c98b8b')
+    b += ell(31, 46, 6.5, 3.6, '#9aa1aa', 'stroke="#5d646d" stroke-width=".7"')
+    b += ell(30, 47.2, 4.5, 1.6, '#c5cad1')
+    b += f'<path d="M36,43.6 q4.5,.8 5.2,3 q-2,1.4 -5.4,.8 Z" fill="#9aa1aa" stroke="#5d646d" stroke-width=".7" stroke-linejoin="round"/>'
+    b += circ(35.6, 42.6, 2, '#9aa1aa', '#5d646d', .7) + circ(35.6, 42.6, 1.1, '#f2a7b5')
+    b += circ(38.6, 45.1, .6, '#1f2321') + circ(41.3, 46.6, .7, '#f27a92')
+    b += f'<path d="M41,46.4 l2.6,-1 M41,46.8 l2.8,.4" stroke="#5d646d" stroke-width=".4"/>'
+    return b
+add('mouse_0', vmouse(0)); add('mouse_1', vmouse(1))
 for _n in ('anna', 'miley'):
     for _p in ('walk0', 'walk1', 'sit', 'sleep'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
 
