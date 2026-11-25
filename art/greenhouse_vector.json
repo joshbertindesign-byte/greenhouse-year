@@ -29,6 +29,102 @@
     32
    ]
   },
+  "grass_winter_a": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_winter_b": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_winter_c": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_spring_a": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_spring_b": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_spring_c": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_summer_a": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_summer_b": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_summer_c": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_fall_a": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_fall_b": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "grass_fall_c": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
   "floor": {
    "w": 64,
    "h": 64,
@@ -603,6 +699,70 @@
    "anchor": [
     64,
     80
+   ]
+  },
+  "cat_anna_walk0": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_anna_walk1": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_anna_sit": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_anna_sleep": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_miley_walk0": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_miley_walk1": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_miley_sit": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_miley_sleep": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
    ]
   }
  }

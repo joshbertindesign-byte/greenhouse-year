@@ -85,6 +85,39 @@ def blit_map(img, rows, pal, ox, oy):
             if ch in pal and pal[ch] is not None: put(img, ox + i, oy + j, pal[ch])
 
 # ---------------------------------------------------------------- ground tiles
+SEASON = {
+    'spring': {'g': [C('#3f7a44'), C('#56a052'), C('#6dba5e'), C('#92d270'), C('#b6e686')], 'dots': [C('#ffffff'), C('#ffe066'), C('#ff9ccf'), C('#c9a7ff')], 'n': 7},
+    'summer': {'g': [C('#4a7a3a'), C('#5f9447'), C('#76a852'), C('#97c060'), C('#b8d77a')], 'dots': [C('#f4e27a'), C('#ffffff')], 'n': 2, 'dry': C('#b9b25c')},
+    'fall':   {'g': [C('#5f5a2c'), C('#79733a'), C('#938a46'), C('#ae9f52'), C('#c8b865')], 'dots': [C('#d9772b'), C('#b8432a'), C('#e8b33a'), C('#c9572f')], 'n': 9, 'leaf': True},
+    'winter': {'g': [C('#aebdd0'), C('#cfdbe8'), C('#e3ebf4'), C('#f2f6fb'), C('#ffffff')], 'dots': [C('#5f7f56'), C('#7a9a6a')], 'n': 4, 'snow': True},
+}
+def tile_season(season, seed):
+    im = new(); sp = SEASON[season]; g = sp['g']
+    def fn(x, y):
+        r = h2(x, y, seed + 31)
+        if sp.get('snow'): return g[3] if r < .6 else g[2] if r < .85 else g[4] if r < .95 else g[1]
+        c = g[1] if r < .55 else g[2] if r < .85 else g[0] if r < .93 else g[3]
+        if sp.get('dry') and h2(x // 3, y // 2, seed + 9) < .12: c = sp['dry']
+        return c
+    fill(im, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], fn)
+    rnd = random.Random(seed * 13 + len(season))
+    if not sp.get('snow'):
+        for _ in range(5):
+            x, y = rnd.randint(8, 23), rnd.randint(20, 28)
+            if im.getpixel((x, y))[3] and im.getpixel((x, y - 2))[3]:
+                put(im, x, y, g[3]); put(im, x, y - 1, g[4]); put(im, x - 1, y, g[2]); put(im, x + 1, y, g[2])
+    for _ in range(sp['n']):
+        x, y = rnd.randint(6, 25), rnd.randint(19, 29)
+        if not im.getpixel((x, y))[3]: continue
+        c = rnd.choice(sp['dots'])
+        if sp.get('leaf'):
+            put(im, x, y, c); put(im, x + 1, y, c); put(im, x, y + 1, tuple(int(v * .8) for v in c[:3]) + (255,))
+        elif sp.get('snow'):
+            put(im, x, y, c); put(im, x, y - 1, g[0] if rnd.random() < .5 else c)
+        else:
+            put(im, x, y, c)
+            if season == 'spring': put(im, x + 1, y, C('#f6d64a'))
+    return im
 def tile_grass(seed):
     im = new(); g = PAL['grass']
     def fn(x, y):
@@ -346,6 +379,76 @@ def person(rows, shirt, hat, ox=9, oy=4):
     blit_map(im, rows, pal, ox, oy)
     return im
 
+# ---------------------------------------------------------------- cats (facing right; flip for left)
+CAT = {
+ 'walk0': ["...........o..o.",
+           "..........obooboo",
+           "..........obbbbbo",
+           "..oo......obebebo",
+           ".obbo.....obbpbbo",
+           ".obo.oooooobbbbo.",
+           "..oobbbbbbbbbbo..",
+           "...obbbbbbbbbbo..",
+           "...owbbbbbbbwwo..",
+           "...obo.ob..obo...",
+           "...oo..oo..oo....",
+           ],
+ 'walk1': ["...........o..o.",
+           "..........obooboo",
+           "..........obbbbbo",
+           "..oo......obebebo",
+           ".obbo.....obbpbbo",
+           ".obo.oooooobbbbo.",
+           "..oobbbbbbbbbbo..",
+           "...obbbbbbbbbbo..",
+           "...owbbbbbbbwwo..",
+           "....obo.obo.obo..",
+           "....oo..oo..oo...",
+           ],
+ 'sit':   ["........o..o....",
+           ".......obooboo..",
+           ".......obbbbbo..",
+           ".......obebebo..",
+           ".......obbpbbo..",
+           "........obbbo...",
+           ".......obbbbbo..",
+           "..oo..obbbbbwo..",
+           ".obbooobbbbbwo..",
+           "..obbbbbbbbbwo..",
+           "...oooooowowoo..",
+           ],
+ 'sleep': ["................",
+           "................",
+           "................",
+           "................",
+           "......oooooo....",
+           "....oobbbbbboo..",
+           "...obbbbbbbbobo.",
+           "..obbbbbbbobbebo",
+           "..obbbbbbbbobbbo",
+           "..oobwwwbbbbooo.",
+           "....ooooooooo...",
+           ],
+}
+COAT = {
+    'anna':  {'b': C('#eb9a4c'), 'd': C('#b9642a'), 'w': C('#fff0d6'), 'p': C('#ff9aa8'), 'e': C('#2b2233')},
+    'miley': {'b': C('#727986'), 'd': C('#4c525c'), 'w': C('#f6f6f6'), 'p': C('#ff9aa8'), 'e': C('#1f2a1f')},
+}
+def cat(name, pose):
+    im = new(); co = COAT[name]
+    for x in range(10, 24):
+        for y in range(26, 29):
+            if ((x - 16.5) / 6) ** 2 + ((y - 27.3) / 1.4) ** 2 < 1: put(im, x, y, (20, 30, 20, 60))
+    rows = CAT[pose]; ox, oy = 9, 27 - len(rows)
+    for j, row in enumerate(rows):
+        for i, ch in enumerate(row):
+            if ch == '.': continue
+            c = OUT if ch == 'o' else co.get(ch, co['b'])
+            if ch == 'b' and name == 'anna' and (i + j) % 4 == 0: c = co['d']          # tabby stripes
+            if ch == 'b' and name == 'miley' and j >= len(rows) - 4 and i < 10: c = co['w']   # tuxedo belly
+            put(im, ox + i, oy + j, c)
+    return im
+
 # ---------------------------------------------------------------- icons
 GLYPH = {
  'pot': ["......w.......", "....ww.ww.....", "...w..w..w....", "......w.......", "..wwwwwwwwww..", "..wwwwwwwwww..",
@@ -405,6 +508,8 @@ cells = []  # (name, image, w_cells, h_cells, anchor)
 def add(name, im, w=1, h=1, anchor=(16, 16)): cells.append((name, im, w, h, anchor))
 
 add('grass_a', tile_grass(1)); add('grass_b', tile_grass(2)); add('grass_c', tile_grass(3))
+for _ss in ('winter', 'spring', 'summer', 'fall'):
+    for _i, _v in enumerate('abc'): add(f'grass_{_ss}_{_v}', tile_season(_ss, _i + 1))
 add('floor', tile_floor()); add('floor_drain', tile_floor(True)); add('road', tile_road()); add('road_line', tile_road(True)); add('dock', tile_dock())
 add('bench_left', bench('left')); add('bench_mid', bench('mid')); add('bench_right', bench('right')); add('bench_single', bench('single'))
 add('bench_left_tray', bench('left', True)); add('bench_mid_tray', bench('mid', True)); add('bench_right_tray', bench('right', True)); add('heater', heater())
@@ -419,6 +524,8 @@ add('grower_work', person(work(GROWER_FRONT), GREEN, STRAW))
 add('crew_front_0', person(GROWER_FRONT, BLUE, CAP)); add('crew_front_1', person(step(GROWER_FRONT, 1), BLUE, CAP)); add('heater_broken', heater(True))
 add('crew_back_0', person(GROWER_BACK, BLUE, CAP)); add('crew_back_1', person(step(GROWER_BACK, 1), BLUE, CAP)); add('crew_work', person(work(GROWER_FRONT), BLUE, CAP))
 for k in ('pot', 'water', 'pest', 'fix', 'load'): add(f'icon_{k}', icon(k), anchor=(16, 28))
+for _n in ('anna', 'miley'):
+    for _p in ('walk0', 'walk1', 'sit', 'sleep'): add(f'cat_{_n}_{_p}', cat(_n, _p))
 add('wall_back', wall('back'), 1, 2, (16, 48)); add('wall_left', wall('left'), 1, 2, (16, 48))
 add('truck', truck(), 2, 2, (32, 40))
 

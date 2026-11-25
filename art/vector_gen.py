@@ -84,6 +84,43 @@ def grass(seed):
     return b
 add('grass_a', grass(0)); add('grass_b', grass(2)); add('grass_c', grass(4))
 
+lin('gWinter', [(0, '#eef5fa', None), (1, '#eef5fa', None)])
+VS = {'spring': ('#9be07a', '#6cc45a', ['#ffffff', '#ffe066', '#ff9ccf', '#c9a7ff']),
+      'summer': ('#8fd06c', '#72bd57', ['#ffe066', '#ffffff']),
+      'fall':   ('#c9b35a', '#a8923f', ['#e8772b', '#c9432f', '#f2b43a', '#d6602c'])}
+def season_grass(season, seed):
+    I = Iso(); r = random.Random(seed * 7 + len(season))
+    if season == 'winter':
+        b = I.tile('url(#gWinter)')
+        for _ in range(2 + seed):     # soft drift shadows
+            u, v = r.uniform(.25, .75), r.uniform(.25, .75); x, y = I.P(u, v)
+            b += ell(x, y, r.uniform(5, 9), r.uniform(1.6, 2.6), '#c9dbea', 'opacity=".7"')
+        for _ in range(seed):        # grass poking through
+            u, v = r.uniform(.2, .8), r.uniform(.2, .8); x, y = I.P(u, v)
+            b += f'<path d="M{f2(x-1.5)},{f2(y)} l1,-4 M{f2(x)},{f2(y)} l0,-5 M{f2(x+1.5)},{f2(y)} l-.5,-3.5" stroke="#6f9a63" stroke-width="1" stroke-linecap="round"/>'
+            b += ell(x, y + .5, 3.4, 1.2, '#ffffff')
+        for _ in range(4):
+            u, v = r.uniform(.15, .85), r.uniform(.15, .85); x, y = I.P(u, v)
+            b += circ(x, y, .7, '#ffffff')
+        return b
+    base, tuft, dots = VS[season]
+    b = I.tile(base)
+    for _ in range(2 + seed):
+        u, v = r.uniform(.15, .85), r.uniform(.15, .85); x, y = I.P(u, v)
+        b += f'<path d="M{f2(x-2)},{f2(y)} q1,-4 2,-6 q0,4 1,6 q1,-3 3,-4 q-1,3 -1,4" fill="none" stroke="{tuft}" stroke-width="1.1" stroke-linecap="round"/>'
+    if season == 'fall':
+        for _ in range(4 + seed * 2):
+            u, v = r.uniform(.15, .85), r.uniform(.15, .85); x, y = I.P(u, v); col = r.choice(dots); a = r.randint(0, 180)
+            b += f'<g transform="translate({f2(x)},{f2(y)}) rotate({a}) scale(1 .6)"><path d="M-3,0 q3,-3 6,0 q-3,3 -6,0 Z" fill="{col}"/><path d="M-3,0 h6" stroke="#7a3a1a" stroke-width=".4"/></g>'
+    else:
+        n = (2 + seed * 2) if season == 'spring' else seed
+        for _ in range(n):
+            u, v = r.uniform(.2, .8), r.uniform(.2, .8); x, y = I.P(u, v); col = r.choice(dots)
+            b += ''.join(circ(x + dx, y + dy, 1.2, col) for dx, dy in ((-1.3, 0), (1.3, 0), (0, -1), (0, 1))) + circ(x, y, .9, '#ffcf3a')
+    return b
+for _ss in ('winter', 'spring', 'summer', 'fall'):
+    for _i, _v in enumerate('abc'): add(f'grass_{_ss}_{_v}', season_grass(_ss, _i + 1))
+
 def floor(drain=False):
     I = Iso(); b = I.tile('url(#gFloor)')
     for t in (.5,):
@@ -360,6 +397,54 @@ def truck():
         b += ell(x, y, 7, 7.5, '#2f3138') + ell(x, y, 3.2, 3.4, '#c9ced6') + circ(x, y, 1, '#6b7280')
     return b
 add('truck', truck(), 128, 128, (64, 80))
+
+# ------------------------------------------------------------------ cats (facing right; flip for left)
+VCOAT = {'anna':  dict(b='#f2a154', d='#c96f2c', w='#fff1dc', o='#9a5424', eye='#2b6b2f'),
+         'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a')}
+def vcat(name, pose):
+    c = VCOAT[name]; o = c['o']; sw = .9
+    b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
+    stripes = (lambda pts: ''.join(f'<path d="{p}" stroke="{c["d"]}" stroke-width="1.4" fill="none" stroke-linecap="round"/>' for p in pts)) if name == 'anna' else (lambda pts: '')
+    def head(x, y, closed=False):
+        h = poly([(x - 5.5, y - 2), (x - 4.5, y - 8.5), (x - 1, y - 4.5)], c['b'], o, sw) + poly([(x + 5.5, y - 2), (x + 4.5, y - 8.5), (x + 1, y - 4.5)], c['b'], o, sw)
+        h += poly([(x - 4.4, y - 3), (x - 4, y - 7), (x - 2, y - 4.6)], '#ffb3c0') + poly([(x + 4.4, y - 3), (x + 4, y - 7), (x + 2, y - 4.6)], '#ffb3c0')
+        h += ell(x, y, 6.4, 5.6, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        if name == 'miley': h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
+        h += stripes([f'M{x-1.5},{y-5} v2', f'M{x+.5},{y-5.3} v2.2', f'M{x+2.5},{y-5} v2'])
+        if closed:
+            h += f'<path d="M{x-3.6},{y-.2} q1.3,1.2 2.6,0 M{x+1.6},{y-.2} q1.3,1.2 2.6,0" stroke="{o}" stroke-width=".9" fill="none" stroke-linecap="round"/>'
+        else:
+            h += ell(x - 2.2, y - .4, 1.2, 1.5, c['eye']) + ell(x + 2.9, y - .4, 1.2, 1.5, c['eye']) + circ(x - 1.9, y - .9, .4, '#fff') + circ(x + 3.2, y - .9, .4, '#fff')
+        h += poly([(x + .1, y + 1.4), (x + 1.5, y + 1.4), (x + .8, y + 2.3)], '#ff8a9a')
+        h += f'<path d="M{x+.8},{y+2.3} q-1,1.2 -2,.4 M{x+.8},{y+2.3} q1,1.2 2,.4" stroke="{o}" stroke-width=".6" fill="none"/>'
+        return h
+    if pose in ('walk0', 'walk1'):
+        f = 1 if pose == 'walk1' else -1
+        b += f'<path d="M21,43 q-8,-2 -6,-12 q1,-3 3,-1" fill="none" stroke="{o}" stroke-width="4.6" stroke-linecap="round"/>'
+        b += f'<path d="M21,43 q-8,-2 -6,-12 q1,-3 3,-1" fill="none" stroke="{c["b"]}" stroke-width="3" stroke-linecap="round"/>'
+        for lx, ph in ((24, f), (28, -f), (36, -f), (40, f)):
+            b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.6" fill="{c["b"] if name=="anna" else c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
+        b += ell(32, 43, 12, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        if name == 'miley': b += ell(33, 46.5, 8, 2.6, c['w'])
+        b += stripes(['M27,37.5 q1,3 0,6', 'M31,37 q1,3 0,6.5', 'M35,37 q1,3 0,6.5'])
+        b += head(43, 35)
+    elif pose == 'sit':
+        b += f'<path d="M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5" fill="none" stroke="{o}" stroke-width="4.6" stroke-linecap="round"/>'
+        b += f'<path d="M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5" fill="none" stroke="{c["b"]}" stroke-width="3" stroke-linecap="round"/>'
+        b += f'<path d="M24,52 q-1,-16 9,-17 q9,1 8,17 Z" fill="{c["b"]}" stroke="{o}" stroke-width="{sw}"/>'
+        b += ell(33.5, 45, 4.4, 6, c['w'])
+        b += stripes(['M26,42 q2,1 3,0', 'M26,46 q2,1 3,0'])
+        b += ell(30.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"') + ell(36.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"')
+        b += head(33.5, 30)
+    else:  # sleep: curled loaf
+        b += ell(31, 47, 12.5, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        b += stripes(['M24,42 q1,3 0,6', 'M28,41 q1,3 0,7', 'M32,41 q1,3 0,7'])
+        b += f'<path d="M19,49 q8,6 22,2" fill="none" stroke="{o}" stroke-width="4.4" stroke-linecap="round"/><path d="M19,49 q8,6 22,2" fill="none" stroke="{c["b"]}" stroke-width="2.8" stroke-linecap="round"/>'
+        b += head(39, 45, True)
+        b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
+    return b
+for _n in ('anna', 'miley'):
+    for _p in ('walk0', 'walk1', 'sit', 'sleep'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
 
 # ------------------------------------------------------------------ write files
 defs = '\n'.join(DEFS)
