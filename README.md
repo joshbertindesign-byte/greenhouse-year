@@ -1,6 +1,6 @@
 # Greenhouse Year
 
-A greenhouse management game that runs in the browser. The year runs in eight periods. Between periods you plan orders on a bench-by-period board. During each period you and your crew pot, water, spray, fix and load trucks in an isometric greenhouse that can grow to three floors.
+A greenhouse management game that runs in the browser. The year runs in eight periods. Between periods you plan orders on a bench-by-period board. During each period you and your crew pot, water, spray, fix and load trucks. The operation grows from one greenhouse to four side by side, then up to three floors on each: twelve houses in all.
 
 The earlier quarterly version lives in `classic/`.
 
@@ -17,6 +17,7 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 - **Customers:** each of the eight customers has a standing of Lost, Wary, Steady, Loyal or Partner. Better standing means better prices, more offers and contracts. You're asked before you knowingly drop a customer to a lower tier.
 - **Work:** tap the icons over the greenhouse to queue jobs. Crew pick up work on their home floor and get faster with experience.
 - **Trucks:** trucks queue at the dock. A truck that comes up short pauses the game so you can buy plants in or ship short.
+- **Upgrades:** eleven upgrades, from pots and soil to watering booms, grow lights, a forklift and ladybugs. Each one shows up in the greenhouses.
 - **Extras:** the seasons change the ground and weather, and two greenhouse cats, Anna and Miley, wander around. Tap one to pet her.
 
 ## Art

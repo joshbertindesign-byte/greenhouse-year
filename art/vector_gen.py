@@ -398,6 +398,67 @@ def truck():
     return b
 add('truck', truck(), 128, 128, (64, 80))
 
+# ------------------------------------------------------------------ upgrade props
+def soil_pallet(l):
+    I = Iso(); b = I.box(.12, .14, .88, .86, 0, 4, '#e0ad66', '#c08945', '#a87436', '#7a4f24', .7)
+    bag = lambda u0, v0, u1, v1, z: (I.box(u0, v0, u1, v1, z, z + 7, '#8cc152', '#6aa03c', '#568532', '#335a1e', .7) +
+                                     poly([I.P(u0 + .08, (v0 + v1) / 2, z + 7), I.P(u1 - .08, (v0 + v1) / 2, z + 7), I.P(u1 - .08, (v0 + v1) / 2 + .06, z + 7), I.P(u0 + .08, (v0 + v1) / 2 + .06, z + 7)], '#f4e7b4'))
+    b += bag(.18, .2, .82, .48, 4) + bag(.18, .52, .82, .8, 4)
+    if l >= 2: b += bag(.18, .2, .82, .48, 11) + bag(.18, .52, .82, .8, 11)
+    if l >= 3:
+        b += I.box(.22, .24, .78, .76, 18, 32, '#ffffff', '#e8e3d6', '#d6d0c0', '#a39b86', .8)
+        for u in (.22, .78):
+            x, y = I.P(u, .24, 32); b += f'<path d="M{f2(x)},{f2(y)} q2,-6 5,-1" fill="none" stroke="#6aa03c" stroke-width="1.6"/>'
+        b += poly([I.P(.32, .76, 22), I.P(.68, .76, 22), I.P(.68, .76, 28), I.P(.32, .76, 28)], '#6aa03c')
+    return b
+def hose_reel(l):
+    I = Iso(); b = I.box(.3, .35, .75, .7, 0, 3, '#c9d8e4', 'url(#gMetal)', '#7f95a8', '#5d7185', .7)
+    cx_, cy_ = I.P(.52, .52, 15)
+    b += ell(cx_ - 7, cy_ + 4, 2.2, 6, '#33413a') + ell(cx_ + 7, cy_ + 4, 2.2, 6, '#33413a')
+    b += circ(cx_, cy_, 9, '#2f7a3f', '#1f5a2e', 1)
+    for r in (7.2, 5.4, 3.6): b += circ(cx_, cy_, r, 'none', '#6fd16a', 1.1)
+    b += circ(cx_, cy_, 1.6, '#c9d8e4')
+    b += f'<path d="M{f2(cx_)},{f2(cy_-9)} L{f2(cx_+2)},{f2(cy_-17)} L{f2(cx_+8)},{f2(cy_-15)}" fill="none" stroke="#56606b" stroke-width="1.8" stroke-linecap="round"/>'
+    b += f'<path d="M{f2(cx_+8)},{f2(cy_+2)} q6,6 10,2 q4,-4 8,1" fill="none" stroke="#2f7a3f" stroke-width="2" stroke-linecap="round"/>'
+    if l >= 2: b += I.box(.62, .12, .86, .32, 0, 12, '#9fd0ff', '#5a9ee0', '#4282c2', '#2a5a8a', .7)
+    if l >= 3:
+        b += I.box(.08, .14, .3, .34, 8, 20, '#ffe27a', '#f2c230', '#d9a51f', '#8a6a14', .7)
+        x, y = I.P(.3, .24, 15); b += poly([(x - 3.5, y - 2), (x + .5, y - 4), (x + .5, y + .5), (x - 3.5, y + 2.5)], '#2b3a33')
+    return b
+def potter(l):
+    I = Iso(); c = ('#ffb56b', '#f08a3c', '#d0702a', '#8a4a1a') if l == 1 else ('#8fe3d6', '#3fb8a6', '#2c9a8a', '#1f5f56')
+    b = I.box(.08, .4, .92, .7, 0, 12, '#5d6b62', '#46524b', '#39433d', '#262d29', .7)   # belt
+    for t in (.2, .4, .6, .8):
+        x, y = I.P(t, .55, 12); b += f'<path d="M{f2(x-3)},{f2(y-1.5)} l6,3" stroke="#7f8c84" stroke-width=".8"/>'
+    b += I.box(.12, .12, .55, .9, 0, 26, c[0], c[1], c[2], c[3], .9)
+    b += poly([I.P(.18, .25, 26), I.P(.5, .25, 26), I.P(.46, .75, 26), I.P(.22, .75, 26)], '#6a4129')
+    b += I.box(.2, .2, .48, .3, 26, 34, c[0], c[1], c[2], c[3], .7)
+    x, y = I.P(.55, .6, 18); b += circ(x - 4, y, 2.2, '#ffffff', '#33413a', .8) + circ(x + 1, y + 2, 1.4, '#ff5a4a')
+    pots = [(.68, .55), (.84, .55)] if l == 1 else [(.62, .55), (.75, .55), (.88, .55)]
+    for u, v in pots:
+        x, y = I.P(u, v, 12)
+        b += poly([(x - 3, y - 4), (x + 3, y - 4), (x + 2.2, y + 1), (x - 2.2, y + 1)], '#3a3f3c', '#1f2321', .6)
+        if l == 2: b += cluster(x, y - 6, 3.2, 'url(#gLeaf)', '#2f7a3f', int(u * 10))
+    return b
+def forklift(l):
+    I = Iso(); c = ('#ffd75e', '#f2c230', '#d0a21a', '#7a5a10') if l == 1 else ('#9fd0ff', '#3a8fd6', '#2a72b8', '#1d4f80')
+    b = ''
+    for u, v in ((.4, .78), (.78, .78)):
+        x, y = I.P(u, v, 3); b += ell(x, y, 4.5, 3.2, '#22282a')
+    b += I.box(.12, .32, .2, .68, 0, 36, '#7f8c96', '#56606b', '#46505a', '#2c333a', .7)
+    for v in (.36, .58):
+        b += I.box(-.18, v, .14, v + .06, 1, 3, '#9aa5ad', '#6f7b84', '#5d6870', '#3a4248', .5)
+    b += I.box(.24, .26, .88, .74, 3, 15, c[0], c[1], c[2], c[3], .9)
+    b += I.box(.62, .32, .84, .68, 15, 22, '#3a4248', '#2c333a', '#232a30', '#1a1f23', .6)
+    for u, v in ((.3, .3), (.82, .3), (.3, .7), (.82, .7)):
+        b += I.box(u - .02, v - .02, u + .02, v + .02, 15, 36, '#33413a', '#33413a', '#262f2a', '#1a1f1c', .4)
+    b += I.box(.27, .27, .85, .73, 36, 38, c[0], c[1], c[2], c[3], .6)
+    if l == 2:
+        x, y = I.P(.88, .5, 9); b += poly([(x - 1, y - 4), (x + 2, y - 1), (x, y - 1), (x + 1, y + 3), (x - 2, y), (x, y)], '#fff27a')
+    return b
+for _l in (1, 2, 3): add(f'soil_{_l}', soil_pallet(_l)); add(f'hose_{_l}', hose_reel(_l))
+for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklift(_l))
+
 # ------------------------------------------------------------------ cats (facing right; flip for left)
 VCOAT = {'anna':  dict(b='#f2a154', d='#c96f2c', w='#fff1dc', o='#9a5424', eye='#2b6b2f'),
          'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a')}
