@@ -204,6 +204,16 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tk .cal i{display:block;height:13px;border-radius:3px;background:#efece2;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
 .tk .cal i.past{background:#dcd8cc}
 .tk .cropsrow{display:flex;gap:4px;flex-wrap:wrap}
+.hb.gear{font-size:20px;padding:8px 12px}
+.stls{display:grid;gap:8px}
+.stl{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;border:3px solid var(--line);border-radius:16px;padding:8px 12px}
+.stl.on{border-color:var(--go);box-shadow:0 0 0 3px rgba(46,125,74,.18)}
+.stl .pvs{display:flex;align-items:center;justify-content:center;gap:2px;flex:none;width:116px}
+.stl .pv{display:inline-block;width:56px;height:56px}
+.stl .pv svg{display:block;width:56px;height:56px}
+.stl .pxv{background-repeat:no-repeat;image-rendering:pixelated}
+.stl .blk{background:linear-gradient(135deg,#c9a173 0 45%,#62b544 45% 100%);border-radius:8px;width:44px;height:44px;margin:6px}
+.stl b{display:block;font-size:17px}.stl small{font-size:14px;color:var(--mute)}
 .nowline{position:absolute;width:3px;background:#16231b;border-radius:2px;pointer-events:none;z-index:3;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .blk{flex-direction:column;justify-content:center;align-items:center;padding:0 3px}
 .blk .bx{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:0;max-width:100%;text-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -266,6 +276,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <button class="hb" id="bBoard" type="button">Board <span class="n" id="bN"></span></button>
   <button class="hb go" id="bGo" type="button">Start</button>
   <div class="seg" id="speed"><button type="button" data-s="1" class="on">1x</button><button type="button" data-s="1.5">1.5x</button></div>
+  <button class="hb gear" id="bSet" type="button" aria-label="Settings">⚙</button>
 </header>
 <div class="toasts" id="toasts"></div>
 <div class="floors" id="floors" hidden><button type="button" id="fUp" aria-label="Floor up">▲<span class="n"></span></button><b id="fLab">Floor<big>1</big></b><button type="button" id="fDn" aria-label="Floor down">▼<span class="n"></span></button></div>
@@ -277,6 +288,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div class="ask" id="ask" hidden></div>
 <div class="sheet" id="sheet" hidden></div>
 <div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<script src="art.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -602,7 +614,7 @@ function stepWorker(w,dt,slow){
     }
   }
   if(w.path.length){
-    const n=w.path[0],dx=n.x-w.x,dy=n.y-w.y,d=Math.hypot(dx,dy),sp=4/slow*dt;
+    const n=w.path[0],dx=n.x-w.x,dy=n.y-w.y,d=Math.hypot(dx,dy),sp=4/slow*dt;if(d>.01)w.face=dx+dy>=0?'front':'back';
     if(d<=sp){w.x=n.x;w.y=n.y;w.path.shift();}else{w.x+=dx/d*sp;w.y+=dy/d*sp;}
     return;
   }
@@ -749,7 +761,7 @@ const P=(x,y,z=0)=>[ox+(x-y)*TW/2*sc,oy+(x+y)*TH/2*sc-(z-camZ)*sc];
 function layout(){
   DPR=Math.min(2,devicePixelRatio||1);VW=innerWidth;VH=innerHeight;cv.width=Math.round(VW*DPR);cv.height=Math.round(VH*DPR);
   const top=$('hud').offsetHeight+8,bot=$('tray').offsetHeight+8,tall=VH>VW*1.2,side=S&&S.floors>1&&!tall?84:0;
-  TW=tall?54:64;TH=tall?34:32;
+  TW=tall&&STYLE==='blocks'?54:64;TH=tall&&STYLE==='blocks'?34:32;
   const pts=[[-.4,7.4,0],[9.4,-.4,0],[9.4,7.4,0],[0,0,64],[2.5,-2.7,40],[7.5,-2.7,40]];
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   for(const [x,y,z] of pts){const X=(x-y)*TW/2,Y=(x+y)*TH/2-z;x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
@@ -757,6 +769,50 @@ function layout(){
   ox=VW/2-(x0+x1)/2*sc;oy=top+(VH-top-bot)/2-(y0+y1)/2*sc;
   iconR=clamp(15*sc+12,24,34);viewTop=top;viewBot=VH-bot;
   const fl=$('floors');fl.style.top=(tall?VH-bot-188:top+(VH-top-bot)/2-100)+'px';
+}
+// ---------------- art styles ----------------
+let STYLE='blocks';try{STYLE=localStorage.getItem('gy8-style')||'blocks';}catch(e){}
+if(typeof ART==='undefined'||!['blocks','pixel','vector'].includes(STYLE))STYLE='blocks';
+let pixImg=null;const vecImg={},vecCan={};let vecK=0;
+function prepArt(){
+  if(STYLE==='pixel'&&!pixImg){pixImg=new Image();pixImg.src=ART.pixel.src;}
+  if(STYLE==='vector'){
+    for(const id in ART.vector)if(!vecImg[id]){const im=new Image();im.onload=()=>{vecCan[id]=null;};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(ART.vector[id][4]);vecImg[id]=im;}
+  }
+}
+function vecCanvas(id){
+  const k=TW*sc/64*DPR;if(k!==vecK){vecK=k;for(const i in vecCan)vecCan[i]=null;}
+  let c=vecCan[id];if(c)return c;
+  const im=vecImg[id],d=ART.vector[id];if(!im||!im.complete||!im.naturalWidth||!d)return null;
+  c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(d[0]*k));c.height=Math.max(1,Math.ceil(d[1]*k));
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);vecCan[id]=c;return c;
+}
+function spr(id,u,v,z){
+  const [X,Y]=P(u,v,z||0);
+  if(STYLE==='pixel'){
+    const f=ART.pixel.frames[id];if(!f||!pixImg||!pixImg.complete)return false;
+    const k=TW*sc/32;cx.imageSmoothingEnabled=false;
+    cx.drawImage(pixImg,f[0],f[1],f[2],f[3],Math.round(X-f[4]*k),Math.round(Y-f[5]*k),Math.ceil(f[2]*k),Math.ceil(f[3]*k));return true;
+  }
+  const d=ART.vector[id],c=d&&vecCanvas(id);if(!c)return false;
+  const k=TW*sc/64;cx.imageSmoothingEnabled=true;cx.drawImage(c,X-d[2]*k,Y-d[3]*k,d[0]*k,d[1]*k);return true;
+}
+const spriteMode=()=>STYLE!=='blocks';
+const tileHash=(u,v)=>{const n=Math.sin(u*12.9898+v*78.233)*43758.5453;return n-Math.floor(n);};
+function setStyle(st){STYLE=st;try{localStorage.setItem('gy8-style',st);}catch(e){}prepArt();layout();}
+function openSettings(){
+  const pre=id=>STYLE&&ART&&ART.vector[id]?`<span class="pv">${ART.vector[id][4].replace(/width="\d+" height="\d+"/,'width="56" height="56"')}</span>`:'';
+  const px=ART.pixel.frames['petunia_3'],pxg=ART.pixel.frames['grower_front_0'];
+  const pimg=f=>`<span class="pv pxv" style="background-image:url(${ART.pixel.src});background-position:-${f[0]*1.75}px -${f[1]*1.75}px;background-size:${448}px auto"></span>`;
+  const opt=(k,name,desc,prev)=>`<button type="button" class="stl${STYLE===k?' on':''}" data-style="${k}"><span class="pvs">${prev}</span><span class="stx"><b>${name}</b><small>${desc}</small></span></button>`;
+  modal(`<h2>Settings</h2><p style="margin-bottom:6px"><b>Art style</b></p>
+    <div class="stls">${opt('blocks','Blocks','The original chunky boxes. Lightest on older phones.','<span class="pv blk"></span>')}
+    ${opt('pixel','Pixel','Cozy 32×32 pixel art.',pimg(pxg)+pimg(px))}
+    ${opt('vector','Vector','Bright, soft cartoon drawings.',pre('grower_front_0')+pre('petunia_3'))}</div>
+    <p style="margin-top:14px">Playtesting? Let the developer know which style you like best.</p>
+    <button class="btn go" type="button" id="setX">Done</button>`);
+  $('mbox').querySelectorAll('[data-style]').forEach(b=>b.onclick=()=>{setStyle(b.dataset.style);$('mbox').querySelectorAll('[data-style]').forEach(x=>x.classList.toggle('on',x===b));});
+  $('setX').onclick=closeModal;
 }
 function poly(pts,fill,stroke){cx.beginPath();cx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);cx.closePath();cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1;cx.stroke();}}
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;r=clamp(Math.round(r*f),0,255);g=clamp(Math.round(g*f),0,255);b=clamp(Math.round(b*f),0,255);return`rgb(${r},${g},${b})`;}
@@ -769,6 +825,15 @@ function box(x,y,z,w,d,h,col){
 function rr(x,y,w,h,r){cx.beginPath();cx.roundRect?cx.roundRect(x,y,Math.max(0,w),h,r):cx.rect(x,y,w,h);}
 const FLOORCOL=[['#e8e3d4','#c9c2ad','#b5ad97'],['#e3e6dc','#c2c8b6','#adb4a0'],['#e6e1dc','#c8bfb6','#b3a99f']];
 function drawGround(){
+  if(spriteMode()){
+    cx.fillStyle=STYLE==='pixel'?'#4f9150':'#8fd06c';cx.fillRect(0,0,VW,VH);
+    for(let v=-7;v<12;v++)for(let u=-8;u<17;u++){
+      if(viewF===0&&u>=0&&u<=8&&v>=0&&v<=6)continue;
+      const n=v===-3?'road':v===-2?(((u%2)+2)%2?'road_line':'road'):(v===-1&&u>=3&&u<=5)?'dock':['grass_a','grass_b','grass_c'][Math.floor(tileHash(u,v)*3)];
+      spr(n,u,v,0);
+    }
+    return;
+  }
   cx.fillStyle='#79a95b';cx.fillRect(0,0,VW,VH);
   for(let x=-6;x<16;x++)for(let y=-5;y<13;y++){if((x+y)&1)continue;poly([P(x,y),P(x+1,y),P(x+1,y+1),P(x,y+1)],'#73a256');}
   poly([P(-14,-2.75),P(24,-2.75),P(24,-1.5),P(-14,-1.5)],'#5c6468');
@@ -779,6 +844,7 @@ function drawSlab(){
   const z=ZB();
   if(viewF>0)for(const [x,y] of [[-.2,-.2],[8.95,-.2],[-.2,6.95],[8.95,6.95]])box(x,y,z-FH+60,.25,.25,FH-54,'#8d948f');
   box(-.25,-.25,z,9.5,7.5,6,FLOORCOL[viewF]);
+  if(spriteMode()){for(let v=0;v<7;v++)for(let u=0;u<9;u++)spr(u===4&&v===3?'floor_drain':'floor',u,v,z+6);return;}
   cx.strokeStyle='rgba(0,0,0,.05)';cx.lineWidth=1;
   for(let x=0;x<=9;x++){cx.beginPath();cx.moveTo(...P(x,0,6+z));cx.lineTo(...P(x,7,6+z));cx.stroke();}
   for(let y=0;y<=7;y++){cx.beginPath();cx.moveTo(...P(0,y,6+z));cx.lineTo(...P(9,y,6+z));cx.stroke();}
@@ -797,6 +863,7 @@ function drawGhostFloor(k){
 const GLASS='rgba(214,236,232,.42)',POST='#3f5a4e',ZB=()=>viewF*FH;
 function drawBackWalls(){
   const z=ZB();
+  if(spriteMode()){for(let u=0;u<9;u++)if(!(u===4&&viewF===0))spr('wall_back',u,0,z+6);for(let v=0;v<7;v++)spr('wall_left',0,v,z+6);return;}
   for(let x=0;x<9;x++){
     if(x===4&&viewF===0){box(x,-.18,6,.08,.18,60,POST);box(x+.92,-.18,6,.08,.18,60,POST);box(x,-.18,58,1,.18,8,POST);continue;}
     box(x,-.18,6+z,1,.18,16,['#d7dcd6','#b9c1ba','#a5aea6']);
@@ -813,14 +880,26 @@ function drawBackWalls(){
 }
 function drawFront(){
   const z=ZB();
-  box(-.18,7,6+z,9.36,.18,10,['#d7dcd6','#b9c1ba','#a5aea6']);
+  if(!spriteMode()){box(-.18,7,6+z,9.36,.18,10,['#d7dcd6','#b9c1ba','#a5aea6']);
   box(9,-.18,6+z,.18,7.18,10,['#d7dcd6','#b9c1ba','#a5aea6']);
-  for(let x=0;x<=9;x+=3)box(x-.06,7,6+z,.12,.18,12,POST);
+  for(let x=0;x<=9;x+=3)box(x-.06,7,6+z,.12,.18,12,POST);}
   if(S.floors>1){const p=P(5.5,7.6,10+z);cx.font='700 18px Outfit,sans-serif';const t=floorName(viewF)+' · '+floorSpan(viewF),w=cx.measureText(t).width+22;cx.fillStyle='#173426';rr(p[0]-w/2,p[1]-14,w,28,14);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+1);}
 }
 const SOIL=['#6e5038','#5a4230','#4b3727'];
 function drawBenchTile(b,i){
   const x=b.x+i,y=b.y,z=ZB();
+  if(spriteMode()){
+    const nm=['bench_left','bench_mid','bench_right'][i];
+    const pl=S.phase==='done'?null:liveAt(b.i,S.period),k=pl?pl.rows.indexOf(b.i):-1;
+    if(!pl){spr(nm,x,y,z+6);return;}
+    if(!pl.potted[k]){spr(pl.s===S.period&&S.phase==='run'?nm+'_tray':nm,x,y,z+6);return;}
+    const af=pl.alive[k]/(pl.flats[k]||1),part=clamp(af*3-i,0,1);
+    if(part<=0){spr(nm+'_tray',x,y,z+6);return;}
+    spr(nm,x,y,z+6);
+    const pr=prog(pl),st=pr<.15?0:pr<.5?1:pr<1?2:3;
+    spr(`${pl.crop}_${st}`,x,y,z+6);
+    return;
+  }
   box(x+.04,y+.06,6+z,.92,.88,16,['#c9a173','#a37d54','#8c6a45']);
   if(S.phase==='done')return;
   const pl=liveAt(b.i,S.period);if(!pl)return;
@@ -834,7 +913,8 @@ function drawBenchTile(b,i){
   if(pr>=1&&part>.5){const zz=22+z+h*(.45+.55*part);for(const [fx,fy] of [[.2,.22],[.58,.2],[.28,.56],[.62,.55]])box(x+fx,y+fy,zz,.2,.2,7,C.color);}
 }
 function drawUnit(now){
-  const u=UNIT,z=ZB(),br=S.broken[viewF];box(u.x+.1,u.y+.1,6+z,.8,.8,34,['#c9d2d8','#9eabb4','#8a98a1']);
+  const u=UNIT,z=ZB(),br=S.broken[viewF];
+  if(spriteMode()){spr(br?'heater_broken':'heater',u.x,u.y,z+6);return;}box(u.x+.1,u.y+.1,6+z,.8,.8,34,['#c9d2d8','#9eabb4','#8a98a1']);
   for(let i=0;i<3;i++){const a=P(u.x+.9,u.y+.25+i*.2,16+z),b=P(u.x+.9,u.y+.25+i*.2,34+z);cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=2;cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(b[0],b[1]);cx.stroke();}
   const l=P(u.x+.5,u.y+.5,44+z),on=!br||Math.floor(now/300)%2;
   cx.fillStyle=br?(on?'#ff4d3a':'#7a2a22'):'#47d16b';cx.beginPath();cx.arc(l[0],l[1],Math.max(4,5*sc),0,7);cx.fill();
@@ -846,6 +926,7 @@ function drawLift(){
   box(LIFT.x+.04,LIFT.y+.04,56+z,.92,.92,4,POST);
 }
 function drawTruck(x,col){
+  if(spriteMode()){spr('truck',x+1.2,-2.08,0);return;}
   const y=-2.55;
   box(x,y,4,2.25,.95,40,['#f7f4ea','#e1dccd','#cac3b1']);
   poly([P(x+.2,y+.95,14),P(x+2.05,y+.95,14),P(x+2.05,y+.95,32),P(x+.2,y+.95,32)],col||'#2e7d4a');
@@ -869,6 +950,14 @@ function drawTrucks(now){
 }
 function drawPerson(w,shirt,now){
   const x=w.x,y=w.y,z=w.y<0?0:w.f*FH,walking=w.path.length>0,working=w.task&&!walking&&w.leg!=='lift',b=walking?Math.abs(Math.sin(now/95))*3:working?Math.abs(Math.sin(now/140))*2:0;
+  if(spriteMode()){
+    const who=w===me?'grower':'crew',face=w.face||'front';
+    const id=working?(Math.floor(now/320)%2?`${who}_work`:`${who}_front_0`):`${who}_${face}_${walking?Math.floor(now/170)%2:0}`;
+    spr(id,x-.5,y-.5,z+6);
+    if(working&&w.work>0){const need=workOf(w.task)*(w===me?1:slowOf(w.rec)),f=clamp(w.work/need,0,1),p=P(x,y,66+z);
+      cx.fillStyle='rgba(0,0,0,.35)';rr(p[0]-22,p[1]-5,44,10,5);cx.fill();cx.fillStyle='#6fe08a';rr(p[0]-20,p[1]-3,40*f,6,3);cx.fill();}
+    return;
+  }
   const s=P(x,y,6+z);cx.fillStyle='rgba(0,0,0,.18)';cx.beginPath();cx.ellipse(s[0],s[1],16*sc,8*sc,0,0,7);cx.fill();
   const lg=walking?Math.sin(now/95)*.06:0;
   box(x-.15+lg,y-.07,6+z,.12,.14,14,'#33413a');box(x+.03-lg,y-.07,6+z,.12,.14,14,'#33413a');
@@ -1339,6 +1428,7 @@ function benchInfo(b){
   toast(prog(pl)>=1?'load':'water',`${b.L}: ${C.name}, ${pl.alive[k]} of ${pl.flats[k]} alive, ${prog(pl)>=1?'ready':'ships '+PN[pl.e].toLowerCase()}`);
 }
 $('bBoard').onclick=()=>sheetOpen()?closeSheet():openSheet();
+$('bSet').onclick=openSettings;
 $('bGo').onclick=()=>startPeriod();
 let speed=1;
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -1380,7 +1470,7 @@ function boot(){
   S=load();
   if(!S){fresh();genOffers();}
   else if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
-  syncStaff();layout();hud();
+  prepArt();syncStaff();layout();hud();
   if(S.phase==='done')yearEnd();
   else if(!S.welcomed)welcome();
   else openSheet();
