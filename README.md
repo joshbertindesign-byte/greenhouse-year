@@ -18,7 +18,7 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 - **Work:** tap the icons over the greenhouse to queue jobs. Crew pick up work on their home floor and get faster with experience.
 - **Trucks:** trucks queue at the dock. A truck that comes up short pauses the game so you can buy plants in or ship short.
 - **Upgrades:** eleven upgrades, from pots and soil to watering booms, grow lights, a forklift and ladybugs. Each one shows up in the greenhouses.
-- **Extras:** the seasons change the ground and weather, and two greenhouse cats, Anna and Miley, wander around. Tap one to pet her.
+- **Extras:** the seasons change the ground and weather. Pick which greenhouse cats live with you (Miley, Anna and Max) in the Upgrades tab; they wander, nap, chase the odd mouse and visit their food and water bowls. Tap one to pet it.
 
 ## Art
 

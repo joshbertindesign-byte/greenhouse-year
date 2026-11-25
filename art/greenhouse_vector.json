@@ -829,6 +829,14 @@
     32
    ]
   },
+  "cat_anna_eat": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
   "cat_miley_walk0": {
    "w": 64,
    "h": 64,
@@ -854,6 +862,62 @@
    ]
   },
   "cat_miley_sleep": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_miley_eat": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_max_walk0": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_max_walk1": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_max_sit": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_max_sleep": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "cat_max_eat": {
+   "w": 64,
+   "h": 64,
+   "anchor": [
+    32,
+    32
+   ]
+  },
+  "catbowls": {
    "w": 64,
    "h": 64,
    "anchor": [

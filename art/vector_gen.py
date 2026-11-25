@@ -462,11 +462,12 @@ for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklif
 # ------------------------------------------------------------------ cats (facing right; flip for left)
 VCOAT = {'anna':  dict(b='#fbf8f2', d='#c96f2c', w='#ffffff', o='#7a6656', eye='#3f8a3a', h='#f0a050', t='#4a4f57', ts='#9aa0a8',
                       patches=('#ee9a48', '#8e959e', '#5a3a28')),
-         'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a')}
+         'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a'),
+         'max':   dict(b='#f2a04e', d='#c96a26', w='#fff3e2', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a')}
 def vcat(name, pose):
     c = VCOAT[name]; o = c['o']; sw = .9
     b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
-    stripes = lambda pts: ''
+    stripes = (lambda pts: ''.join(f'<path d="{d}" stroke="{c["st"]}" stroke-width="1.7" fill="none" stroke-linecap="round"/>' for d in pts)) if 'st' in c else (lambda pts: '')
     hc, tc = c.get('h', c['b']), c.get('t', c['b'])
     def tail(d, w1=4.6, w2=3):
         t = f'<path d="{d}" fill="none" stroke="{o}" stroke-width="{w1}" stroke-linecap="round"/><path d="{d}" fill="none" stroke="{tc}" stroke-width="{w2}" stroke-linecap="round"/>'
@@ -480,7 +481,8 @@ def vcat(name, pose):
         h = poly([(x - 5.5, y - 2), (x - 4.5, y - 8.5), (x - 1, y - 4.5)], hc, o, sw) + poly([(x + 5.5, y - 2), (x + 4.5, y - 8.5), (x + 1, y - 4.5)], c['patches'][2] if 'patches' in c else hc, o, sw)
         h += poly([(x - 4.4, y - 3), (x - 4, y - 7), (x - 2, y - 4.6)], '#ffb3c0') + poly([(x + 4.4, y - 3), (x + 4, y - 7), (x + 2, y - 4.6)], '#ffb3c0')
         h += ell(x, y, 6.4, 5.6, hc, f'stroke="{o}" stroke-width="{sw}"')
-        if name == 'miley': h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
+        if name in ('miley', 'max'): h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
+        if 'st' in c: h += ''.join(f'<path d="{p}" stroke="{c["st"]}" stroke-width="1.2" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.6},{y-5} v2', f'M{x+.6},{y-5.4} v2.3', f'M{x+2.8},{y-5} v2', f'M{x-5.6},{y+.6} h-1.6', f'M{x+6.4},{y+.6} h1.6'))
         if 'patches' in c:
             h += ell(x + .6, y + 2.8, 3.2, 2.2, '#ffffff')
             h += ''.join(f'<path d="{p}" stroke="#c9742e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.5},{y-5} v1.8', f'M{x+.5},{y-5.3} v2', f'M{x+2.5},{y-5} v1.8'))
@@ -498,7 +500,7 @@ def vcat(name, pose):
             b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.6" fill="{c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += ell(32, 43, 12, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
         b += patches(ell(32, 43, 11.5, 6, '#000'), [(0, 27.5, 38.2, 7.2, 4.6), (1, 36.8, 38, 5.2, 4.2), (2, 21, 40.8, 4.2, 4.2), (0, 41, 41, 3, 2.6), (2, 32.5, 37.4, 2.2, 1.8)])
-        if name == 'miley': b += ell(33, 46.5, 8, 2.6, c['w'])
+        if name in ('miley', 'max'): b += ell(33, 46.5, 8, 2.6, c['w'])
         b += stripes(['M27,37.5 q1,3 0,6', 'M31,37 q1,3 0,6.5', 'M35,37 q1,3 0,6.5'])
         b += head(43, 35)
     elif pose == 'sit':
@@ -509,9 +511,19 @@ def vcat(name, pose):
         b += stripes(['M26,42 q2,1 3,0', 'M26,46 q2,1 3,0'])
         b += ell(30.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"') + ell(36.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"')
         b += head(33.5, 30)
+    elif pose == 'eat':
+        b += tail('M21,45 q-8,-1 -7,-9 q1,-3 3,-1')
+        for lx in (24, 28, 36, 40):
+            b += f'<rect x="{lx-1.6}" y="47" width="3.4" height="5.5" rx="1.6" fill="{c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
+        b += ell(31, 45, 11.5, 6, c['b'], f'stroke="{o}" stroke-width="{sw}"')
+        b += patches(ell(31, 45, 11, 5.5, '#000'), [(0, 26.5, 40.5, 7, 4.4), (1, 35.5, 40.2, 5, 4), (2, 20, 43, 4, 4)])
+        if name in ('miley', 'max'): b += ell(32, 48.5, 7.5, 2.4, c['w'])
+        b += stripes(['M25,39.8 q1,3 0,6', 'M29,39.2 q1,3 0,6.5', 'M33,39.2 q1,3 0,6.5'])
+        b += head(45, 46, True)
     else:  # sleep: curled loaf
         b += ell(31, 47, 12.5, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
         b += patches(ell(31, 47, 12, 6, '#000'), [(0, 27, 42, 7, 4.2), (1, 36, 41.6, 5, 3.6), (2, 21, 45, 3.8, 3.4), (2, 31.5, 41, 2.2, 1.8)])
+        b += stripes(['M24,42.5 q1,3 0,5.5', 'M28.5,41.2 q1,3 0,6', 'M33,41.2 q1,3 0,6'])
         b += tail('M19,49 q8,6 22,2', 4.4, 2.8)
         b += head(39, 45, True)
         b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
@@ -529,8 +541,25 @@ def vmouse(frame):
     b += f'<path d="M41,46.4 l2.6,-1 M41,46.8 l2.8,.4" stroke="#5d646d" stroke-width=".4"/>'
     return b
 add('mouse_0', vmouse(0)); add('mouse_1', vmouse(1))
-for _n in ('anna', 'miley'):
-    for _p in ('walk0', 'walk1', 'sit', 'sleep'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
+for _n in ('anna', 'miley', 'max'):
+    for _p in ('walk0', 'walk1', 'sit', 'sleep', 'eat'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
+def vbowls():
+    I = Iso(); b = ''
+    m = [I.P(.12, .3), I.P(.88, .3), I.P(.88, .78), I.P(.12, .78)]
+    b += poly(m, '#e9c46a', '#b8913a', .8)
+    def bowl(u, v, rim, inner, fill):
+        x, y = I.P(u, v); s = ''
+        s += ell(x, y + 2, 8.2, 4.1, '#1d3a24', 'opacity=".15"')
+        s += f'<path d="M{x-7.6},{y-1.4} L{x-6},{y+2.6} Q{x},{y+5.6} {x+6},{y+2.6} L{x+7.6},{y-1.4} Z" fill="{rim}" stroke="#2f3a44" stroke-width=".7"/>'
+        s += ell(x, y - 1.4, 7.6, 3.5, rim, 'stroke="#2f3a44" stroke-width=".7"')
+        s += ell(x, y - 1.3, 6, 2.6, inner)
+        return s + fill(x, y)
+    kib = lambda x, y: ''.join(circ(x + dx*1.2, y - 1.3 + dy, 1.05, c) for dx, dy, c in ((-2.4, -.3, '#8a5a2b'), (-.8, .5, '#a86b33'), (.9, -.4, '#7a4a22'), (2.4, .3, '#a86b33'), (0, -.9, '#8a5a2b'), (-1.6, .9, '#7a4a22'), (1.6, .8, '#8a5a2b')))
+    wat = lambda x, y: f'<path d="M{x-2.6},{y-1.4} q1.4,-.6 2.6,0" stroke="#ffffff" stroke-width=".8" fill="none" opacity=".9"/>'
+    b += bowl(.32, .62, '#d2553f', '#8a5a2b', kib)
+    b += bowl(.68, .44, '#3f7fc4', '#8fd0f2', wat)
+    return b
+add('catbowls', vbowls())
 
 # ------------------------------------------------------------------ write files
 defs = '\n'.join(DEFS)

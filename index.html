@@ -48,20 +48,22 @@ button{font:inherit;color:inherit;cursor:pointer}
 .ic{display:inline-grid;place-items:center;border-radius:50%;flex:none}
 .ic svg{display:block}
 
-.tray{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(251,250,245,.96);border-top:3px solid #dcd6c3;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
-.lane{display:flex;align-items:center;gap:10px;min-height:74px}
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(251,250,245,.96);border-top:3px solid #dcd6c3;padding:2px 8px calc(4px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:6px}
+.lane{display:flex;align-items:center;gap:8px;min-height:60px}
+.crewc{flex:none;display:flex;align-items:center;gap:6px;max-width:52%;border-left:2px solid var(--line);padding-left:8px}
+.crewc .cards{flex:1;min-width:0}
 .lane .who{writing-mode:vertical-rl;transform:rotate(180deg);font-size:13px;font-weight:600;color:var(--mute);letter-spacing:.04em}
-.cards{display:flex;gap:8px;overflow-x:auto;flex:1;padding:2px 2px 4px;scrollbar-width:none}
+.cards{display:flex;gap:8px;overflow-x:auto;flex:1;padding:9px 9px 3px 2px;scrollbar-width:none}
 .cards::-webkit-scrollbar{display:none}
-.card{position:relative;flex:none;width:78px;height:74px;border-radius:14px;background:#fff;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding-top:2px}
+.card{position:relative;flex:none;width:64px;height:58px;border-radius:14px;background:#fff;border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding-top:2px}
 .card.now{border-color:var(--go)}
 .card.warn{border-color:#e7a321}
 .card.hot{border-color:var(--bad)}
-.card .lb{font-size:14px;font-weight:600;line-height:1}
+.card .lb{font-size:12px;font-weight:600;line-height:1}.card{gap:1px;padding:0 0 9px;justify-content:center}.card .bar{bottom:4px;height:4px}
 .card .bar{position:absolute;left:8px;right:8px;bottom:5px;height:5px;border-radius:3px;background:#e9e5d8;overflow:hidden}
 .card .bar i{display:block;height:100%;width:0;background:var(--go)}
 .card .x{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#5d6b62;color:#fff;font-size:15px;line-height:1;display:grid;place-items:center;padding:0}
-.lane.h .card{width:66px;height:62px}
+.lane.h .card{width:58px;height:54px}
 .empty{color:var(--mute);font-size:15px;padding:0 6px}
 
 .sheet{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100vw,820px);height:94vh;max-height:94vh;overflow:hidden;background:#24402f;border-radius:30px 30px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.14);padding:12px 10px calc(26px + env(safe-area-inset-bottom));animation:up .28s ease-out;display:flex;flex-direction:column}
@@ -174,7 +176,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .av.walk .rt{stroke:#bfe3c8}
 .av .af{position:absolute;right:-2px;bottom:-2px;background:var(--hud);color:#fff;border:2px solid #fff;border-radius:8px;font-size:11px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 3px}
 .av .az{position:absolute;left:50%;transform:translateX(-50%);top:-7px;background:#8a958d;color:#fff;border-radius:6px;font-size:10px;padding:0 4px;line-height:14px}
-.lane.crew .cards{gap:5px;padding-top:8px}
+.crewc .cards{gap:4px}
 .crewpop{position:fixed;z-index:7;width:300px;background:#fff;border-radius:16px;border:2px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.22);padding:10px 12px 12px}
 .crewpop .cph{display:flex;align-items:center;gap:10px}.crewpop .cph>div{flex:1;min-width:0}
 .crewpop .cph b{display:block;font-size:16px}.crewpop .cph span{font-size:13px;color:var(--mute)}
@@ -194,6 +196,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stat .cred{display:block;font-size:11px;color:#ffd59a;opacity:1}
 .stat .cred:empty{display:none}
 .oc{display:block;font-size:11px;font-weight:600;opacity:.8}
+.blk .fl{position:absolute;left:3px;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.blk .fl.bg{left:50%;transform:translate(-50%,-50%);opacity:.9}
+.blk.fb .bx{background:rgba(20,30,24,.42);border-radius:7px;padding:1px 4px}.blk.ghost.fb .bx{background:rgba(255,255,255,.72);text-shadow:none}
+.blk.hf .bx{margin-left:calc(var(--fs,40px) * .9)}
+.blk.st-plan .fl:not(.bg),.blk.ghost .fl:not(.bg){opacity:.85}
+.crop .fi{vertical-align:-5px;margin:-3px 4px -3px -4px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;max-width:640px}
+@media (max-width:600px){.catc{padding:8px 6px 10px}.catc img{width:60px;height:60px}.catc small{font-size:12px;min-height:46px}}
+.catc{display:flex;flex-direction:column;align-items:center;gap:2px;border:3px solid var(--line);background:#fff;border-radius:16px;padding:10px 10px 12px;font:inherit;color:inherit;cursor:pointer;text-align:center}
+.catc img{width:76px;height:76px;filter:grayscale(1);opacity:.5;transition:filter .2s,opacity .2s}
+.catc.on{border-color:var(--go);background:#f2faf3}.catc.on img{filter:none;opacity:1}
+.catc b{font-size:17px}.catc small{color:var(--mute);font-size:13px;line-height:1.3;min-height:34px}
+.catc .cs{margin-top:6px;font-size:13px;font-weight:700;border-radius:999px;padding:4px 12px;background:#ece6d6;color:#3c4a40}.catc.on .cs{background:var(--go);color:#fff}
+.ttop .st.cash b.neg{color:#ffb4a6}
 .bank{border:2px solid var(--line);border-radius:16px;padding:12px 14px;margin:10px 0 14px;background:#f7fbf4}
 .bank .bk1{display:flex;gap:12px;align-items:flex-start}.bank .bk1 .rn{display:flex;flex-direction:column;gap:2px}.bank .bk1 .rn span{color:var(--mute);font-size:14px;line-height:1.35}
 .bank .bk2{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:14px;color:var(--mute)}.bank .bk2 b{color:var(--ink)}
@@ -261,7 +277,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .chip .cl b{font-size:14px}.chip .cl span{font-size:13px;color:var(--mute)}
 .chip .bar{position:absolute;left:8px;right:8px;bottom:3px;height:4px;border-radius:2px;background:#e9e5d8;overflow:hidden}
 .chip .bar i{display:block;height:100%;width:0;background:var(--go)}
-.lane.crew{min-height:54px}
+@media (max-width:600px){.lane .who{display:none}.crewc{padding-left:6px}.av{width:44px;height:44px}.av .ring{width:44px;height:44px}.av .ai{width:32px;height:32px}}
 
 .hand{display:flex;gap:10px;align-items:stretch;margin:4px 0 8px}
 .hcard{flex:1;min-width:0;background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:16px;padding:8px 12px 10px;position:relative}
@@ -351,7 +367,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .ttop .tx{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer}
 .scr{flex:1;min-height:0;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .scr .bfoot{margin-top:14px}
-@media (max-width:860px){.ttop{padding:10px 10px 10px 14px;gap:8px}.ttop .tw{flex:1;min-width:0}.ttop .tw b{font-size:18px}.ttop .st{display:none}.ttabs{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.ttabs button{flex-direction:column;gap:2px;padding:6px 0;font-size:12px}.ttabs button .nb{display:none}.scr{padding:10px 8px}.ttop .go{padding:10px 14px;font-size:15px}}
+@media (max-width:860px){.ttop{padding:10px 10px 10px 14px;gap:8px}.ttop .tw{flex:1;min-width:0}.ttop .tw b{font-size:18px}.ttop .st.st2{display:none}.ttop .sp{display:none}.ttop .st.cash{text-align:right;flex:none}.ttop .st.cash b{font-size:17px}.ttabs{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.ttabs button{flex-direction:column;gap:2px;padding:6px 0;font-size:12px}.ttabs button .nb{display:none}.scr{padding:10px 8px}.ttop .go{padding:10px 14px;font-size:15px}}
 .olay{display:flex;gap:16px;align-items:flex-start}.ocol{width:360px;flex:none;display:flex;flex-direction:column;gap:12px}
 @media (max-width:860px){.olay{flex-direction:column;gap:10px}.ocol{width:auto;align-self:stretch;gap:10px}}
 .hc{background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:22px;padding:13px 15px 14px;display:flex;flex-direction:column;gap:9px;box-shadow:0 6px 0 var(--cs,#efe8d6);position:relative}
@@ -430,8 +446,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div class="hstrip" id="hstrip" hidden></div>
 <div class="floors" id="floors" hidden><button type="button" id="fUp" aria-label="Floor up">▲<span class="n"></span></button><b id="fLab">Floor<big>1</big></b><button type="button" id="fDn" aria-label="Floor down">▼<span class="n"></span></button></div>
 <footer class="tray" id="tray">
-  <div class="lane"><span class="who">YOU</span><div class="cards" id="qMe"></div></div>
-  <div class="lane crew" id="laneC" hidden><span class="who">CREW</span><div class="cards" id="qC"></div></div>
+  <div class="lane"><span class="who">YOU</span><div class="cards" id="qMe"></div><div class="crewc" id="laneC" hidden><span class="who">CREW</span><div class="cards" id="qC"></div></div></div>
 </footer>
 <div class="crewpop" id="crewPop" hidden></div>
 <div class="ask" id="ask" hidden></div>
@@ -579,7 +594,7 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
+    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna','miley','max'],stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
     ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
@@ -830,7 +845,7 @@ const boomT={};
 const inLB=(lx,ly)=>LB.some(b=>ly===b.y&&lx>=b.x&&lx<b.x+3);
 function walkableL(x,y,L){
   const h=houseAtXY(x,y,L);
-  if(h>=0){const H=HOUSES[h],lx=x-H.ox,ly=y-H.oy;if(lx===8&&ly===3)return false;if(PROPS.some(p=>p.x===lx&&p.y===ly&&upLv(p.k)))return false;return!inLB(lx,ly);}
+  if(h>=0){const H=HOUSES[h],lx=x-H.ox,ly=y-H.oy;if(lx===8&&ly===3)return false;if(h===0&&lx===BOWL.x&&ly===BOWL.y&&S.cats.length)return false;if(PROPS.some(p=>p.x===lx&&p.y===ly&&upLv(p.k)))return false;return!inLB(lx,ly);}
   if(L>0)return false;
   if(x===6&&y===-1&&upLv('fork'))return false;
   return x>=-1&&x<=20&&y>=-1&&y<=16;
@@ -1181,8 +1196,27 @@ function drawWeather(dt){
 }
 // ---------------- greenhouse cats ----------------
 const CATS=[{id:'anna',name:'Miley',x:2.5,y:3.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#eb9a4c',dk:'#b9642a',wh:'#fff1dc'},
-            {id:'miley',name:'Anna',x:6.5,y:6.5,f:0,path:[],mode:'sleep',t:5,face:-1,dir:[0,1],col:'#7d8592',dk:'#555c68',wh:'#f6f6f6'}];
-const CAT_LINES=[n=>`${n} headbutts your boot`,n=>`${n} purrs and flops over`,n=>`${n} is supervising`,n=>`${n} sniffs the petunias`,n=>`${n} blinks slowly at you`,n=>`${n} would like a snack`];
+            {id:'miley',name:'Anna',x:6.5,y:6.5,f:0,path:[],mode:'sleep',t:5,face:-1,dir:[0,1],col:'#7d8592',dk:'#555c68',wh:'#f6f6f6'},
+            {id:'max',name:'Max',x:4.5,y:3.5,f:0,path:[],mode:'sit',t:4,face:1,dir:[1,0],col:'#f2a04e',dk:'#c96a26',wh:'#fff3e2'}];
+CATS.forEach((c,i)=>c.meal=20+i*25+Math.random()*30);
+const CAT_INFO={anna:'Calico. Bossy, fast, the best mouser.',miley:'Grey tuxedo. Naps on the warmest bench.',max:'Orange tabby. Mostly here for the snacks.'};
+const liveCats=()=>CATS.filter(c=>S.cats.includes(c.id));
+const BOWL={x:2,y:6};
+const bowlSpots=()=>{const H=HOUSES[0];return[{tx:H.ox+3,ty:H.oy+6,ex:H.ox+3.2,ey:H.oy+6.5,face:-1},{tx:H.ox+1,ty:H.oy+6,ex:H.ox+1.8,ey:H.oy+6.5,face:1}];};
+function catGoEat(c){
+  const busy=liveCats().filter(o=>o!==c&&o.eatSpot!=null).map(o=>o.eatSpot),k=[0,1].find(i=>!busy.includes(i));
+  if(k==null){c.meal=8;return false;}
+  const sp=bowlSpots()[k],[x,y]=catTile(c);const path=route(x,y,sp.tx,sp.ty);
+  if(!path.length&&(x!==sp.tx||y!==sp.ty)){c.meal=10;return false;}
+  path.push({x:sp.ex,y:sp.ey});c.path=path;c.mode='walk';c.goEat=k;c.eatSpot=k;return true;
+}
+function toggleCat(id){
+  const c=CATS.find(x=>x.id===id);if(!c)return;
+  if(S.cats.includes(id)){S.cats=S.cats.filter(x=>x!==id);c.path=[];c.chase=false;c.eatSpot=null;c.goEat=null;toast('cat',`${c.name} moves in with a neighbour. You can bring ${c.id==='max'?'him':'her'} back any time`);}
+  else{S.cats.push(id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='eat';c.t=5;c.face=-1;c.eatSpot=0;c.meal=90;toast('cat',`${c.name} moves in and heads straight for the food bowl`);}
+  save();
+}
+const CAT_LINES=[n=>`${n} headbutts your boot`,n=>`${n} has a full belly`,n=>`${n} purrs and flops over`,n=>`${n} is supervising`,n=>`${n} sniffs the petunias`,n=>`${n} blinks slowly at you`,n=>`${n} would like a snack`];
 const catTile=c=>[Math.floor(c.x),Math.floor(c.y)];
 function catWander(c){
   const r=Math.random();let tx,ty;
@@ -1196,12 +1230,14 @@ function catWander(c){
 let mouse=null,mouseT=35+Math.random()*50;
 function mouseTarget(){const H=HOUSES[Math.floor(Math.random()*Math.min(4,S.floors))];for(let k=0;k<20;k++){const tx=H.ox+Math.floor(Math.random()*9),ty=H.oy+Math.floor(Math.random()*7);if(walkable(tx,ty))return[tx,ty];}return null;}
 function spawnMouse(){
-  let t=null;for(let k=0;k<30;k++){const q=mouseTarget();if(q&&CATS.every(c=>Math.hypot(c.x-q[0]-.5,c.y-q[1]-.5)>4)){t=q;break;}}if(!t)return;
+  const LC=liveCats();if(!LC.length)return;
+  let t=null;for(let k=0;k<60&&!t;k++){const q=mouseTarget(),md=k<30?4:2.5;if(q&&LC.every(c=>Math.hypot(c.x-q[0]-.5,c.y-q[1]-.5)>md))t=q;}if(!t)return;
   mouse={x:t[0]+.5,y:t[1]+.5,f:0,path:[],face:1,t:0};
-  const c=CATS.slice().sort((a,b)=>Math.hypot(a.x-mouse.x,a.y-mouse.y)-Math.hypot(b.x-mouse.x,b.y-mouse.y))[Math.random()<.7?0:1];
-  c.chase=true;c.rp=0;c.mode='walk';c.path=[];
+  const srt=LC.slice().sort((a,b)=>Math.hypot(a.x-mouse.x,a.y-mouse.y)-Math.hypot(b.x-mouse.x,b.y-mouse.y)),c=srt[Math.random()<.7||srt.length<2?0:1];
+  c.eatSpot=null;c.goEat=null;c.chase=true;c.rp=0;c.mode='walk';c.path=[];
 }
 function stepMouse(dt){
+  if(mouse&&!liveCats().some(c=>c.chase))mouse=null;
   if(!mouse){mouseT-=dt;if(mouseT<=0){spawnMouse();mouseT=60+Math.random()*90;}return;}
   mouse.t+=dt;
   if(mouse.t>30){mouse=null;CATS.forEach(c=>{if(c.chase){c.chase=false;c.mode='sit';c.t=3;}});return;}
@@ -1213,13 +1249,14 @@ function stepMouse(dt){
 }
 function catchMouse(c){
   floats.push({x:c.x,y:c.y,f:0,text:'Gotcha!',color:'#c96f2c',t0:performance.now()});
-  toast('cat',[`${c.name} caught a mouse!`,`${c.name} pounces. Mouse caught!`,`${c.name} is very proud of herself`][Math.floor(Math.random()*3)]);
+  toast('cat',[`${c.name} caught a mouse!`,`${c.name} pounces. Mouse caught!`,`${c.name} is very proud of ${c.id==='max'?'himself':'herself'}`][Math.floor(Math.random()*3)]);
   mouse=null;c.chase=false;c.mode='sit';c.t=5+Math.random()*3;c.path=[];
 }
 function stepCats(dt){
   stepMouse(dt);
-  for(const c of CATS){
+  for(const c of liveCats()){
     c.f=0;
+    if(!c.chase&&c.goEat==null&&c.mode!=='eat'){c.meal-=dt;if(c.meal<=0&&(c.mode!=='walk'||Math.random()<.02)){catGoEat(c);continue;}}
     if(c.chase&&mouse){
       if(Math.hypot(c.x-mouse.x,c.y-mouse.y)<.45){catchMouse(c);continue;}
       c.rp-=dt;if(c.rp<=0||!c.path.length){c.rp=.4;c.path=route(Math.floor(c.x),Math.floor(c.y),Math.floor(mouse.x),Math.floor(mouse.y));if(c.path.length)c.path[c.path.length-1]={x:mouse.x,y:mouse.y};else c.path=[{x:mouse.x,y:mouse.y}];}
@@ -1234,10 +1271,11 @@ function stepCats(dt){
       if(Math.abs(dx-dy)>.01)c.face=dx-dy>0?1:-1;if(d>.01)c.dir=[dx/d,dy/d];
       if(d<=st){c.x=n.x;c.y=n.y;c.path.shift();}else{c.x+=dx/d*st;c.y+=dy/d*st;}
       if(!c.path.length){
+        if(c.goEat!=null){c.face=bowlSpots()[c.goEat].face;c.goEat=null;c.mode='eat';c.t=5+Math.random()*4;continue;}
         if(c.goLift){c.goLift=false;const o=[...Array(S.floors).keys()].filter(f=>f!==c.f);c.f=o[Math.floor(Math.random()*o.length)]??c.f;c.mode='sit';c.t=1.5;continue;}
         const r=Math.random();c.mode=r<.45?'sit':r<.75?'sleep':'walk';c.t=c.mode==='sit'?3+Math.random()*4:8+Math.random()*9;if(c.mode==='walk')catWander(c);
       }
-    }else if((c.t-=dt)<=0)catWander(c);
+    }else if((c.t-=dt)<=0){if(c.mode==='eat'){c.eatSpot=null;c.meal=70+Math.random()*80;c.mode='sit';c.t=2+Math.random()*2;if(Math.random()<.3)floats.push({x:c.x,y:c.y,f:0,text:'♥',color:'#e2552f',t0:performance.now()});continue;}catWander(c);}
   }
 }
 function sprFlip(id,u,v,z,flip){
@@ -1246,13 +1284,13 @@ function sprFlip(id,u,v,z,flip){
 }
 function drawCat(c,now){
   const z=c.f*FH,walking=c.mode==='walk';
-  const pose=walking||c.chase?'walk'+(Math.floor(now/(c.chase?100:180))%2):c.mode==='sleep'?'sleep':'sit';
+  const pose=walking||c.chase?'walk'+(Math.floor(now/(c.chase?100:180))%2):c.mode==='sleep'?'sleep':c.mode==='eat'?'eat':'sit';
   sprFlip(`cat_${c.id}_${pose}`,c.x-.5,c.y-.5,z+6,c.face<0);
 }
 function drawMouse(now){if(!mouse||viewF!==0)return;sprFlip('mouse_'+(Math.floor(now/90)%2),mouse.x-.5,mouse.y-.5,6,mouse.face<0);}
 function petCat(c){
   floats.push({x:c.x,y:c.y,f:c.f,text:'♥',color:'#e2552f',t0:performance.now()});
-  if(c.mode==='walk'){c.path=[];}c.mode='sit';c.t=3+Math.random()*2;
+  if(c.mode==='walk'||c.mode==='eat'){c.path=[];c.goEat=null;c.eatSpot=null;if(c.meal<=0)c.meal=15;}c.mode='sit';c.t=3+Math.random()*2;
   toast('cat',CAT_LINES[Math.floor(Math.random()*CAT_LINES.length)](c.name));
 }
 function drawPerson(w,shirt,now){
@@ -1344,7 +1382,7 @@ function draw(now){
   const items=built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)}));
   if(viewF===0){
     for(const w of [me,...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
-    for(const c of CATS)if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
+    for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
     if(mouse&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
@@ -1358,7 +1396,8 @@ function drawHouse(H,now){
   for(const p of PROPS){const l=upLv(p.k);if(l)L.push({d:H.ox+p.x+H.oy+p.y+1,f:()=>spr(`${p.k}_${l}`,H.ox+p.x,H.oy+p.y,H.L*FH+6)});}
   if(S.floors>4&&(H.L>0||S.floors>H.h+4))L.push({d:lf.x+lf.y+1.2,f:()=>drawLift(H)});
   for(const w of [me,...staff]){if(w.y>=0&&inH(w.x,w.y,w.f)&&!((w.leg==='lift'||w.leg==='home')&&w.ride>0))L.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});}
-  for(const c of CATS)if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
+  if(H.h===0&&S.cats.length)L.push({d:H.ox+BOWL.x+H.oy+BOWL.y+.6,f:()=>spr('catbowls',H.ox+BOWL.x,H.oy+BOWL.y,H.L*FH+6)});
+  for(const c of liveCats())if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
   if(mouse&&inH(mouse.x,mouse.y,0))L.push({d:mouse.x+mouse.y-.02,f:()=>drawMouse(now)});
   L.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   drawUpgrades(H,now);
@@ -1437,7 +1476,7 @@ function renderTray(){
   const sig=S.queue.map(t=>t.id).join(',')+'|'+staff.map(w=>w.id+':'+(w.task?.id||'')+':'+w.rec.home).join(',')+'|'+(me.task?.id||'')+'|'+S.phase;
   if(sig!==traySig){
     traySig=sig;
-    $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.type,38)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?'Tap the big icons to give your grower jobs':'Plan the period, then start it'}</span>`;
+    $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.type,28)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?(isPhone()?'Tap icons to queue jobs':'Tap the big icons to give your grower jobs'):'Plan the period, then start it'}</span>`;
     $('laneC').hidden=!staff.length;
     $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}">${glyph(w.role,22)}</span>${S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
     if(crewPop)renderCrewPop();
@@ -1655,13 +1694,13 @@ function handHTML(of,noShapes){
     const dl=of.dl,crops=[...new Set(dl.map(d=>d.crop))],cur=placing&&placing.of===of?placing.cur:null,C0=crop(dl[0].crop),lc=lockedCrop(of);
     return`<div class="hc" style="--c:#6b4fc8;--cs:#ddd3f5">${head}
     <div class="r2"><span class="ctag">Contract · ${of.label}</span><b class="pr" style="font-size:30px">${fmt(offerValue(of)*potM())}</b></div>
-    <div class="r2" style="flex-wrap:wrap">${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}<small style="color:#4f5c54">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]}</small></div>
+    <div class="r2" style="flex-wrap:wrap">${crops.map(k=>cropPill(k)).join('')}<small style="color:#4f5c54">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]}</small></div>
     ${cur?`<div class="cur"><span>Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, ships ${PN[cur.p].toLowerCase()}</span>${noShapes?'':shapes(cur)}</div>`:''}${lc&&!noShapes?unlockBtn(lc):''}</div>`;
   }
   const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,f0=forms(of)[0];
   const info=flexible(of)?`<span>${tico('cal',15)}Wants it by <b>${PN[of.p].toLowerCase()}</b></span><span>${tico('sun',15,'#c98a00')}Peak season <b>${(PEAK[of.crop]||[]).map(p=>PN[p].toLowerCase()).join(', ')}</b></span>`:`<span>${tico('cal',15)}Ships <b>${PN[of.p].toLowerCase()}</b> (fixed date)</span>`;
   return`<div class="hc" style="--c:${C.color};--cs:${C.color}33">${head}
-  <div class="r2"><span class="crop" style="background:${C.color}">${C.name}</span><b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
+  <div class="r2">${cropPill(of.crop)}<b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
   <div class="r3">${info}</div>
   ${mine&&noShapes?'':mine?shapes(of):`<div class="r4"><small>Shape</small><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Standard</small></span></div>`}
   ${lk&&!noShapes?unlockBtn(of.crop):''}</div>`;
@@ -1671,7 +1710,7 @@ const isPhone=()=>innerWidth<=860;
 function pbarHTML(of,peek,left){
   const x=placing?placing.cur:null,C=crop((x||of).crop),col=of.contract?'#6b4fc8':C.color,lc=lockedCrop(of);
   const l1=of.contract?`<span class="crop" style="background:#6b4fc8">Contract ×${of.n}</span><span class="due">${x?`Delivery ${placing.k+1}: ${x.qty} ${C.name.toLowerCase()}, ship ${PSH[x.p]}`:esc(short1(of.cust))}</span><b class="pr">${fmt(offerValue(of)*potM())}</b>`
-    :`<span class="crop" style="background:${C.color}">${C.name}</span><span class="q">${of.qty}</span><span class="due">${flexible(of)?'by':'ships'} ${PSH[of.p]} · ${esc(short1(of.cust))}</span><b class="pr">${fmt(valAt(of,of.p))}</b>`;
+    :`${cropPill((x||of).crop,C.name)}<span class="q">${of.qty}</span><span class="due">${flexible(of)?'by':'ships'} ${PSH[of.p]} · ${esc(short1(of.cust))}</span><b class="pr">${fmt(valAt(of,of.p))}</b>`;
   const nx=`<span class="nxt">${peek.map(o=>{const f=o.contract?null:forms(o)[0],c2=o.contract?'#6b4fc8':crop(o.crop).color;return f?shapeHTML(f.h,f.g,c2,6):shapeHTML(1,2,c2,6);}).join('')}${left} left</span>`;
   const l2=lc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${crop(lc).name.toLowerCase()} ${fmt(GEN[lc])}</button>${nx}`:x?`${formsHTML(x).btns}${nx}`:nx;
   return`<div class="pbar" style="--c:${col}"><button type="button" class="pb1" id="pbT" aria-expanded="${drawer}">${l1}<span class="chev">▾</span></button><div class="pb2">${l2}</div></div>`;
@@ -1705,13 +1744,13 @@ function tkHTML(of){
     const cal=`<div class="cal">${['EW','LW','ESp','LSp','ESu','LSu','EF','LF'].map((n,i)=>`<b class="${i===S.period?'now':''}">${n}</b>`).join('')}${dl.map(d=>{const D=CROPS[d.crop],st=d.p-D.g+1;return PSH.map((_,i)=>`<i class="${i<S.period?'past':''}" style="${i>=st&&i<=d.p?`background:${D.color};opacity:${i===d.p?1:.45}`:''}">${i===d.p?d.qty:i===st?'●':''}</i>`).join('');}).join('')}</div>`;
     const first=dl[0],fC=CROPS[first.crop];
     return`<div class="tk ct${lkc?' locked':''}" data-of="${of.id}"><span class="tag ctag">${of.label||'Contract'} · ${dl.length} deliveries</span><button class="dx" type="button" data-dx="${of.id}" aria-label="Decline">×</button>
-    <div class="cropsrow">${crops.map(k=>`<span class="crop" style="background:${CROPS[k].color}">${CROPS[k].name}</span>`).join('')}</div>
+    <div class="cropsrow">${crops.map(k=>cropPill(k)).join('')}</div>
     ${cal}
     <div class="due">First pot ${PSH[first.p-fC.g+1]} · last ship ${PSH[dl[dl.length-1].p]}</div>
     <div class="val">${fmt(offerValue(of))} total · ${dl.reduce((a,d)=>a+d.qty,0)} flats</div>${lkc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${CROPS[lc].name.toLowerCase()} ${fmt(GEN[lc])}</button>`:''}</div>`;
   }
   return`<div class="tk${isSel?' sel':''}${lk?' locked':''}" data-of="${of.id}">${of.popup?'<span class="tag">Pop-up</span>':''}<button class="dx" type="button" data-dx="${of.id}" aria-label="Decline">×</button>
-  <span class="crop" style="background:${C.color}">${C.name}</span>
+  ${cropPill(of.crop)}
   <div class="row2"><div class="q">${of.qty}<small> fl</small></div><span class="shape" style="grid-template-columns:repeat(${g},8px)">${('<i style="background:'+C.color+'"></i>').repeat(g*h)}</span></div>
   <div class="due">${g>1?PSH[st]+'→':'Ships '}${PSH[of.p]}</div>
   <div class="val">${fmt(of.qty*of.price)}</div>${lk?`<button class="unl" type="button" data-gen="${of.crop}">Unlock ${fmt(GEN[of.crop])}</button>`:''}</div>`;
@@ -1732,7 +1771,7 @@ function renderSheet(){
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
   const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
   const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
-  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span><div class="st"><small>${stat[0]}</small><b>${stat[1]}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
@@ -1772,10 +1811,12 @@ function renderSheet(){
       ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
       
       <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}"><span class="crop" style="background:${C.color}">${C.name}</span><span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
+      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
+      <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Pick who lives here. Residents share the food and water bowls in house 1 and keep the mice down. Just for fun: no cost, no effect on the books.</p>
+      <div class="cats">${CATS.map(c=>{const on=S.cats.includes(c.id);return`<button type="button" class="catc${on?' on':''}" data-cat="${c.id}" aria-pressed="${on}"><img src="${catURL(c.id)}" alt=""><b>${c.name}</b><small>${CAT_INFO[c.id]}</small><span class="cs">${on?'Lives here':'Invite in'}</span></button>`;}).join('')}</div>
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
@@ -1801,6 +1842,7 @@ function renderSheet(){
   const go=$('goB');if(go)go.onclick=()=>{if(placing)cancelPlacing(true);sel=null;tryStart();};
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
+  el.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{toggleCat(b.dataset.cat);renderSheet();});
   el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
   const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();openSheet();toast('good','Fresh start: year 1, three varieties');}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
   el.querySelectorAll('[data-gen]').forEach(b=>b.onclick=e=>{e.stopPropagation();buyGen(b.dataset.gen);});
@@ -1920,13 +1962,22 @@ function boardMetrics(){
   const bw=$('board').parentElement.clientWidth,W=bw>=640?bw-176:bw,lab=30,cw=Math.min(62,(W-lab)/8),rh=Math.max(34,Math.round(cw)),hh=placing&&flexible(placing.cur)?50:28;
   return{W,lab,cw,rh,hh,H:hh+rh*8};
 }
+const fURL={};
+function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
+  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
+function catURL(id){const k='cat_'+id;if(fURL[k])return fURL[k];const d=ART.vector['cat_'+id+'_sit'];if(!d)return'';
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
+const flowerImg=(k,px)=>`<img class="fi" src="${flowerURL(k,3)}" alt="" style="width:${px}px;height:${px}px">`;
+const cropPill=(k,txt)=>`<span class="crop" style="background:${CROPS[k].color}">${flowerImg(k,20)}${txt??CROPS[k].name}</span>`;
 function blkInner(wide,text){return`${wide?`<span class="bi">${glyph('pot',15)}</span>`:''}<span class="bt">${text}</span>${wide?`<span class="bi">${glyph('load',15)}</span>`:''}`;}
 function blkHTML(o){
   // o: {cls,color,left,top,w,h,st,name,count,short,val,fut,rm,id,ghost}
   const narrow=o.w<74,lbl={plan:'Planned',grow:'Growing',ready:'Ready',done:'Shipped',fail:'Missed',ghost:''}[o.st];
   const l1=`${o.w>130&&o.name?o.name+' ':''}<span class="${o.short?'short':''}">${o.count}</span>`;
   const l2=o.ghost||o.w<150?o.val:`${lbl} · ${o.val}`;
-  return`<div class="blk st-${o.st}${o.cls}${o.w<62?' tiny':''}"${o.id?` data-pl="${o.id}"`:''} style="background-color:${o.color};left:${o.left}px;top:${o.top}px;width:${o.w}px;height:${o.h}px">${o.fut?`<i class="fut" style="width:${o.fut}%"></i>`:''}<i class="sq"></i><span class="bx"><span class="b1">${l1}</span>${o.h>=30?`<span class="b2">${l2}</span>`:''}</span>${o.rm?`<button class="rm" type="button" data-rm="${o.id}" aria-label="Remove">×</button>`:''}</div>`;
+  const fs=o.crop?Math.round(Math.min(o.h-6,44,o.w*.42)):0,fw=o.crop&&o.w>=100&&fs>=24;
+  const fimg=o.crop&&fs>=16?`<img class="fl${fw?'':' bg'}" src="${flowerURL(o.crop,o.stage??3)}" alt="" style="width:${fw?fs:Math.min(o.h-4,o.w-4,56)}px;height:${fw?fs:Math.min(o.h-4,o.w-4,56)}px">`:'';
+  return`<div class="blk st-${o.st}${o.cls}${o.w<62?' tiny':''}${fw?' hf':fimg?' fb':''}"${o.id?` data-pl="${o.id}"`:''} style="--fs:${fs}px;background-color:${o.color};left:${o.left}px;top:${o.top}px;width:${o.w}px;height:${o.h}px">${o.fut?`<i class="fut" style="width:${o.fut}%"></i>`:''}<i class="sq"></i>${fimg}<span class="bx"><span class="b1">${l1}</span>${o.h>=30?`<span class="b2">${l2}</span>`:''}</span>${o.rm?`<button class="rm" type="button" data-rm="${o.id}" aria-label="Remove">×</button>`:''}</div>`;
 }
 function renderBoard(){
   const B=$('board');if(!B)return;const m=boardMetrics(),c=S.period,ms=minStart(),base=boardF*8;
@@ -1952,19 +2003,19 @@ function renderBoard(){
     const fut=(st==='grow'||st==='ready')?Math.round(clamp((left+bw-nowX)/bw,0,1)*100):0;
     const ct=o.contract?contractOf(o.contract):null,ctag=ct?`${o.k+1}/${ct.n} `:'';
     const val=ctag+(st==='done'?fmt(Math.round((o.sent||0)*o.price*(1+.1*upLv('pots')))):fmt(Math.round(o.qty*o.price*(1+.1*upLv('pots')))));
-    h+=blkHTML({cls:`${mv?' mv':''}${isSel?' picked':''}${lifted?' lift':''}${ev&&ev.ok&&ev.gone.includes(pl)?' bump':''}`,color:C.color,left,top:m.hh+top*m.rh+2,w:bw,h:h2*m.rh-4,st,name:C.name,count:`${hv}/${o.qty}`,short:hv<o.qty&&!pl.done,val,fut,rm:mv,id:pl.id});
+    h+=blkHTML({cls:`${mv?' mv':''}${isSel?' picked':''}${lifted?' lift':''}${ev&&ev.ok&&ev.gone.includes(pl)?' bump':''}`,color:C.color,left,top:m.hh+top*m.rh+2,w:bw,h:h2*m.rh-4,st,name:C.name,count:`${hv}/${o.qty}`,short:hv<o.qty&&!pl.done,val,fut,rm:mv,id:pl.id,crop:pl.crop,stage:st==='grow'?Math.max(1,prog(pl)<.5?1:2):3});
   }
   h+=`<div class="nowline" style="left:${nowX-1.5}px;top:${m.hh-6}px;height:${m.rh*8+6}px"></div>`;
   if(hand){
-    if(placing.of.contract)for(let k=placing.k+1;k<placing.of.n;k++){const d=delivery(placing.of,k,placing.cid),pp=piece(d),r=firstFit(d);if(r<0||Math.floor(r/8)!==boardF)continue;h+=blkHTML({cls:' later',color:crop(d.crop).color,left:m.lab+pp.s*m.cw+2,top:m.hh+(r-base)*m.rh+2,w:(pp.e-pp.s+1)*m.cw-4,h:pp.h*m.rh-4,st:'ghost',name:'',count:`#${k+1}`,val:crop(d.crop).name,ghost:true});}
+    if(placing.of.contract)for(let k=placing.k+1;k<placing.of.n;k++){const d=delivery(placing.of,k,placing.cid),pp=piece(d),r=firstFit(d);if(r<0||Math.floor(r/8)!==boardF)continue;h+=blkHTML({cls:' later',color:crop(d.crop).color,left:m.lab+pp.s*m.cw+2,top:m.hh+(r-base)*m.rh+2,w:(pp.e-pp.s+1)*m.cw-4,h:pp.h*m.rh-4,st:'ghost',name:'',count:`#${k+1}`,val:crop(d.crop).name,ghost:true,crop:d.crop});}
     if(pv&&Math.floor(pv.top/8)===boardF){
-      h+=blkHTML({cls:' ghost'+(ev.ok?'':' bad'),color:crop(sel.crop).color,left:m.lab+sel.s*m.cw+2,top:m.hh+(pv.top-base)*m.rh+2,w:(sel.e-sel.s+1)*m.cw-4,h:sel.h*m.rh-4,st:'ghost',name:'',count:ev.ok?span(pv.top,sel.h):'Blocked',val:ev.ok?'+'+fmt(ev.gain):'',ghost:true});
+      h+=blkHTML({cls:' ghost'+(ev.ok?'':' bad'),color:crop(sel.crop).color,left:m.lab+sel.s*m.cw+2,top:m.hh+(pv.top-base)*m.rh+2,w:(sel.e-sel.s+1)*m.cw-4,h:sel.h*m.rh-4,st:'ghost',name:'',count:ev.ok?span(pv.top,sel.h):'Blocked',val:ev.ok?'+'+fmt(ev.gain):'',ghost:true,crop:sel.crop});
     }
   }
   else if(live&&ghostRow>=0){
     const t=nearestFit(live,ghostRow),top=(t>=0?t:topFor(live,ghostRow))-base,C=crop(live.crop),w=(live.e-live.s+1)*m.cw;
     const of=live.offer,qty=of?of.qty:orderOf(live.plot).qty,price=of?of.price:orderOf(live.plot).price;
-    h+=blkHTML({cls:' ghost'+(t>=0?'':' bad'),color:C.color,left:m.lab+live.s*m.cw+2,top:m.hh+top*m.rh+2,w:w-4,h:live.h*m.rh-4,st:'ghost',name:'',count:t>=0?span(t,live.h):'No room',val:fmt(Math.round(qty*price*(1+.1*upLv('pots')))),ghost:true});
+    h+=blkHTML({cls:' ghost'+(t>=0?'':' bad'),color:C.color,left:m.lab+live.s*m.cw+2,top:m.hh+top*m.rh+2,w:w-4,h:live.h*m.rh-4,st:'ghost',name:'',count:t>=0?span(t,live.h):'No room',val:fmt(Math.round(qty*price*(1+.1*upLv('pots')))),ghost:true,crop:live.crop});
   }
   B.innerHTML=h;
   B.querySelectorAll('.blk.mv').forEach(b=>b.addEventListener('pointerdown',pieceDown));
@@ -2032,7 +2083,7 @@ cv.addEventListener('pointerup',e=>{
   if(sheetOpen()&&S.phase==='run'){closeSheet();return;}
   let best=null,bd=1e9;for(const h of iconHits){const d=Math.hypot(e.clientX-h.x,e.clientY-h.y);if(d<=h.r&&d<bd){bd=d;best=h;}}
   if(best){best.tasks.forEach(enqueue);return;}
-  {const ct=CATS.filter(c=>c.f===viewF).map(c=>({c,d:Math.hypot(e.clientX-P(c.x,c.y,ZB()+14)[0],e.clientY-P(c.x,c.y,ZB()+14)[1])})).filter(o=>o.d<TW*.42*sc).sort((a,b)=>a.d-b.d)[0];if(ct){petCat(ct.c);return;}}
+  {const ct=liveCats().filter(c=>c.f===viewF).map(c=>({c,d:Math.hypot(e.clientX-P(c.x,c.y,ZB()+14)[0],e.clientY-P(c.x,c.y,ZB()+14)[1])})).filter(o=>o.d<TW*.42*sc).sort((a,b)=>a.d-b.d)[0];if(ct){petCat(ct.c);return;}}
   if(S.phase==='run'){
     const near=(p,rx,ry)=>Math.abs(e.clientX-p[0])<rx&&Math.abs(e.clientY-p[1])<ry;
     // heater or fans on this floor
@@ -2061,7 +2112,7 @@ $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.cats=Array.isArray(d.cats)?d.cats:['anna','miley','max'];if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
   <div class="steps">
