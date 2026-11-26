@@ -714,12 +714,12 @@ const levels=()=>Math.ceil(S.floors/4);
 const benchName=i=>(Math.floor(i/8)===SH?'★':S&&S.floors>1?(Math.floor(i/8)+1):'')+LETTERS[i];
 const WORK={pot:1.8,water:1,pest:2,fix:3.2,care:1.3,phone:.4,star:.25};
 const ROLES={
-  pot:{name:'Planter',does:'Pots new orders',cost:120},
-  water:{name:'Waterer',does:'Waters thirsty benches',cost:90},
-  pest:{name:'Applicator',does:'Sprays for pests',cost:105},
-  fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:80},
-  load:{name:'Loader',does:'Loads trucks at the dock',cost:120},
-  prize:{name:'Prize grower',does:'Runs the showcase house',cost:600}};
+  pot:{name:'Planter',does:'Pots new orders',cost:190},
+  water:{name:'Waterer',does:'Waters thirsty benches',cost:145},
+  pest:{name:'Applicator',does:'Sprays for pests',cost:170},
+  fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:130},
+  load:{name:'Loader',does:'Loads trucks at the dock',cost:190},
+  prize:{name:'Prize grower',does:'Runs the showcase house',cost:800}};
 const SLOW0=1.6,SLOW_STEP=.06,VET=10;
 const NAMES=['Ana','Luis','Mara','Dev','Rosa','Jun','Tess','Omar','Kira','Ben','Lupe','Nate','Ivy','Raj','Sol','Wren','Cruz','Tam'];
 const slowOf=r=>r?(S&&S.slowCrew===ckey()&&r.role!=='prize'?1.25:1)*(r.role==='prize'?[1,1.5,1.35,1.2,1.08,1][clamp(r.att||1,1,5)]:Math.max(1,SLOW0-SLOW_STEP*r.n*(catOn('gremlin')?1.5:1))):1;
@@ -1150,7 +1150,7 @@ function startPeriod(){
   if(!window.__quiet){const nc=(rnd()<.8?1:0)+(stage()>=5&&rnd()<.35?1:0);for(let i=0;i<nc;i++)S.events.push({at:PSEC*(.12+rnd()*.6),k:'call'});}
   S.plots.filter(pl=>pl.show&&!pl.done&&pl.s<=c&&pl.e>=c).forEach(pl=>{const n=pl.e===c?2:3;for(let i=0;i<n;i++)S.events.push({at:PSEC*(.12+i*(.72/n)+rnd()*.12),k:'care',plot:pl.id});});
   if(c>=2&&c<=5&&rnd()<.6)S.events.push({at:PSEC*(.15+rnd()*.3),k:'popup'});
-  if(!window.__quiet&&rnd()<(catOn('minaou')?.56:.375))S.events.push({at:PSEC*(.1+rnd()*.6),k:'star'});
+  if(!window.__quiet&&rnd()<(catOn('minaou')?.75:.5))S.events.push({at:PSEC*(.1+rnd()*.6),k:'star'});
   S.events.sort((a,b)=>a.at-b.at);
   closeSheet();hud();
 }
@@ -2807,7 +2807,7 @@ const STAGES=[
 const GATE_UP={pots:[1,4,8],soil:[1,3,7],hose:[1,2,7],bugs:[1,5],heat:[2,6],vents:[2,5],boom:[3,6],potter:[3,6],fork:[4,7],lights:[4,8],roll:[5,8]};
 const GATE_GEN={vinca:1,begonia:2,geranium:2,fern:3,kale:3,hydrangea:4,poinsettia:6};
 const HOUSE_CAP=[1,1,2,3,4,6,8,10,12,12,12];
-const CREW_CAP=[2,2,4,6,9,12,16,20,26,32,40];
+const CREW_CAP=[2,2,3,4,6,8,11,14,18,22,28];
 const crewCap=()=>CREW_CAP[Math.min(stage(),CREW_CAP.length-1)];
 const crewN=()=>S.crew.filter(r=>r.role!=='prize').length;
 const crewRoom=()=>Math.max(0,crewCap()-crewN());
@@ -3193,7 +3193,8 @@ $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.tips){d.tips={};const vet=d.hist.length>0||d.year>1;const m=k=>d.tips[k]=1;if(vet)['place','start','pot','queue','water','pest','fix','load','goal','phone'].forEach(m);if((d.crew||[]).length)m('crew');if(Object.values(d.up||{}).some(Boolean))m('up');if(d.floors>1)m('house');if(d.show)m('show');if((d.crew||[]).some(r=>r.role==='prize'))m('prize');if(d.home&&Object.keys(d.home).length)m('home');if((d.owned||[]).length>7)m('gen');}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.wageV){d.wageV=2;const NW={pot:190,water:145,pest:170,fix:130,load:190,prize:800},OW={pot:120,water:90,pest:105,fix:80,load:120,prize:600};(d.crew||[]).forEach(r=>{if(NW[r.role])r.wage=Math.round((r.wage||OW[r.role])*NW[r.role]/OW[r.role]/5)*5;});}
+  if(!d.tips){d.tips={};const vet=d.hist.length>0||d.year>1;const m=k=>d.tips[k]=1;if(vet)['place','start','pot','queue','water','pest','fix','load','goal','phone'].forEach(m);if((d.crew||[]).length)m('crew');if(Object.values(d.up||{}).some(Boolean))m('up');if(d.floors>1)m('house');if(d.show)m('show');if((d.crew||[]).some(r=>r.role==='prize'))m('prize');if(d.home&&Object.keys(d.home).length)m('home');if((d.owned||[]).length>7)m('gen');}
   if(!d.homeV){d.homeV=1;d.cats=['anna'];d.stars=d.hist.reduce((a,r)=>a+(r.stars||0)+(r.met?3:0),0);d.home={};d.catHouse=1;d.office=1;}if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:13},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:13},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
