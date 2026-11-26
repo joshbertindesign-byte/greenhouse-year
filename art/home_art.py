@@ -166,7 +166,6 @@ def farmhouse(I):
     # front fence, mailbox, path
     b += stones(I, [(1.32, 2.95), (1.36, 3.0)], 2)
     b += picket(I, [(.05, 2.92), (1.08, 2.92)]) + picket(I, [(1.62, 2.92), (2.95, 2.92)])
-    x, y = I.P(2.75, 2.75, 0); b += seg((x, y), (x, y - 13), '#6a3e22', 1.8) + f'<rect x="{f2(x-4.5)}" y="{f2(y-19)}" width="9" height="6" rx="3" fill="#3a6fd6" stroke="#1f4f9e" stroke-width=".7"/><path d="M{f2(x+4)},{f2(y-19)} v-4 h3 v2 Z" fill="#e0402f"/>'
     b += bush(*I.P(.25, 1.6, 0), 9, seed=5, flowers='#ff8fc0') + bush(*I.P(2.85, 2.4, 0), 7, seed=8)
     return b
 
@@ -478,6 +477,24 @@ for _id, fn in (('h_farm', farmhouse), ('h_deb_brush', deb_brush), ('h_deb_rocks
     add(_id, fn(), HW, HH, (HAX, HAY))
 for _l in (1, 2, 3): add(f'h_cats_{_l}', cathouse(_l)(), HW, HH, (HAX, HAY))
 for _l in (1, 2): add(f'h_office_{_l}', office(_l)(), HW, HH, (HAX, HAY))
+# the mailbox (flag down / flag up)
+def mailbox(up):
+    I = Iso(40, 92); b = ell(40, 93, 11, 4, '#1d3a24', 'opacity=".18"')
+    b += I.box(-.05, -.05, .05, .05, 0, 30, '#8a5a3a', '#7a4a2b', '#6a3e22', '#4a2a18', .6)
+    b += I.box(-.22, -.1, .22, .1, 30, 40, '#4f86e0', '#3a6fd6', '#2f5fb8', '#1f3f80', .8)
+    x0, y0 = I.P(-.22, -.1, 40); x1, y1 = I.P(.22, -.1, 40); x2, y2 = I.P(.22, .1, 40); x3, y3 = I.P(-.22, .1, 40)
+    b += f'<path d="M{f2(x3)},{f2(y3)} Q{f2((x3+x0)/2)},{f2(y3-9)} {f2(x0)},{f2(y0)} L{f2(x1)},{f2(y1)} Q{f2((x1+x2)/2)},{f2(y2-9)} {f2(x2)},{f2(y2)} Z" fill="#6a9ef0" stroke="#1f3f80" stroke-width=".8"/>'
+    b += f'<path d="M{f2(x2)},{f2(y2)} Q{f2((x1+x2)/2)},{f2(y2-9)} {f2(x1)},{f2(y1)} L{f2(x1)},{f2(y1+10)} L{f2(x2)},{f2(y2+10)} Z" fill="#2f5fb8" stroke="#1f3f80" stroke-width=".8"/>'
+    fx, fy = I.P(.18, .1, 36)
+    if up:
+        b += seg((fx + 1, fy), (fx + 1, fy - 17), '#8a8f94', 1.6) + poly([(fx + 1, fy - 17), (fx + 11, fy - 14), (fx + 1, fy - 10)], '#e0402f', '#9a2a1f', .7)
+        for i in range(3): b += ell(fx - 10 + i * 2, fy - 22 - i * 3, 1.2, 1.2, '#ffd23a')
+    else:
+        b += seg((fx, fy), (fx + 13, fy + 6), '#8a8f94', 1.6) + poly([(fx + 8, fy + 3.5), (fx + 15, fy + 7), (fx + 13, fy + 12), (fx + 6, fy + 8)], '#c0392b', '#9a2a1f', .7)
+    if up:
+        lx, ly = I.P(-.22, 0, 35); b += poly([(lx - 2, ly - 4), (lx + 7, ly - 6), (lx + 7, ly + 1), (lx - 2, ly + 3)], '#fff6dc', '#b9ad95', .6)
+    return b
+add('h_mail_0', mailbox(False), 80, 112, (40, 92)); add('h_mail_1', mailbox(True), 80, 112, (40, 92))
 # scenery
 add('h_tree', tree(48, 112, 1.1, seed=41), 96, 128, (48, 112))
 add('h_tree2', tree(48, 112, 1.25, 'url(#gTreeD)', seed=42), 96, 128, (48, 112))
