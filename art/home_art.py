@@ -500,3 +500,63 @@ add('h_tree', tree(48, 112, 1.1, seed=41), 96, 128, (48, 112))
 add('h_tree2', tree(48, 112, 1.25, 'url(#gTreeD)', seed=42), 96, 128, (48, 112))
 add('h_pine', pine(48, 112, 1.2), 96, 128, (48, 112))
 add('h_bush', bush(32, 50, 9, seed=43, flowers='#ffffff'), 64, 64, (32, 48))
+
+# ---------------------------------------------------------------- field trees (5 species x 4 sizes)
+rad('gJm', [(0, '#ff8a7a', None), (.55, '#c0392b', None), (1, '#7a1f2a', None)], .35, .3, .85)
+rad('gMg', [(0, '#a8e07a', None), (.55, '#4f9a4a', None), (1, '#2a6a3a', None)], .35, .3, .85)
+rad('gRm', [(0, '#ffc27a', None), (.55, '#e0602a', None), (1, '#a83a1a', None)], .35, .3, .85)
+rad('gOk', [(0, '#8fbf6a', None), (.55, '#3f7a3f', None), (1, '#24502c', None)], .35, .3, .85)
+lin('gSp', [(0, '#a8c8d8', None), (1, '#4f7f98', None)], 0, 0, 1, 1)
+def field_tree(sp, st):
+    s = [.34, .56, .8, 1.0][st]; x, y = 48, 116; rr = random.Random(hash((sp, st)) & 0xffff)
+    b = ell(x + 5 * s, y + 1, 26 * s + 4, 8 * s + 2, '#1d3a24', 'opacity=".16"')
+    b += ell(x, y, 13 * s + 5, 5 * s + 2, '#6a4a2e', 'opacity=".55"')  # mulch ring
+    if st == 0: b += seg((x + 7, y), (x + 7, y - 34), '#d9b07a', 1.6) + seg((x + 7, y - 24), (x + 1, y - 24), '#3f8f45', 1)
+    trunk = lambda h, w: f'<path d="M{f2(x-w)},{f2(y)} q1,{f2(-h*.5)} {f2(w*.4)},{f2(-h)} h{f2(w*1.2)} q1,{f2(h*.5)} {f2(w*.4)},{f2(h)} Z" fill="#7a5232" stroke="#4a3220" stroke-width=".7"/>'
+    if sp == 'spruce':
+        b += trunk(10 * s, 2.2 * s + .6)
+        tiers = [(30, -8), (25, -26), (19, -44), (13, -60), (7, -73)]
+        for k, (w, yy) in enumerate(tiers):
+            b += poly([(x - w * s, y + (yy - 2) * s), (x + w * s, y + (yy - 2) * s), (x + w * .15 * s, y + (yy - 24) * s), (x - w * .15 * s, y + (yy - 24) * s)], 'url(#gSp)' if k % 2 == 0 else '#6f98ad', '#3f6a80', .8)
+        b += poly([(x, y - 96 * s), (x - 5 * s, y - 80 * s), (x + 5 * s, y - 80 * s)], '#8fb4c6', '#3f6a80', .7)
+        return b
+    if sp == 'oak':
+        b += trunk(32 * s, 6 * s + .8)
+        b += f'<path d="M{f2(x)},{f2(y-28*s)} l{f2(-16*s)},{f2(-10*s)} M{f2(x+2*s)},{f2(y-30*s)} l{f2(17*s)},{f2(-8*s)}" stroke="#6a4228" stroke-width="{f2(3.2*s+.6)}" stroke-linecap="round"/>'
+        blobs = [(-30, -40, 15), (30, -40, 15), (-16, -52, 17), (16, -52, 17), (0, -60, 18), (-34, -30, 11), (34, -30, 11), (0, -42, 16)]
+        g = 'url(#gOk)'
+    elif sp == 'jmaple':
+        b += f'<path d="M{f2(x-2)},{f2(y)} l{f2(-6*s)},{f2(-22*s)} M{f2(x+1)},{f2(y)} l{f2(5*s)},{f2(-24*s)} M{f2(x)},{f2(y)} v{f2(-26*s)}" stroke="#5a3a2a" stroke-width="{f2(2*s+.6)}" stroke-linecap="round"/>'
+        blobs = [(-22, -26, 12), (22, -26, 12), (-12, -34, 13), (12, -34, 13), (0, -40, 13), (-26, -20, 9), (26, -20, 9)]
+        g = 'url(#gJm)'
+    elif sp == 'magnolia':
+        b += trunk(22 * s, 3.6 * s + .6)
+        blobs = [(-14, -40, 13), (14, -40, 13), (0, -54, 15), (-8, -66, 11), (8, -66, 11), (0, -32, 12)]
+        g = 'url(#gMg)'
+    else:  # red maple
+        b += trunk(28 * s, 4.2 * s + .6)
+        blobs = [(-17, -44, 14), (17, -44, 14), (0, -58, 16), (-10, -70, 11), (10, -70, 11), (0, -40, 13)]
+        g = 'url(#gRm)'
+    for dx, dy, r in blobs:
+        b += circ(x + dx * s, y + dy * s, r * s, g, '#00000033', .8)
+    top = min(dy - r for dx, dy, r in blobs)
+    b += circ(x - 6 * s, y + (top + 8) * s, 5 * s, '#ffffff', 'none', 1, 'opacity=".18"')
+    if sp == 'magnolia' and st >= 1:
+        for k in range(5 + st * 3):
+            a = rr.random() * 6.28; d = rr.random() * 14
+            bx, by = x + math.cos(a) * d * s * 1.3, y + (-50 + math.sin(a) * d) * s
+            b += f'<path d="M{f2(bx)},{f2(by)} q-2.2,-3.2 0,-5.4 q2.2,2.2 0,5.4 Z" fill="#fbe3ef" stroke="#d07aa0" stroke-width=".5"/>'
+    if sp == 'jmaple':
+        for k in range(6):
+            a = rr.random() * 6.28; d = rr.random() * 18
+            b += circ(x + math.cos(a) * d * s * 1.2, y + (-32 + math.sin(a) * d * .5) * s, 1.6 * s + .4, '#ffb0a0', 'none', 1, 'opacity=".7"')
+    return b
+for _sp in ('jmaple', 'spruce', 'magnolia', 'rmaple', 'oak'):
+    for _st in range(4): add(f'tree_{_sp}_{_st}', field_tree(_sp, _st), 96, 128, (48, 116))
+# a dug tree, rootball wrapped in burlap
+def balled():
+    x, y = 48, 116
+    b = ell(x, y, 20, 6, '#6a4a2e', 'opacity=".5"') + ell(x, y - 2, 14, 8, '#c9a46a', 'stroke="#8a6a3a" stroke-width=".8"')
+    b += f'<path d="M{x-12},{y-4} q12,6 24,0 M{x-10},{y-8} q10,5 20,0" stroke="#8a6a3a" stroke-width=".8" fill="none"/>'
+    return b
+add('tree_ball', balled(), 96, 128, (48, 116))

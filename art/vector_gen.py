@@ -758,7 +758,7 @@ def vbowls():
     return b
 add('catbowls', vbowls())
 
-exec(open(__file__.replace('vector_gen.py', 'home_art.py')).read())
+exec(open('/home/claude/sprites/home_art.py').read())
 
 # ------------------------------------------------------------------ write files
 defs = '\n'.join(DEFS)
