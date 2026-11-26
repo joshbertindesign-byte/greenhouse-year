@@ -356,6 +356,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 4px;font-size:14px;gap:4px}}
 .tbh{flex-wrap:wrap}
+.gplan{display:flex;gap:12px;align-items:center;background:#f4f1e8;border-radius:14px;padding:10px 12px;margin:8px 0;font-size:14.5px;line-height:1.4;color:var(--mute)}.gplan b{color:var(--ink)}.gplan.on{background:#eef6ea;border:2px solid #b9dfc0}.gplan>svg,.gplan>span:first-child{flex:none}
 .gcard{display:flex;gap:12px;align-items:flex-start;background:#fffaf0;border:2px solid #ecd48e;border-radius:16px;padding:12px;margin:10px 0 4px}.gcard .rn{display:flex;flex-direction:column;gap:4px;min-width:0}.gcard .rn>span{font-size:14px;color:var(--mute);line-height:1.4}.gcard .face{flex:none;border-radius:50%;overflow:hidden;display:grid;place-items:center}.gcard .face img{width:100%}
 .gxpb{display:block;height:8px;border-radius:4px;background:#efe6cc;overflow:hidden}.gxpb i{display:block;height:100%;background:#e2a91f}
 .bonc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}.bonc b{color:var(--mute)}
@@ -965,6 +966,36 @@ function candidates(c,minS,maxP,pref){
 function mkOffer(cd,mult,fixed){const C=CROPS[cd.k],cust=pickCust(false),base=C.price*(mult||1)*tierOf(cust).pm*(S.disc&&S.disc.cust===cust&&S.disc.year===S.year?.95:1)*(.92+rnd()*.22),of={id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(base*(fixed?1:seasF(cd.k,cd.p))),cust};if(!fixed)of.base=base;return of;}
 function candFlex(c){const out=[];for(const k in CROPS){if(!cropOpen(k)||isShowCrop(k))continue;const C=CROPS[k];for(let p=c+C.g-1;p<=Math.min(7,c+4);p++){const f=seasF(k,p);out.push({k,p,w:f>1.1?3:f>=1?2:1});}}return out;}
 function wpick(list){const t=list.reduce((a,x)=>a+x.w,0);let r=rnd()*t;for(const x of list){r-=x.w;if(r<=0)return x;}return list[list.length-1];}
+// ---- planning score: offers seen this year vs. the best plan in hindsight ----
+// Each offer is logged with its best value-per-bench-period option: {v, nd:[[start,end,benches],...]}.
+function offerOpts(of,c0){
+  if(of.showcase)return null;
+  if(of.contract&&of.dl){let v=0;const nd=[];
+    for(let k=0;k<of.n;k++){const d=delivery(of,k,0),F=forms(d).reduce((a,f)=>f.h*f.g<a.h*a.g?f:a);const s0=d.p-F.g+1;if(s0<c0)return null;v+=valAt(d,d.p);nd.push([s0,d.p,F.h]);}
+    return[{v,nd}];}
+  const all=[];
+  for(const F of forms(of)){const ds=flexible(of)?Array.from({length:8},(_,i)=>i).filter(d=>d<=of.p&&d-F.g+1>=c0):[of.p];
+    for(const d of ds){const s0=d-F.g+1;if(s0<c0)continue;all.push({v:valAt(of,d),nd:[[s0,d,F.h]],c:F.h*F.g});}}
+  // keep only options that no other option beats on both value and bench space
+  return all.filter(a=>!all.some(b=>b!==a&&b.v>=a.v&&b.c<=a.c&&(b.v>a.v||b.c<a.c))).map(({v,nd})=>({v,nd}));
+}
+function logOffers(list){
+  if(!S.ys)return;const c0=minStart(),L=S.ys.olog=S.ys.olog||[];
+  for(const of of list){if(of.logged||!offerOwned(of))continue;of.logged=1;const o=offerOpts(of,c0);if(o&&o.length)L.push(o);}
+}
+// Greedy fractional fill of every bench-period with the densest options first; each offer is used at most once in total.
+function planBound(y){
+  const cap=Array.from({length:8},(_,p)=>(y.cap&&y.cap[p]!=null?y.cap[p]:S.floors*8)),used=[];
+  const cells=o=>o.nd.reduce((a,[s0,e,h])=>a+h*(e-s0+1),0);
+  const opts=[];(y.olog||[]).forEach((os,i)=>{used[i]=0;(Array.isArray(os)?os:[os]).forEach(o=>{if(o.v>0)opts.push({...o,i,dens:o.v/cells(o)});});});
+  opts.sort((a,b)=>b.dens-a.dens);
+  let v=0;
+  for(const o of opts){let f=1-used[o.i];if(f<=.001)continue;for(const [s0,e,h] of o.nd)for(let p=Math.max(0,s0);p<=Math.min(7,e);p++)f=Math.min(f,cap[p]/h);
+    if(f<=.001)continue;for(const [s0,e,h] of o.nd)for(let p=Math.max(0,s0);p<=Math.min(7,e);p++)cap[p]-=f*h;used[o.i]+=f;v+=f*o.v;}
+  return Math.round(v);
+}
+const planActual=()=>Math.round(S.orders.filter(o=>!o.showcase&&!o.show).reduce((a,o)=>a+o.qty*o.price*(1+.1*upLv('pots')),0));
+const PLAN_TIERS=[{min:.95,n:'Masterfully planned',st:3,cash:.05},{min:.9,n:'Well planned',st:2,cash:0},{min:.85,n:'Thoughtfully planned',st:1,cash:0}];
 function genOffers(){
   const c=S.period;S.offers=[];genContracts();
   const cand=candFlex(c);if(!cand.length)return;
@@ -977,6 +1008,7 @@ function genOffers(){
   for(let i=S.offers.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[S.offers[i],S.offers[j]]=[S.offers[j],S.offers[i]];}
   const fo=S.offers.findIndex(offerOwned);if(fo>0)S.offers.unshift(...S.offers.splice(fo,1));
   if(hasShow())genShowEntries(c);
+  logOffers(S.offers);
 }
 function genShowEntries(c){
   const ent=S.entered||[],out=[];
@@ -1035,7 +1067,7 @@ function autoAccept(of){
 }
 function genPopup(){
   const c=S.period,cand=candidates(c,c+1,c+3,['vinca','pothos','mum']);if(!cand.length)return;
-  const of=mkOffer(wpick(cand),1.25,true);of.popup=true;S.offers=[of,...S.offers];
+  const of=mkOffer(wpick(cand),1.25,true);of.popup=true;S.offers=[of,...S.offers];logOffers([of]);
   if(window.__quiet)return;
   const show=()=>{if(!S.offers.includes(of)||S.phase!=='run')return;if(!$('modal').hidden||ask){setTimeout(show,400);return;}if(sheetOpen()){if(!placing)renderSheet();return;}openSheet('orders');toast('pop',`Pop-up order: ${of.qty} ${crop(of.crop).name.toLowerCase()} for ${PN[of.p].toLowerCase()}. Place it or bin it`);};
   show();
@@ -1256,7 +1288,7 @@ function enqueue(t){
 
 // ---------------- period flow ----------------
 function startPeriod(){
-  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=S.floors*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
@@ -3105,7 +3137,9 @@ function closeYear(){
   if(met){S.stage=st+1;unlocked=rewardsOf(st+1);const cashR=unlocked.find(r=>r.t==='cash');if(cashR){S.cash+=cashR.n;rec.cash=Math.round(S.cash);}}
   if(S.investor&&S.year<=S.investor.until&&m.prof>0){const sh=Math.round(m.prof*S.investor.share);S.cash-=sh;rec.investor=sh;}
   if(S.ys.cover)rec.cover=S.ys.cover;
-  rec.starsEarned=m.stars+(met?3:0);S.stars=(S.stars||0)+rec.starsEarned;
+  {const bd=planBound(S.ys),act=planActual();if(bd>=1500){const pct=Math.min(1,act/bd),T=PLAN_TIERS.find(t=>pct>=t.min);rec.plan={pct:Math.round(pct*100),act,bd};
+    if(T){rec.plan.tier=T.n;rec.plan.st=T.st;rec.plan.cash=Math.round(act*T.cash/50)*50;S.cash+=rec.plan.cash;rec.cash=Math.round(S.cash);}}}
+  rec.starsEarned=m.stars+(met?3:0)+(rec.plan&&rec.plan.st||0);S.stars=(S.stars||0)+rec.starsEarned;
   S.redYears=S.cash<0?(S.redYears||0)+1:0;
   if(S.redYears>=2)S.lost='bank';
   S.yres={year:S.year,rec,table:tab2,unlocked,met,from:st,showNew};
@@ -3179,7 +3213,8 @@ function yearGoalModal(R0){
   const r=R0.rec,st=stage(),red=S.redYears>0;
   modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
     :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.</p>`}</div>
-    ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from Best Homes and Gardens${r.met?', 3 for hitting your goal':''}.</span></div>`:''}
+    ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from Best Homes and Gardens${r.met?', 3 for hitting your goal':''}${r.plan&&r.plan.st?`, ${r.plan.st} for planning`:''}.</span></div>`:''}
+    ${r.plan?`<div class="gplan${r.plan.tier?' on':''}">${svgIcon('bench',40)}<span><b>${r.plan.tier||'Planning'}: ${r.plan.pct}%</b> Your orders were worth ${fmt(r.plan.act)}. Looking back at every offer you had this year, the best plan your benches could hold was worth about ${fmt(r.plan.bd)}.${r.plan.tier?` Bonus: <b>+${r.plan.st} ★</b>${r.plan.cash?` and <b>${fmt(r.plan.cash)}</b>`:''}.`:` Reach ${Math.round(PLAN_TIERS[PLAN_TIERS.length-1].min*100)}% for a planning bonus.`}</span></div>`:''}
     ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
     ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
