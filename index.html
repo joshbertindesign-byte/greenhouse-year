@@ -312,7 +312,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .blk .rm{top:2px;right:2px;width:22px;height:22px;font-size:14px;border:2px solid rgba(255,255,255,.9);background:rgba(22,35,27,.85);z-index:2}
 .blk .short{background:#fff;color:var(--bad);border-radius:6px;padding:0 4px;text-shadow:none}
 [hidden]{display:none!important}
-.tut{position:fixed;inset:0;z-index:9;pointer-events:none}
+.tut{position:fixed;inset:0;z-index:11;pointer-events:none}
 .tdim{position:fixed;background:rgba(10,25,16,.5);pointer-events:auto}
 .tring{position:fixed;border:3px solid #f2c230;border-radius:16px;box-shadow:0 0 0 4px rgba(242,194,48,.25),0 0 18px rgba(242,194,48,.6);animation:tpulse 1s ease-in-out infinite alternate}
 @keyframes tpulse{from{transform:scale(1)}to{transform:scale(1.04)}}
@@ -1870,6 +1870,14 @@ const TIPS=[
    {el:'#hstrip',t:'Your phone shows one house at a time. Switch houses here; the numbers show jobs waiting in each.',ok:1}]},
  {id:'rail',tag:'NEEDS YOU',when:()=>running()&&!$('rail').hidden,steps:[
    {el:'#rail',t:'Things that need you elsewhere show up here, with a ring for the time left. Tap one to send your grower or jump to that house.',ok:1}]},
+ {id:'locked',tag:'NEW VARIETY ASKED FOR',when:()=>onTab('orders')&&!!document.querySelector('.unl[data-gen]'),steps:[
+   {el:'.unl[data-gen]',t:'This customer wants a variety you don\u2019t grow yet. Unlock its genetics to take the order (you keep them for good), or bin the offer and wait for the next one.',ok:1}]},
+ {id:'popup',tag:'POP-UP ORDER',when:()=>S.phase==='run'&&sheetOpen()&&tab==='orders'&&placing&&placing.of.popup,steps:[
+   {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'Pop-up orders turn up mid-period and the clock waits while you decide. Place it if you have room, or bin it.',ok:1}]},
+ {id:'loan',tag:'THE BANK',modal:1,when:()=>!!document.querySelector('#mbox [data-ln]'),steps:[
+   {el:'#mbox .opts',t:'Short on cash? The bank will lend. Each loan is paid back a bit every period, with interest; each option shows what it really costs. Borrow only what you need.',ok:1}]},
+ {id:'raise',tag:'RAISES',modal:1,when:()=>!!document.querySelector('#mbox [id^="rq"]'),steps:[
+   {el:'#mbox .roles',t:'Newer crew sometimes ask for a raise between periods. Say yes to keep them; say no and they quit. Veterans stop asking.',ok:1}]},
  {id:'contract',tag:'CONTRACT',when:()=>onTab('orders')&&placing&&placing.of.contract,steps:[
    {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'A contract is a run of deliveries for one customer. Place each one. Ship them all for a reputation bonus; break one and it costs you.',ok:1}]},
  {id:'crew',tag:'HIRE SOME HELP',when:()=>inPlan()&&!S.crew.length&&crewRoom()>0&&S.cash>=900&&(S.period>=3||S.year>1),steps:[
@@ -1901,15 +1909,15 @@ const TIPS=[
 let tipCur=null,tipStep=0,tipCool=1,tipMiss=0,tipScrolled=null;
 const safeT=f=>{try{return!!f();}catch(e){return false;}};
 const tipStepNow=()=>tipCur&&tipCur.steps[tipStep];
-const tipBlocking=()=>{const st=tipStepNow();return!!(st&&st.guide&&!$('tut').hidden);};
+const tipBlocking=()=>!!(tipStepNow()&&!$('tut').hidden);
 function endTip(mark){tipPan='';if(tipCur&&mark){S.tips=S.tips||{};S.tips[tipCur.id]=1;save();}tipCur=null;tipCool=mark?2:3;$('tut').hidden=true;}
 function nextTipStep(){tipStep++;tipMiss=0;tipScrolled=null;if(!tipCur||tipStep>=tipCur.steps.length)endTip(true);}
 function tipsTick(dt){
   const T=$('tut');
   if(!S||window.__quiet||S.tipsOff){T.hidden=true;tipCur=null;return;}
   S.tips=S.tips||{};
-  if(!$('modal').hidden){T.hidden=true;return;}
-  if(!tipCur){if((tipCool-=dt)>0){T.hidden=true;return;}const n=TIPS.find(x=>!S.tips[x.id]&&safeT(x.when));if(!n){T.hidden=true;return;}tipCur=n;tipStep=0;tipMiss=0;tipScrolled=null;}
+  const mo=!$('modal').hidden;if(mo&&tipCur&&!tipCur.modal){T.hidden=true;return;}
+  if(!tipCur){if((tipCool-=dt)>0){T.hidden=true;return;}const n=TIPS.find(x=>!S.tips[x.id]&&(!mo||x.modal)&&safeT(x.when));if(!n){T.hidden=true;return;}tipCur=n;tipStep=0;tipMiss=0;tipScrolled=null;}
   const st=tipStepNow();
   if(st.done&&safeT(st.done)){nextTipStep();return;}
   let r=null;try{r=typeof st.el==='function'?st.el():sel$(st.el);}catch(e){}
