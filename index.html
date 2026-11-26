@@ -356,6 +356,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+.hpop{position:fixed;z-index:6;background:var(--paper);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 0 2px #e6dcc2;padding:12px 14px 12px;overflow-y:auto;animation:popin .14s ease-out}
+.hpop .hmt{padding-right:30px}.hpop .hpx{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;border-radius:50%;background:#efe9d8;font-size:20px;line-height:1;color:var(--ink);cursor:pointer}
+.hpop .blist{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+@media (max-width:600px){.hmtop{flex-wrap:wrap;gap:8px!important}.hmtop>div:first-child{flex:1 1 100%;display:flex;align-items:baseline;gap:10px}.hmtop>div:first-child small{white-space:nowrap}.hmtop #hmSk{margin-left:0!important}.hmtop #hmGo{margin-left:auto}.homep .hmh{font-size:13px}}
+@keyframes popin{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
 .mbox:has(#sktree){max-width:1040px}
 #sktree h2{margin-bottom:4px}.skhd{font-size:14px;color:var(--mute);margin:0 0 10px}.skp{display:inline-block;font-weight:700;color:var(--ink);background:#efe9d8;border-radius:99px;padding:2px 10px;margin-right:6px}.skp.on{background:var(--sun)}
 .skgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
@@ -680,6 +685,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <div class="lane"><span class="who">YOU</span><div class="cards" id="qMe"></div><div class="crewc" id="laneC" hidden><span class="who">CREW</span><div class="cards" id="qC"></div></div></div>
 </footer>
 <div class="homep" id="homeP" hidden></div>
+<div class="hpop" id="hpop" hidden></div>
 <div class="crewpop" id="crewPop" hidden></div>
 <div class="ask" id="ask" hidden></div>
 <div class="sheet" id="sheet" hidden></div>
@@ -2245,15 +2251,26 @@ function renderHome(){
   else if(st.b==='orchard'){const go=HJ.some(j=>j.kind==='shake'&&j.lot===L.id),rp=ripe(L.id);body=`<div class="hmt"><b>Fruit trees</b><span>${go?'Your grower is shaking them':rp?'Ripe!':`Ripe again in ${ripeLeft(L.id)}`}</span>${rp&&!go?'<button class="btn sun sm" type="button" id="shkB">Shake the trees</button>':''}</div><p class="hmh">Shake them every 6 hours for a star or two.</p>`;}
   else if(st.b){const B=BUILDS[st.b];body=`<div class="hmt"><b>${B.n}</b></div><p class="hmh">${B.does}.</p>`;}
   else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const dis=(B.uniq&&hasBuild(k))||stars<bcost(k);return`<button type="button" class="bopt" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
-  P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmSk" style="margin-left:auto">Skills${skPts()?` (${skPts()})`:''}</button><button class="btn sm" type="button" id="hmAlm">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${body}</div>`;
+  const hint=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`,sel=!!(homeSel&&(homeSel==='mail'||L));
+  P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmSk" style="margin-left:auto">Skills${skPts()?` (${skPts()})`:''}</button><button class="btn sm" type="button" id="hmAlm">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${hint}</div>`;
+  const pop=$('hpop');pop.hidden=!sel;pop.innerHTML=sel?`<button type="button" class="hpx" id="hpX" aria-label="Close">×</button>${body}`:'';if(sel){$('hpX').onclick=()=>{homeSel=null;renderHome();};placeHpop();}
   $('hmGo').onclick=()=>S.year>1&&S.almSeen!==S.year?almanacModal(leaveHome):leaveHome();const hab=$('hmAlm');if(hab)hab.onclick=()=>almanacModal();const hsk=$('hmSk');if(hsk)hsk.onclick=()=>skillsModal();
   const q=(id,f)=>{const b=$(id);if(b)b.onclick=f;};
   q('chGrow',growCatHouse);q('mlB',tapMail);q('shkB',()=>shakeLot(L.id));q('gfSend',giftSend);q('gfScan',giftScan);q('ofGrow',growOffice);q('clrB',()=>clearLot(L.id));
-  P0.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>adoptCat(b.dataset.adopt));
-  P0.querySelectorAll('[data-build]').forEach(b=>b.onclick=()=>buildLot(L.id,b.dataset.build));
+  pop.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>adoptCat(b.dataset.adopt));
+  pop.querySelectorAll('[data-build]').forEach(b=>b.onclick=()=>buildLot(L.id,b.dataset.build));
   const h=P0.offsetHeight;if(h!==homeH){homeH=h;layout();}
 }
 let homeH=0;
+// Keep the pop-up beside its spot on the map as the view pans and zooms.
+function placeHpop(){
+  const el=$('hpop');if(!el||el.hidden)return;if(S.phase!=='home'){el.hidden=true;return;}
+  const L=homeSel&&homeSel!=='mail'?lotOf(homeSel):null,a=homeSel==='mail'?P(MAIL.x+.5,MAIL.y+.5,40):L?P(L.x+1.5,L.y+1.5,30):null;if(!a)return;
+  const w=Math.min(380,VW-20);el.style.width=w+'px';el.style.maxHeight=Math.max(160,viewBot-viewTop-16)+'px';
+  const h=el.offsetHeight,room=a[1]-viewTop-18,below=viewBot-a[1]-18;
+  let top=room>=h||room>=below?a[1]-18-h:a[1]+18;top=clamp(top,viewTop+8,Math.max(viewTop+8,viewBot-h-8));
+  el.style.left=clamp(a[0]-w/2,10,VW-w-10)+'px';el.style.top=top+'px';
+}
 // ---------------- gift cards: show one on your screen, a friend snaps it ----------------
 const GIFT_MS=12*3600e3,GIFT_MAX=3,GIFT_URL='https://joshbertindesign-byte.github.io/greenhouse-year/';
 const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
@@ -3955,7 +3972,7 @@ function frame(now){
     if((uiT+=dt)>.15){uiT=0;hud();}
   }
   if(S.phase==='run'&&sheetOpen())renderSheetLite();
-  if(S.phase==='home')stepHome(dt);
+  if(S.phase==='home'){stepHome(dt);placeHpop();}else if(!$('hpop').hidden)$('hpop').hidden=true;
   stepCats(dt);renderTray();renderRail();draw(now);tipsTick(dt);
   requestAnimationFrame(frame);
 }
