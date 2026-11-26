@@ -323,6 +323,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hmap button.on{background:var(--hud);border-color:var(--hud);color:#fff}
 .hmap i{height:26px;border:2px dashed #e4e0d3;border-radius:7px}
 .hmap button.shb{background:#fff6d8;border-color:#e2c46a;color:#8a6a12}.hmap button.shb.on{background:#8a6a12;border-color:#8a6a12;color:#fff}.hmg.one{grid-template-columns:30px!important}.hmap.row .shb{margin-left:4px}
+.prizec{display:flex;gap:12px;align-items:flex-start;background:#fffaf0;border:2px solid #ecd9a0;border-radius:16px;padding:12px 14px;margin-bottom:12px}.prizec .rn{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.prizec .rn b{font-size:17px}.prizec .rn>span{font-size:14px;color:var(--mute);line-height:1.35}.prizec .btn{align-self:flex-start;margin-top:6px}
+.pgate{display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:13px;color:var(--mute)}.pgate .gok{color:var(--go);font-weight:700}
+.cls{display:flex;align-items:center;gap:10px;margin-top:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px}.cls span{flex:1}.cls b{display:block;font-size:14px}.cls small{font-size:12px;color:var(--mute)}
+.stars.att{font-size:14px}
 .showb{display:flex;gap:14px;align-items:flex-start;background:#fffaf0;border:2px solid #ecd9a0;border-radius:16px;padding:12px 14px;margin-top:8px}.showb p{margin:0 0 8px;font-size:14px;color:#5d5236;line-height:1.4}
 .newshow{display:flex;gap:12px;align-items:center;background:#f6efff;border:2px solid #cdb3ef;border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14px;line-height:1.35;color:#3c2a5a}
 .rbme{display:flex;align-items:center;gap:14px;background:#f4efe0;border-radius:12px;padding:10px 14px;margin-top:12px;font-family:system-ui,sans-serif}.rbme small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8a7a52}.rbme>div>b{display:block;font-family:Georgia,serif;font-size:24px;color:#2d5a3a}.rbme span{font-size:14px}
@@ -631,10 +635,11 @@ const ROLES={
   water:{name:'Waterer',does:'Waters thirsty benches',cost:90},
   pest:{name:'Applicator',does:'Sprays for pests',cost:105},
   fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:80},
-  load:{name:'Loader',does:'Loads trucks at the dock',cost:120}};
+  load:{name:'Loader',does:'Loads trucks at the dock',cost:120},
+  prize:{name:'Prize grower',does:'Runs the showcase house',cost:600}};
 const SLOW0=1.6,SLOW_STEP=.06,VET=10;
 const NAMES=['Ana','Luis','Mara','Dev','Rosa','Jun','Tess','Omar','Kira','Ben','Lupe','Nate','Ivy','Raj','Sol','Wren','Cruz','Tam'];
-const slowOf=r=>r?Math.max(1,SLOW0-SLOW_STEP*r.n):1;
+const slowOf=r=>r?(r.role==='prize'?[1,1.5,1.35,1.2,1.08,1][clamp(r.att||1,1,5)]:Math.max(1,SLOW0-SLOW_STEP*r.n)):1;
 const spd=r=>Math.round(100/slowOf(r));
 const UPS={
   pots:{name:'Pots',icon:'pot',lv:['Terracotta pots','Glazed pots','Designer pots'],does:l=>`Sell for ${l*10}% more per flat`,cost:[1500,3000,5000]},
@@ -650,7 +655,7 @@ const UPS={
   heat:{name:'New heaters',icon:'heat',lv:['Modern heaters','High-efficiency heaters'],does:l=>`Heaters break down ${[0,35,60][l]}% less, fixes go ${[0,30,50][l]}% faster`,cost:[1600,3200]}};
 const capB=()=>CAP+2*upLv('roll');
 const upLv=k=>(S.up&&S.up[k])||0;
-const SHIRT={me:'#2f8a4e',pot:'#9a5b26',water:'#2a78d0',pest:'#cf3a2f',fix:'#56606b',load:'#2c8a47'};
+const SHIRT={prize:'#b8860b',me:'#2f8a4e',pot:'#9a5b26',water:'#2a78d0',pest:'#cf3a2f',fix:'#56606b',load:'#2c8a47'};
 const unitName=p=>(p>=4&&p<=5)?'Fans':'Heater';
 const floorName=f=>`House ${f+1}`;
 const levelName=L=>L?`floor ${L+1}`:'ground';
@@ -658,6 +663,7 @@ const floorSpan=f=>levelName(lvOf(f));
 
 // ---------------- icons ----------------
 const IC={
+  prize:{c:'#b8860b',f:['M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z'],s:[]},
   mist:{c:'#2f9bb3',f:['M9 9h6v10.5a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z','M10 5h4v4h-4z'],s:['M14 6h3','M19.5 4.5l1.5-1','M20 7h2','M19.5 9.5l1.5 1']},
   stake:{c:'#8a6a3a',f:['M11 3h2v18h-2z'],s:['M12 8c-3 0-4 2-5 4','M12 12c3 0 4 2 5 4','M9.5 10h5','M9.5 14h5']},
   prune:{c:'#b8297f',f:['M6.5 15.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z','M17.5 15.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z'],s:['M8 16L17 4','M16 16L7 4']},
@@ -937,17 +943,19 @@ function resolveAsk(bought){if(!ask)return;const a=ask;ask=null;closeModal();fin
 // ---------------- crew ----------------
 function syncStaff(){
   staff=staff.filter(w=>S.crew.some(r=>r.id===w.id));
-  for(const r of S.crew){if(r.home>=S.floors)r.home=0;let w=staff.find(x=>x.id===r.id);if(!w){const hh=r.role==='load'?0:r.home,H=HOUSES[hh];w=mkWorker(r.id,r.role,H.ox+1.5+staff.length%7,H.oy+6.5);w.f=H.L;staff.push(w);}w.rec=r;}
+  for(const r of S.crew){if(r.role==='prize')r.home=SH;else if(r.home>=S.floors)r.home=0;let w=staff.find(x=>x.id===r.id);if(!w){const hh=r.role==='load'?0:r.home,H=HOUSES[hh];w=mkWorker(r.id,r.role,H.ox+1.5+staff.length%7,H.oy+6.5);w.f=H.L;staff.push(w);}w.rec=r;}
 }
 function hire(role){
   const used=S.crew.map(r=>r.name),name=NAMES.find(n=>!used.includes(n))||('Hand '+(S.crew.length+1));
-  S.crew.push({id:'s'+S.nid++,name,role,home:role==='load'?0:clamp(viewF*4,0,S.floors-1),n:0,wage:ROLES[role].cost});syncStaff();
+  S.crew.push({id:'s'+S.nid++,name,role,home:role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1),n:role==='prize'?VET:0,wage:ROLES[role].cost,att:role==='prize'?1:undefined});syncStaff();
 }
 function fireCrew(id){const r=S.crew.find(x=>x.id===id);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
-function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load')return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
+function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load'||r.role==='prize')return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
+const ATT=[0,13,10,7,4,.6],PSLOW=[1,1.5,1.35,1.2,1.08,1],ATT_N=['','Distracted','Steady','Careful','Sharp','Meticulous'];
 function staffPick(w){
   if(w.task)return;
   const home=w.rec?w.rec.home:0;
+  if(w.role==='prize'){const d=ATT[clamp(w.rec.att||1,1,5)];const t=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===SH&&S.t-t.born>=d&&!S.queue.includes(t)&&!engaged(t)).sort((a,b)=>(a.type==='care'?0:1)-(b.type==='care'?0:1)||(a.due??999)-(b.due??999))[0];if(t)assign(w,t);return;}
   const t=S.tasks.filter(t=>t.type===w.role&&(t.type==='load'||taskF(t)===home)&&!S.queue.includes(t)&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
     .sort((a,b)=>(a.due??999)-(b.due??999))[0];
   if(t)assign(w,t);
@@ -1611,7 +1619,7 @@ function renderTray(){
     traySig=sig;
     $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.care||t.type,28)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?(isPhone()?'Tap icons to queue jobs':'Tap the big icons to give your grower jobs'):'Plan the period, then start it'}</span>`;
     $('laneC').hidden=!staff.length;
-    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}">${glyph(w.role,22)}</span>${S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
+    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}">${glyph(w.role,22)}</span>${w.role==='prize'?'<b class="af">★</b>':S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
     if(crewPop)renderCrewPop();
   }
   const th=$('tray').offsetHeight;if(th!==trayH){trayH=th;layout();}
@@ -1635,9 +1643,9 @@ function renderCrewPop(){
   if(!w){crewPop=null;el.hidden=true;return;}
   const r=w.rec,av=document.querySelector(`#qC .av[data-w="${w.id}"]`);
   el.hidden=false;
-  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>${r.role==='prize'?'Showcase specialist':`Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}`} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
     <div class="cpt">Now: <b id="cpTask">${w.task?taskLabel(w.task):'Idle'}</b></div>
-    ${w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${houseMap(r.home,h=>`data-cpf="${h}"`,'Works in house')}</div>`:''}`;
+    ${w.role==='prize'?`<div class="cpt">Attentiveness ${attStars(r.att||1)} ${ATT_N[r.att||1]} · works the showcase house</div>`:w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${houseMap(r.home,h=>`data-cpf="${h}"`,'Works in house')}</div>`:''}`;
   const tr=$('tray').getBoundingClientRect(),a=av?av.getBoundingClientRect():tr;
   el.style.bottom=(innerHeight-tr.top+8)+'px';el.style.left=clamp(a.left+a.width/2-150,8,innerWidth-308)+'px';
   $('cpX').onclick=()=>{crewPop=null;renderCrewPop();};
@@ -1935,9 +1943,10 @@ function renderSheet(){
     body=ledgerHTML();
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
-      <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
+      ${prizeHTML(plan)}
+      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire${plan?'':' <span class="paused">Between periods</span>'}</h3>
-      <div class="hires">${Object.entries(ROLES).map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
+      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
@@ -1981,6 +1990,8 @@ function renderSheet(){
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
   const shb=$('showB');if(shb)shb.onclick=buildShow;
+  const pzb=$('prizeB');if(pzb)pzb.onclick=hirePrize;
+  const clb=$('classB');if(clb)clb.onclick=takeClass;
   const rnb=$('rnB');if(rnb)rnb.onclick=()=>nameModal(false);
   el.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{toggleCat(b.dataset.cat);renderSheet();});
   el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
@@ -2053,7 +2064,7 @@ function payday(){
 }
 function rushHire(o){
   const used=S.crew.map(r=>r.name),name=NAMES.find(n=>!used.includes(n)&&n!==o.name)||('Hand '+(S.crew.length+1));
-  const r={id:'s'+S.nid++,name,role:o.role,home:o.home,n:0,wage:rushWage(o),rush:true,missed:0,owed:rushWage(o)};
+  const r={id:'s'+S.nid++,name,role:o.role,home:o.home,n:o.role==='prize'?VET:0,wage:rushWage(o),rush:true,missed:0,owed:rushWage(o),att:o.role==='prize'?1:undefined};
   S.crew.push(r);syncStaff();return r;
 }
 function missedModal(warn,stay,gone,due){
@@ -2271,6 +2282,34 @@ function buyUp(k){
   toast('good',`${U.lv[l]} in place`);renderSheet();hud();
 }
 const staffCount=()=>S.crew.length;
+const CLASSES=[{n:'Greenhouse short course',cost:4000},{n:'Advanced plant care',cost:8000},{n:'Master gardener program',cost:15000},{n:'Royal horticulture fellowship',cost:30000}];
+const prizeR=()=>S.crew.find(r=>r.role==='prize');
+const showYears=()=>S.hist.filter(h=>h.ribbon!=null).length;
+const prizeOpen=()=>hasShow()&&showYears()>=3&&S.hist.some(h=>h.ribbon!=null&&h.ribbon>=0&&h.ribbon<=2);
+const attStars=a=>`<span class="stars att">${'★'.repeat(a)}<i>${'★'.repeat(5-a)}</i></span>`;
+function hirePrize(){
+  if(S.phase!=='plan'||prizeR()||!prizeOpen())return;
+  if(!spend(5000,'a prize grower'))return;
+  S.ys.build=(S.ys.build||0)+5000;hire('prize');const r=prizeR();toast('good',`${r.name} joins as your prize grower`);traySig='';renderTray();renderSheet();hud();
+}
+function takeClass(){
+  const r=prizeR();if(!r||S.phase!=='plan')return;const a=r.att||1;if(a>=5)return;
+  if(r.classYear===S.year){toast('bad',`${r.name} already took a class this year`);return;}
+  const C=CLASSES[a-1];if(!spend(C.cost,C.n))return;
+  S.ys.build=(S.ys.build||0)+C.cost;r.att=a+1;r.classYear=S.year;r.wage+=100;
+  toast('good',`${r.name} finished the ${C.n}: now ${ATT_N[r.att].toLowerCase()}, and earns ${fmt(r.wage)} a period`);renderSheet();hud();
+}
+function prizeHTML(plan){
+  const r=prizeR();
+  if(!hasShow())return'';
+  if(!r){const ok=prizeOpen(),ys=showYears(),rib=S.hist.some(h=>h.ribbon!=null&&h.ribbon>=0&&h.ribbon<=2);
+    return`<div class="prizec">${svgIcon('prize',44)}<div class="rn"><b>Prize grower</b><span>Runs the showcase house for you: misting, staking, deadheading, watering, pests and the heater. ${fmt(ROLES.prize.cost)} a period plus a ${fmt(5000)} hiring fee. Starts out distracted; horticulture classes make them sharper.</span>
+      ${ok?`<button class="btn sun" type="button" id="prizeB"${plan?'':' disabled'}>Hire for ${fmt(5000)}</button>`:`<div class="pgate"><span class="${ys>=3?'gok':''}">${ys>=3?'✓':'○'} Three years of showcase judging (${Math.min(ys,3)}/3)</span><span class="${rib?'gok':''}">${rib?'✓':'○'} A Silver ribbon or better</span></div>`}</div></div>`;}
+  const a=r.att||1,C=CLASSES[a-1];
+  return`<div class="prizec on">${svgIcon('prize',44)}<div class="rn"><b>${esc(r.name)} · Prize grower</b><span>Attentiveness ${attStars(a)} ${ATT_N[a]} · ${fmt(r.wage)}/period${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}</b>`:''}</span>
+    <span>${a<5?'Notices a showcase job about '+ATT[a]+'s after it comes up. ':'Notices every job right away. '}Works only in the showcase house.</span>
+    ${a<5?`<div class="cls"><span><b>${C.n}</b><small>One class a year. Raises attentiveness to ${ATT_N[a+1].toLowerCase()} and their wage by $100 a period.</small></span><button class="btn sun" type="button" id="classB"${plan&&r.classYear!==S.year?'':' disabled'}>${r.classYear===S.year?'Next year':fmt(C.cost)}</button></div>`:'<b class="ok">Fully trained</b>'}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`;
+}
 function buildShow(){
   if(S.phase!=='plan'||S.show||!S.showOpen)return;
   if(!spend(SHOW_COST,'the showcase house'))return;
