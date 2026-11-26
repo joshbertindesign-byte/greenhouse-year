@@ -356,6 +356,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 4px;font-size:14px;gap:4px}}
 .tbh{flex-wrap:wrap}
+.bonc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}.bonc b{color:var(--mute)}
 @media (max-width:600px) and (max-height:760px){.sheet{height:calc(100dvh - env(safe-area-inset-top))!important;max-height:calc(100dvh - env(safe-area-inset-top))!important;border-radius:20px 20px 0 0!important;padding:8px 8px calc(6px + env(safe-area-inset-bottom))!important}.bzl{display:none}.tw small{display:none}.tw b{font-size:17px}.bp{padding:6px 4px;gap:6px}.pbar{margin-bottom:6px}}.tbh h2{flex:1 1 320px}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:8px;margin-top:10px}
 .tcard{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 10px 6px 4px;flex-wrap:wrap}.tcard.rdy{border-color:#e2a91f;background:#fffaf0}.tcard.empty{background:#faf7ee}
@@ -3093,8 +3094,35 @@ function goalCardHTML(st,big,noProg){
     <div class="gun"><small>${rw.length?'UNLOCKS':''}</small><div class="rws">${rw.map(rewardTile).join('')}</div></div></div>`;
 }
 const stageBadge=(st,sz)=>`<span class="sbadge" style="--sc:${stg(st).c};width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px">${st>=9?trophySVG(Math.round(sz*.7)):st}</span>`;
+// After a profitable year the crew may ask for a bonus: a quarter of operating profit.
+const BONUS_SHARE=.25,BONUS_QUIT=.3;
+function bonusAsk(R0){
+  const r=R0.rec,crew=S.crew.length;if(!crew||!(r.op>0)||r.bonusAsked)return null;
+  r.bonusAsked=1;if(rnd()>=Math.min(.75,.3+.05*crew))return null;
+  return Math.max(100,Math.round(r.op*BONUS_SHARE/50)*50);
+}
+function bonusResolve(R0,amt,pay){
+  const r=R0.rec;
+  if(pay){S.cash-=amt;r.bonus=amt;S.crew.forEach(c=>c.loyalYear=S.year+1);save();return[];}
+  r.bonus=0;const gone=S.crew.filter(()=>rnd()<BONUS_QUIT);gone.forEach(c=>fireCrew(c.id));r.quit=gone.length;save();return gone;
+}
+function bonusModal(R0,amt,after){
+  const can=S.cash>=amt,n=S.crew.length;
+  modal(`<h2>Your crew asks for a bonus</h2>
+    <div class="bonc">${S.crew.slice(0,6).map(r=>crewFace(r,40)).join('')}${n>6?`<b>+${n-6}</b>`:''}</div>
+    <p>You made ${fmt(R0.rec.op)} operating profit this year, and your ${n===1?'grower':'crew'} would like a share: a quarter of it, ${fmt(amt)}. Pay it and they won’t ask for raises next year. Say no and some of them may quit.</p>
+    <div class="opts"><button class="opt" type="button" id="bnY"${can?'':' disabled'}><b>Pay the bonus: ${fmt(amt)}</b><span>${can?`Leaves you ${fmt(S.cash-amt)} cash`:`You only have ${fmt(S.cash)} cash`}</span></button>
+    <button class="opt" type="button" id="bnN"><b>Not this year</b><span>Each crew member has a ${Math.round(BONUS_QUIT*100)}% chance of quitting</span></button></div>`);
+  $('bnY').onclick=()=>{if(!can)return;bonusResolve(R0,amt,true);hud();closeModal();toast('good',`Bonus paid. Your crew is happy`);after();};
+  $('bnN').onclick=()=>{const gone=bonusResolve(R0,amt,false);hud();
+    modal(`<h2>${gone.length?`${gone.length===1?'One':gone.length} of your crew ${gone.length===1?'quits':'quit'}`:'Grumbling, but they stay'}</h2>
+      ${gone.length?`<div class="roles">${gone.map(r=>`<div class="role">${crewFace(r,40)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Handed in their notice</span></div></div>`).join('')}</div><p>You can hire again from the Crew tab once the year starts.</p>`:'<p>Nobody walked out this time.</p>'}
+      <button class="btn go" type="button" id="bnOk">Continue</button>`);
+    $('bnOk').onclick=()=>{closeModal();after();};};
+}
 function yearEnd(){
-  S.phase='done';S.period=7;S.t=PSEC;const R0=closeYear();save();hud();if(window.__quiet)return;
+  S.phase='done';S.period=7;S.t=PSEC;const R0=closeYear();save();hud();
+  if(window.__quiet){const amt=bonusAsk(R0);if(amt)bonusResolve(R0,amt,!window.__noBonus&&S.cash>=amt);return;}
   modal(magazineHTML(R0)+`<button class="btn go" id="nyNext" type="button">Continue</button>`);
   $('mbox').scrollTop=0;
   $('nyNext').onclick=()=>R0.rec.ribbon!=null?ribbonModal(R0):yearGoalModal(R0);
@@ -3120,7 +3148,7 @@ function yearGoalModal(R0){
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
     <button class="btn go" id="nyBtn" type="button">Go to the homestead</button>`);
   $('mbox').scrollTop=0;
-  $('nyBtn').onclick=()=>{nextYear();closeModal();enterHome();};
+  $('nyBtn').onclick=()=>{const go=()=>{nextYear();closeModal();enterHome();},amt=bonusAsk(R0);if(amt)bonusModal(R0,amt,go);else go();};
 }
 function gameOver(){
   S.phase='over';save();hud();if(window.__quiet)return;
