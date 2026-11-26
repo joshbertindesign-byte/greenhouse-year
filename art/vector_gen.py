@@ -421,6 +421,22 @@ def succ(sp, sz):
 for _sp in ('echeveria', 'jade', 'aloe', 'haworthia', 'cactus'):
     for _sz in range(4): add(f'suc_{_sp}_{_sz}', succ(_sp, _sz))
 
+# ------------------------------------------------------------------ takeaway coffee
+def coffee():
+    b = ell(32, 58, 12, 3.4, '#1d3a24', 'opacity=".2"')
+    b += '<path d="M21,22 L43,22 L39.5,57 Q32,59.5 24.5,57 Z" fill="#fbfaf6" stroke="#b9b2a2" stroke-width="1"/>'
+    b += '<path d="M25.5,22 L28,57.5" stroke="#ffffff" stroke-width="2.2" opacity=".9"/>'
+    b += '<path d="M21.9,32 L42.1,32 L40.6,46 L23.4,46 Z" fill="#c8955a" stroke="#9a6a38" stroke-width=".9"/>'
+    b += '<path d="M23,36 h18 M23.6,42 h16.8" stroke="#b07f48" stroke-width=".6" opacity=".7"/>'
+    b += '<circle cx="32" cy="39" r="4.2" fill="#f3e4c8" stroke="#9a6a38" stroke-width=".7"/><path d="M30.2,38.6 q1.8,-2.6 3.6,0 q-1.8,2.6 -3.6,0 Z" fill="#7a4a22"/>'
+    b += '<path d="M19.5,22.5 Q19.5,17.5 24,17 L40,17 Q44.5,17.5 44.5,22.5 Z" fill="#ffffff" stroke="#a8a294" stroke-width="1"/>'
+    b += '<rect x="19" y="21.5" width="26" height="3" rx="1.5" fill="#efece4" stroke="#a8a294" stroke-width=".8"/>'
+    b += '<ellipse cx="37" cy="18.2" rx="2.2" ry=".9" fill="#5a5148"/>'
+    for i, x in enumerate((27, 32.5, 37.5)):
+        b += f'<path d="M{x},14 q-2.5,-3 0,-5.5 q2.5,-2.5 0,-5.5" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity="{.85 - i * .15:.2f}"/>'
+    return b
+add('coffee', coffee(), 64, 64, (32, 56))
+
 # ------------------------------------------------------------------ people
 SKIN, HAND, SKO = '#ffd8b8', '#ffd3b0', '#c98a63'
 def hat_svg(hat, view):

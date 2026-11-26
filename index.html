@@ -356,6 +356,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+.skins{display:flex;gap:10px;margin-top:10px}.skins .sk{width:36px;height:36px;border-radius:50%;border:3px solid;padding:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}.skins .sk.on{outline:3px solid var(--go);outline-offset:2px}
 @media (max-width:600px){.ttabs.many button:not(.on) .tl{display:none}.ttabs.many button{justify-content:center;min-height:44px}.ttabs.many button.on{grid-column:span 2}}
 .alm .alsec{border-top:1px solid #e3d9bd;padding:10px 0 4px;margin-top:8px}.alm h4{margin:0 0 6px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8a6a2a;font-family:Outfit,sans-serif}
 .alm .alr{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:2px 0}.alm .alr span{color:#5d6b62}.alm .alr b{text-align:right}
@@ -1527,6 +1528,7 @@ function tick(dt){
     if(t.type==='water'&&S.t>=t.due){const pl=S.plots.find(p=>p.id===t.plot);if(pl){let n=0;pl.rows.forEach(r=>n+=hurt(pl,r,.25*(1-.2*upLv('soil')),1));if(n)pl.hurt=1;if(n)float(BENCH[t.bench],`${n} wilted`,'#c8402f');}dropTask(t);}
     if(t.type==='pest'&&S.t>=t.due){
       const pl=S.plots.find(p=>p.id===t.plot);if(pl){const n=hurt(pl,t.bench,.25*(1-.2*upLv('soil')),1);if(n)pl.hurt=1;if(n)float(BENCH[t.bench],`${n} lost to pests`,'#c8402f');}
+      if(S.t>=PSEC){dropTask(t);continue;}
       t.born=S.t;t.due=S.t+24;
       const f=BENCH[t.bench].f;
       const nb=S.plots.filter(p=>!p.done&&plotF(p)===f).flatMap(p=>p.rows.filter((r,k)=>p.potted[k]&&Math.abs(r-t.bench)<=2&&r!==t.bench&&!S.tasks.some(x=>x.type==='pest'&&x.bench===r)).map(r=>[p,r]));
@@ -1536,7 +1538,45 @@ function tick(dt){
   for(const f of houseIds())if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
   checkRed();
   if(idleNow()){S.idleT=(S.idleT||0)+dt;if(S.t<1||S.idleT>3){const first=S.t<1,c=S.period;S.t=PSEC;if(!window.__quiet)toast('good',first?`Nothing growing in ${PN[c].toLowerCase()}. Skipping ahead; upkeep and wages still apply`:c===7?'Last truck is gone. Closing out the year':`Nothing left to do in ${PN[c].toLowerCase()}. Skipping ahead`);}}else S.idleT=0;
-  if(S.t>=PSEC)endPeriod();
+  stepCup(dt);
+  if(S.t>=PSEC){
+    // after the bell, jobs still on the board run out their timers (or get done) before planning starts
+    const live=S.tasks.filter(t=>engaged(t)||(t.due!=null&&S.t<t.due&&t.type!=='pot'));
+    if(!live.length||S.t>=PSEC*1.8||(S.phase==='run'&&window.__quiet&&S.t>=PSEC*1.2))endPeriod();
+    else if(!S.otShown){S.otShown=1;if(!window.__quiet)toast('good',`Time\u2019s up for ${PN[S.period].toLowerCase()}. Finish the jobs still on the board; planning starts when they\u2019re done or missed`);}
+  }
+}
+// A takeaway coffee shows up now and then, more often when the board is busy. Grab it and every job
+// nobody has started yet gets done.
+let cup=null,cupCool=12;
+const cupJobs=()=>S.tasks.filter(t=>!engaged(t)&&t.type!=='phone'&&!(t.type==='load'&&truckById(t.truck)?.state!=='dock'));
+function stepCup(dt){
+  if(window.__quiet||S.phase!=='run')return;
+  if(cup){cup.t+=dt;if(cup.t>10){cup=null;cupCool=20;}return;}
+  if((cupCool-=dt)>0)return;
+  const n=cupJobs().length;if(n<3)return;
+  if(rnd()<(.004+.0016*(n-3))*dt){
+    const sx=VW*(.25+rnd()*.5)-RAIL_W()/2,sy=viewTop+(viewBot-viewTop)*(.3+rnd()*.4),z=30;
+    const a=(sx-ox)/(TW/2*sc),b=(sy-oy+(z-camZ)*sc)/(TH/2*sc);cup={u:(a+b)/2,v:(b-a)/2,z,t:0};
+    if(!S.tips||!S.tips.cupSeen){S.tips=S.tips||{};}
+  }
+}
+function drawCup(now){
+  if(!cup||S.phase!=='run')return;
+  const [X,Y]=P(cup.u,cup.v,cup.z+Math.sin(now/260)*4),r=Math.max(26,30*Math.min(1.3,sc+.3)),f=1-cup.t/10;
+  cx.save();cx.fillStyle='rgba(255,246,214,.92)';cx.beginPath();cx.arc(X,Y-r*.55,r,0,7);cx.fill();
+  cx.strokeStyle='#c98a00';cx.lineWidth=4;cx.beginPath();cx.arc(X,Y-r*.55,r,-Math.PI/2,-Math.PI/2+Math.PI*2*f);cx.stroke();cx.restore();
+  const d=artDef('coffee'),c=d&&vecCanvas('coffee');if(c){const k=r*1.7/64;cx.drawImage(c,X-32*k,Y-r*.55-36*k,64*k,64*k);}
+  cup.sx=X;cup.sy=Y-r*.55;cup.r=r+6;
+}
+function drinkCup(){
+  const jobs=cupJobs();cup=null;cupCool=25;let n=0;
+  for(const t of jobs){if(!S.tasks.includes(t))continue;S.queue=S.queue.filter(x=>x!==t);n++;
+    if(t.type==='pot')t.due=Math.max(t.due||0,S.t);if(t.type==='care'){t.born=S.t;t.due=S.t+60;}
+    complete(t);dropTask(t);}
+  S.ys.coffee=(S.ys.coffee||0)+1;
+  floats.push({x:me.x,y:me.y-.5,f:me.f,text:'☕ Coffee break!',color:'#8a5a22',t0:performance.now()});
+  toast('good',n?`Coffee break! The whole team got to ${n} job${n>1?'s':''} at once`:'Coffee break! Nothing was waiting, but it hit the spot');
 }
 const idleNow=()=>!window.__noSkip&&!sucOn()&&!S.plots.some(pl=>!pl.done&&pl.s<=S.period)&&!S.trucks.some(k=>k.state==='coming'||k.state==='line'||k.state==='dock')&&!ask&&!S.offers.some(o=>o.popup)&&!S.tasks.some(t=>t.type==='phone'||t.type==='star'||t.type==='tree');
 function busyFloat(){if(S.busyUntil&&S.t<S.busyUntil&&!S.busyShown){S.busyShown=1;float({x:me.x-.5,y:me.y-.5,f:me.f},S.busyWhat||'Busy','#2a78d0');}if(!(S.busyUntil&&S.t<S.busyUntil))S.busyShown=0;}
@@ -1556,7 +1596,7 @@ function settleBooks(){
   if(lp)toast('cash',`Loan payment: ${fmt(lp)} plus ${fmt(li)} interest`);
 }
 function endPeriod(){
-  if(ask)resolveAsk(0);
+  if(ask)resolveAsk(0);S.otShown=0;cup=null;
   const c=S.period;
   S.trucks.filter(k=>k.state==='line'||k.state==='dock'||k.state==='coming').forEach(k=>truckLeaves(k,true));
   let fails=0;
@@ -1651,6 +1691,7 @@ const RECOLOR={
   desert:[['#246346','#7a3a1a'],['#2f7d57','#a8542a'],['#3f9a6c','#c9703a'],['#7fcfa0','#e8a070'],['#8fdcae','#f0b888']],
   marble:[['url(#gFloor)','#f6f1fa'],['#e3d8c4','#e2d8ec'],['#d9ccb4','#cfc2dd']],
   heat:[['url(#gCream)','#e2edf5'],['#f0dcb8','#c8d8e5'],['url(#gCreamR)','#a9bccb'],['#ef5b4c','#2f8fd6'],['#d6473a','#2577b8'],['#ffe9c7','#eaf4fb'],['#b3936a','#6f8496']]};
+SKINS.forEach((sk,i)=>{if(i)RECOLOR['gs'+i]=SKINS[0].map((c,k)=>[c,sk[k]]);});
 LOOKS.forEach(([sk,hr],i)=>{RECOLOR['lk'+i]=[...SKINS[0].map((c,k)=>[c,SKINS[sk][k]]),...HAIRS[0].map((c,k)=>[c,HAIRS[hr][k]])].filter(([a,b])=>a!==b);});
 function artDef(id){
   let d=ART.vector[id];if(d||!id.includes('|'))return d;
@@ -1905,7 +1946,7 @@ function petCat(c){
 }
 function drawPerson(w,shirt,now){
   const x=w.x,y=w.y,z=w.y<0?0:w.f*FH,walking=w.path.length>0,working=w.task&&!walking&&w.leg!=='lift',b=walking?Math.abs(Math.sin(now/95))*3:working?Math.abs(Math.sin(now/140))*2:0;
-  const who=w===me?growerId():'crew_'+w.role,face=w.face||'front',lk=w===me?'':'|'+lookOf(w.rec);
+  const who=w===me?growerId():'crew_'+w.role,face=w.face||'front',lk=w===me?gsk():'|'+lookOf(w.rec);
   const id=(working?(Math.floor(now/320)%2?`${who}_work`:`${who}_front_0`):`${who}_${face}_${walking?Math.floor(now/170)%2:0}`)+lk;
   spr(id,x-.5,y-.5,z+6);
   if(working&&w.work>0){const need=workOf(w.task)*(w===me?1:slowOf(w.rec)),f=clamp(w.work/need,0,1),p=P(x,y,66+z);
@@ -1997,7 +2038,7 @@ function draw(now){
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   if(viewF===0&&S.phase!=='home')drawSign();
-  drawLabels();drawCounts();drawFloats(now);drawIcons();
+  drawLabels();drawCounts();drawFloats(now);drawIcons();drawCup(now);
 }
 function drawHouse(H,now){
   drawSlab(H);drawBackWalls(H);if(H.h===0)drawPhone(H,now);
@@ -2275,13 +2316,13 @@ function stepHome(dt){
   if((hg.idle-=dt)<=0){hg.idle=4+rnd()*6;const L=pick(LOTS.filter(l=>l.pre||lotState(l.id).b)),sp=hSpot(L);hg.path=hRoute(hg.x,hg.y,sp.x+(rnd()-.5)*1.4,sp.y);
     if(L.pre==='cathouse')setTimeout(()=>{if(S.phase==='home'&&hg&&!hJob)floats.push({x:hg.x,y:hg.y,f:0,text:'♥',color:'#e2552f',t0:performance.now()});},2600);}
 }
-const growerId=()=>S&&S.gender==='f'?'growerf':'grower';
+const growerId=()=>S&&S.gender==='f'?'growerf':'grower',gsk=()=>S&&S.gskin?'|gs'+S.gskin:'';
 function drawHomeGrower(now){
   const g=growerId();let id;
   if(hg.path.length)id=`${g}_${hg.face}_${Math.floor(now/170)%2}`;
   else if(hJob&&hJob.working)id=hJob.kind==='clear'?`${g}_shovel${Math.floor(hJob.t/.32)%2}`:hJob.kind==='greet'||hJob.kind==='mail'?`${g}_front_0`:hJob.kind==='shake'?`${g}_work`:`${g}_hammer${Math.floor(hJob.t/.26)%2}`;
   else id=`${g}_front_0`;
-  spr(id,hg.x-.5,hg.y-.5,0);
+  spr(id+gsk(),hg.x-.5,hg.y-.5,0);
 }
 function drawRibbons(L,l){
   const x=L.x,y=L.y,rib=S.hist.filter(h=>h.ribbon!=null&&h.ribbon>=0),w0=x+1.35,w1=x+(l>=2?2.65:2.2);
@@ -2415,6 +2456,8 @@ const TIPS=[
    {el:'.sucb',t:'Succulents keep growing from year to year and sell to customers who walk in. Read the almanac before each year to see what\u2019s in.',ok:1}]},
  {id:'shopc',tag:'A CUSTOMER',when:()=>running()&&hasT(t=>t.type==='shop'),steps:[
    {el:()=>sel$('#railL [data-rk="suc"]')||iconOf(t=>t.type==='shop')(),t:'Someone walked into the succulent house. Tap them to serve: your grower rings up the best plant you have for what they asked. Wait too long and they leave.',ok:1,done:()=>!hasT(t=>t.type==='shop'&&!S.queue.includes(t))}]},
+ {id:'cup',tag:'COFFEE BREAK',when:()=>running()&&!!cup&&cup.sx!=null,steps:[
+   {el:()=>cup&&cup.sx!=null?{x:cup.sx-cup.r,y:cup.sy-cup.r,w:cup.r*2,h:cup.r*2}:null,t:'A coffee! Tap it before it goes cold and everyone pitches in: every job nobody has started gets done at once. They turn up more often when things get hectic.',ok:1,done:()=>!cup}]},
  {id:'glv',tag:'GROWER LEVEL',when:()=>inPlan()&&glv()>=2,steps:[
    {el:'[data-tab="crew"]',t:'Your grower levelled up. Open the Crew tab to see how.',guide:1,done:()=>tab==='crew'},
    {el:'.gcard',t:'Every job you do yourself earns experience. Each level makes you a little faster and gives tree and showcase jobs longer before they\u2019re missed.',ok:1}]},
@@ -2495,7 +2538,7 @@ function renderRail(){
 function hud(){
   const c=Math.min(S.period,7);
   $('tray').hidden=S.phase==='home';
-  $('hWhen').textContent=S.phase==='home'?`Year ${S.year} · Homestead`:S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':''}`;
+  $('hWhen').textContent=S.phase==='home'?`Year ${S.year} · Homestead`:S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':S.t>=PSEC?' · wrap-up':''}`;
   $('hYr').innerHTML=PN.map((_,i)=>`<i><b style="width:${i<c?100:i===c?(S.phase==='run'?S.t/PSEC*100:0):0}%"></b></i>`).join('');
   $('hCash').textContent=innerWidth<=600&&Math.abs(S.cash)>=100000?fmtK(S.cash):fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
@@ -3183,12 +3226,14 @@ function nameModal(first,after){
   modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every Best Homes and Gardens ranking.</p>
     <label class="nmf"><span>Nursery name</span><input id="nmIn" maxlength="28" autocomplete="off" value="${esc(S.name||'')}" placeholder="${esc(idea)}"></label>
     <div class="nmi">${NAME_IDEAS.filter(n=>n!==S.name).slice(0,4).map(n=>`<button type="button" class="chip" data-nm="${esc(n)}">${esc(n)}</button>`).join('')}</div>
-    <div class="gpick"><span>YOUR GROWER</span><div>${[['m','grower','Man'],['f','growerf','Woman']].map(([g,id,t])=>`<button type="button" class="gp${(S.gender||'m')===g?' on':''}" data-g="${g}"><img src="${personURL(id+'_front_0')}" alt=""><b>${t}</b></button>`).join('')}</div></div>
+    <div class="gpick"><span>YOUR GROWER</span><div>${[['m','grower','Man'],['f','growerf','Woman']].map(([g,id,t])=>`<button type="button" class="gp${(S.gender||'m')===g?' on':''}" data-g="${g}"><img data-gid="${id}" src="${personURL(id+'_front_0'+gsk())}" alt=""><b>${t}</b></button>`).join('')}</div>
+    <div class="skins" role="radiogroup" aria-label="Skin tone">${SKINS.map((c,i)=>`<button type="button" class="sk${(S.gskin||0)===i?' on':''}" data-sk="${i}" style="background:${c[0]};border-color:${c[2]}" aria-label="Skin tone ${i+1}"></button>`).join('')}</div></div>
     <button class="btn go" id="nmGo" type="button">${first?'Open the nursery':'Save name'}</button>`);
   const inp=$('nmIn');setTimeout(()=>{try{inp.focus();}catch(e){}},50);
   $('mbox').querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{inp.value=b.dataset.nm;inp.focus();});
+  let skin=S.gskin||0;$('mbox').querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{skin=+b.dataset.sk;$('mbox').querySelectorAll('[data-sk]').forEach(x=>x.classList.toggle('on',x===b));$('mbox').querySelectorAll('[data-gid]').forEach(im=>im.src=personURL(im.dataset.gid+'_front_0'+(skin?'|gs'+skin:'')));});
   let gen=S.gender||'m';$('mbox').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{gen=b.dataset.g;$('mbox').querySelectorAll('[data-g]').forEach(x=>x.classList.toggle('on',x===b));});
-  const go=()=>{S.gender=gen;S.name=(inp.value.trim()||idea).replace(/\s+/g,' ').slice(0,28);save();closeModal();hud();if(sheetOpen())renderSheet();if(after)after();};
+  const go=()=>{S.gender=gen;S.gskin=skin;S.name=(inp.value.trim()||idea).replace(/\s+/g,' ').slice(0,28);save();closeModal();hud();if(sheetOpen())renderSheet();if(after)after();};
   $('nmGo').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go();};
 }
 const STAGES=[
@@ -3549,7 +3594,7 @@ function takeClass(){
 }
 function growerCardHTML(){
   const l=glv(),mx=l>=GLV_MAX,need=gNeed(l),xp=S.gxp||0,pc=n=>Math.round((n-1)*100);
-  return`<div class="gcard"><span class="face" style="width:52px;height:52px;background:#e9c46a"><img src="${personURL(growerId()+'_front_0')}" alt=""></span>
+  return`<div class="gcard"><span class="face" style="width:52px;height:52px;background:#e9c46a"><img src="${personURL(growerId()+'_front_0'+gsk())}" alt=""></span>
     <div class="rn"><b>You · Level ${l}${mx?' (top level)':''}</b>
     ${mx?'':`<span class="gxpb"><i style="width:${Math.round(xp/need*100)}%"></i></span><span>${xp} of ${need} experience to level ${l+1}. Every job you do yourself counts; tree and showcase jobs count extra.</span>`}
     <span>${l>1?`Since level 1: walking ${pc(gWalk()/.88)}% faster, working ${pc(gWork()/.85)}% faster, and tree and showcase jobs wait ${pc(gTimer())}% longer.`:'You start out a bit slow. Each level makes you a little quicker on your feet and at the bench, and gives tree and showcase jobs longer before they’re missed.'}</span></div></div>`;
@@ -3728,6 +3773,7 @@ cv.addEventListener('pointerup',e=>{ptrEnd(e);
   if(!down||down.pan||Math.hypot(e.clientX-down.x,e.clientY-down.y)>12){down=null;return;}down=null;
   if(S.phase==='home'){homeTap(e);return;}
   if(sheetOpen()&&S.phase==='run'){closeSheet();return;}
+  if(cup&&cup.sx!=null&&Math.hypot(e.clientX-cup.sx,e.clientY-cup.sy)<=cup.r){drinkCup();return;}
   let best=null,bd=1e9;for(const h of iconHits){const d=Math.hypot(e.clientX-h.x,e.clientY-h.y);if(d<=h.r&&d<bd){bd=d;best=h;}}
   if(best){best.tasks.forEach(enqueue);return;}
   {const ct=liveCats().filter(c=>c.f===viewF).map(c=>({c,d:Math.hypot(e.clientX-P(c.x,c.y,ZB()+14)[0],e.clientY-P(c.x,c.y,ZB()+14)[1])})).filter(o=>o.d<TW*.42*sc).sort((a,b)=>a.d-b.d)[0];if(ct){petCat(ct.c);return;}}
