@@ -943,7 +943,8 @@ const ROLES={
   prize:{name:'Prize grower',does:'Runs the showcase house',cost:800}};
 const SLOW0=1.6,SLOW_STEP=.06,VET=10;
 const NAMES=['Ana','Luis','Mara','Dev','Rosa','Jun','Tess','Omar','Kira','Ben','Lupe','Nate','Ivy','Raj','Sol','Wren','Cruz','Tam'];
-const slowOf=r=>r?(S&&S.slowCrew===ckey()&&r.role!=='prize'?1.25:1)*(r.role==='prize'?[1,1.5,1.35,1.2,1.08,1][clamp(r.att||1,1,5)]:Math.max(1,SLOW0-SLOW_STEP*r.n*(catOn('gremlin')?1.5:1)*(1+.3*sk('mentor')))):1;
+const RUST_MAX=5,RUST_MIN=3;
+const slowOf=r=>r?(1+.05*(r.role!=='prize'?r.rust||0:0))*(S&&S.slowCrew===ckey()&&r.role!=='prize'?1.25:1)*(r.role==='prize'?[1,1.5,1.35,1.2,1.08,1][clamp(r.att||1,1,5)]:Math.max(1,SLOW0-SLOW_STEP*r.n*(catOn('gremlin')?1.5:1)*(1+.3*sk('mentor')))):1;
 const spd=r=>Math.round(100/slowOf(r));
 const UPS={
   pots:{name:'Pots',icon:'pot',lv:['Terracotta pots','Glazed pots','Designer pots'],does:l=>`Sell for ${l*10}% more per flat`,cost:[1500,3000,5000]},
@@ -1456,7 +1457,7 @@ const SKB=[
   {k:'people',n:'People',c:'#3c6e8f',d:'Customers and crew',s:[
     {k:'smooth',n:'Smooth talker',r:2,t:0,d:r=>`The phone rings ${40*r}% longer`},
     {k:'shopkeep',n:'Shopkeeper',r:2,t:0,d:r=>`Shop customers wait ${25*r}% longer and tip ${20+10*r}% instead of 20%`},
-    {k:'mentor',n:'Mentor',r:2,t:1,d:r=>`New hires reach full speed ${30*r}% faster`},
+    {k:'mentor',n:'Mentor',r:2,t:1,d:r=>`New hires reach full speed ${30*r}% faster, and rusty crew bounce back twice as fast`},
     {k:'foreman',n:'Foreman',r:2,t:1,d:r=>`Crew work ${10*r}% faster while you’re in their house`},
     {k:'negot',n:'Negotiator',r:2,t:2,d:r=>`Contract and vegetable prices +${3*r}%`}]},
   {k:'luck',n:'Luck',c:'#b8860b',d:'The extras',s:[
@@ -1530,7 +1531,7 @@ function stepWorker(w,dt,slow){
   if(w.task.type==='load'&&truckById(w.task.truck)?.state!=='dock')return;
   if(w===me&&S.busyUntil&&S.t<S.busyUntil)return;
   w.work+=dt;
-  if(w.work>=workOf(w.task)*(w===me?1/gWork():slow)){const t=w.task;w.task=null;w.work=0;complete(t);if(w===me)gainXP(t);}
+  if(w.work>=workOf(w.task)*(w===me?1/gWork():slow)){const t=w.task;w.task=null;w.work=0;complete(t);if(w===me)gainXP(t);else if(w.rec)w.rec.jobs=(w.rec.jobs||0)+1;}
 }
 function enqueue(t){
   const holder=staff.find(w=>w.task===t);
@@ -1693,14 +1694,36 @@ function endPeriod(){
   S.tasks.filter(t=>t.type==='shop'||t.type==='succ').forEach(sucMiss);
   sucPlants().forEach(p=>{if(p)p.age++;});
   S.tasks=[];S.queue=[];me.task=null;me.path=[];staff.forEach(w=>{w.task=null;w.path=[];});
-  S.crew.forEach(r=>{if(r.n<VET)r.n++;});
+  S.crew.forEach(r=>{if(r.n<VET)r.n++;r.tp=(r.tp||0)+1;});
+  {const rusted=[],fast=catOn('gremlin')||sk('mentor')>0;
+    for(const r of S.crew.filter(r=>r.role!=='prize'&&(r.tp||0)>1)){const j=r.jobs||0;
+      if(j<RUST_MIN){if((r.rust||0)<RUST_MAX){r.rust=(r.rust||0)+1;rusted.push(r);}}
+      else if(r.rust)r.rust=Math.max(0,r.rust-(fast?2:1));}
+    S.crew.forEach(r=>r.jobs=0);
+    if(rusted.length&&!window.__quiet)S.rustNote=rusted.map(r=>r.name);}
   settleBooks();
   if(checkRepLoss()&&!window.__quiet){gameOver();return;}
   S.period++;
   if(S.period>7){yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the nursery closes`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();vegAsk();skAsk();}
+function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the nursery closes`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();skAsk();}
+// Seasoned hands sometimes retire without warning; idle crew get rusty.
+function crewNews(){
+  if(S.rustNote&&S.rustNote.length){const n=S.rustNote;S.rustNote=null;setTimeout(()=>toast('crew',`${n.length>2?`${n.length} of your crew`:n.join(' and ')} got rusty: not enough to do last period. They’re a little slower until they’re busy again`),700);}
+  if(S.period===0&&S.year===1)return;
+  const vets=S.crew.filter(r=>r.role!=='prize'&&r.n>=VET&&(r.tp||0)>=VET+4);
+  const r=vets.find(r=>rnd()<Math.min(.015,.005+.0005*((r.tp||0)-VET)));
+  if(!r)return;
+  fireCrew(r.id);
+  if(window.__quiet)return;
+  const yrs=Math.max(1,Math.round((r.tp||VET)/8));
+  const show=()=>{if(!$('modal').hidden){setTimeout(show,400);return;}
+    modal(`<div class="lvup">${crewFace(r,64)}<h2>${esc(r.name)} is retiring</h2><p>After ${yrs} year${yrs>1?'s':''} as your ${ROLES[r.role].name.toLowerCase()}, ${esc(r.name)} hung up their gloves this morning. Thanks for everything!</p><p class="alnote">You’ll want to hire a replacement from the Crew tab. New hires start slow; Gremlin and the Mentor skill help them catch up.</p></div>
+      <div class="ab2"><button class="btn" type="button" id="rtX">Wish them well</button><button class="btn go" type="button" id="rtH">Open Crew</button></div>`);
+    $('rtX').onclick=()=>{closeModal();renderSheet();renderTray();};$('rtH').onclick=()=>{closeModal();openSheet('crew');};};
+  show();
+}
 function askRaises(){
   const reqs=S.crew.filter(r=>r.loyalYear!==S.year&&((r.n>0&&r.n<VET&&rnd()<.25)||r.wantRaise)).map(r=>{r.wantRaise=false;return r;}).map(r=>({r,to:Math.round(r.wage*(1.08+rnd()*.07)/5)*5}));
   if(!reqs.length)return;
@@ -2180,7 +2203,7 @@ const ripe=id=>{const st=lotState(id);return st.b==='orchard'&&Date.now()>=(st.s
 function ripeLeft(id){const t=Math.max(1,Math.ceil(Math.max(0,(lotState(id).shk||0)-Date.now())/60000)),h=Math.floor(t/60),m=t%60;return h?`${h}h ${m}m`:`${m}m`;}
 function shakeLot(id){if(!ripe(id)||HJ.some(j=>j.kind==='shake'&&j.lot===id))return;addHJob({lot:id,kind:'shake',dur:1.6});}
 const CAT_COST=6,CATHOUSE=[0,2,4,6],CATHOUSE_COST=[0,0,10,18],OFFICE_COST=8;
-const CAT_BONUS={anna:'Pest outbreaks 15% less often',miley:'Heaters and fans break down 15% less',max:'+10% on reputation gains',gremlin:'New hires reach full speed faster',beatrice:'Flats sell for 5% more',minaou:'Stars turn up 50% more often'};
+const CAT_BONUS={anna:'Pest outbreaks 15% less often',miley:'Heaters and fans break down 15% less',max:'+10% on reputation gains',gremlin:'New hires reach full speed faster; rusty crew recover twice as fast',beatrice:'Flats sell for 5% more',minaou:'Stars turn up 50% more often'};
 const catOn=id=>!!(S&&S.cats&&S.cats.includes(id));
 const lotOf=id=>LOTS.find(l=>l.id===id);
 const lotState=id=>(S.home&&S.home[id])||{};
@@ -2721,7 +2744,7 @@ function renderCrewPop(){
   if(!w){crewPop=null;el.hidden=true;return;}
   const r=w.rec,av=document.querySelector(`#qC .av[data-w="${w.id}"]`);
   el.hidden=false;
-  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>${r.role==='prize'?'Showcase specialist':`Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}`} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>${r.role==='prize'?'Showcase specialist':`Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''}`} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
     <div class="cpt">Now: <b id="cpTask">${w.task?taskLabel(w.task):'Idle'}</b></div>
     ${w.role==='prize'?`<div class="cpt">Attentiveness ${attStars(r.att||1)} ${ATT_N[r.att||1]} · works the showcase house</div>`:w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${houseMap(r.home,h=>`data-cpf="${h}"`,'Works in house')}</div>`:''}`;
   const tr=$('tray').getBoundingClientRect(),a=av?av.getBoundingClientRect():tr;
@@ -3027,9 +3050,9 @@ function renderSheet(){
   }else if(tab==='book'){
     body=ledgerHTML();
   }else if(tab==='crew'){
-    body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
+    body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them. Crew with too little to do in a period get rusty and slow down until they're busy again, and long-serving veterans may retire.</small></h2></div>
       ${growerCardHTML()}${prizeHTML(plan)}
-      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
+      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
       <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
