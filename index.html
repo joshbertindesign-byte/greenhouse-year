@@ -1020,9 +1020,9 @@ function staffPick(w){
   const home=w.rec?w.rec.home:0;
   if(w.rec&&w.rec.away===ckey())return;
   if(w.role==='prize'){const d=ATT[clamp(w.rec.att||1,1,5)];const t=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===SH&&S.t-t.born>=d&&!S.queue.includes(t)&&!engaged(t)).sort((a,b)=>(a.type==='care'?0:1)-(b.type==='care'?0:1)||(a.due??999)-(b.due??999))[0];if(t)assign(w,t);return;}
-  const t=S.tasks.filter(t=>t.type===w.role&&(t.type==='load'||taskF(t)===home)&&!S.queue.includes(t)&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
+  const away=S.busyUntil&&S.t<S.busyUntil,t=S.tasks.filter(t=>t.type===w.role&&(t.type==='load'||taskF(t)===home)&&(away||!S.queue.includes(t))&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
     .sort((a,b)=>w.role==='load'?Math.abs(BAYS[a.bay||0].x-w.x)/3+(a.due-S.t)*.15-(Math.abs(BAYS[b.bay||0].x-w.x)/3+(b.due-S.t)*.15):(a.due??999)-(b.due??999))[0];
-  if(t)assign(w,t);
+  if(t){if(S.queue.includes(t))S.queue=S.queue.filter(x=>x!==t);assign(w,t);}
 }
 
 // ---------------- workers ----------------
@@ -1089,13 +1089,14 @@ function enqueue(t){
   const holder=staff.find(w=>w.task===t);
   if(holder){if(holder.work>0){toast('good',`${ROLES[holder.role].name} is already on it`);return;}holder.task=null;holder.path=[];}
   if(S.queue.includes(t)){S.queue=[t,...S.queue.filter(x=>x!==t)];if(me.task&&me.task!==t){me.task=null;me.path=[];me.work=0;}return;}
+  if(t.type==='phone'||t.type==='star'){const i=me.task&&S.queue[0]===me.task?1:0;S.queue.splice(i,0,t);return;}
   if(t.type==='load'){const i=me.task&&S.queue[0]===me.task?1:0;let j=i;while(j<S.queue.length&&S.queue[j].type==='load')j++;S.queue.splice(j,0,t);return;}
   S.queue.push(t);
 }
 
 // ---------------- period flow ----------------
 function startPeriod(){
-  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.phase='run';S.t=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
