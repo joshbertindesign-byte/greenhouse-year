@@ -146,6 +146,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .nmf input{width:100%;box-sizing:border-box;font:inherit;font-size:20px;font-weight:700;padding:12px 14px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
 .nmf input:focus{outline:none;border-color:var(--go)}
 .nmi{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.nmi .chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;color:#3c4a40;cursor:pointer}
+.rnm.bad{color:var(--bad);border-color:#f0c4bb}
 .rnm{vertical-align:middle;margin-left:6px;border:2px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;font-weight:700;color:#3c4a40;cursor:pointer}
 .steps div{display:flex;gap:12px;align-items:center;font-size:16px;line-height:1.35}.steps div>svg,.steps div>.ic,.steps div>img{flex:none}
 .kv{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:17px;margin:12px 0 18px}
@@ -1272,7 +1273,7 @@ function layoutHome(){
   for(const [x,y,z] of [[-.6,-15.6,0],[19.6,-15.6,0],[-.6,-3.4,0],[19.6,-3.4,0],[0,-15,60],[19,-15,60]]){const X=(x-y)*TW/2,Y=(x+y)*TH/2-z;x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
   const aw=VW-16,ah=Math.max(120,VH-top-bot),fit=Math.min(aw/(x1-x0),ah/(y1-y0));
   sc=clamp(Math.max(fit,VW<760?.78:0),.35,1.5);
-  const mx=Math.max(0,((x1-x0)*sc-aw)/2),my=Math.max(0,((y1-y0)*sc-ah)/2);if(panX==null)panX=((x0+x1)/2-15.5*TW/2)*sc;panX=clamp(panX,-mx,mx);panY=clamp(panY,-my,my);homeBox={mx,my};
+  const mx=Math.max(0,((x1-x0)*sc-aw)/2)+aw*.25,my=Math.max(0,((y1-y0)*sc-ah)/2)+ah*.3;if(panX==null)panX=((x0+x1)/2-15.5*TW/2)*sc;panX=clamp(panX,-mx,mx);panY=clamp(panY,-my,my);homeBox={mx,my};
   ox=VW/2-(x0+x1)/2*sc+panX;oy=top+ah/2-(y0+y1)/2*sc+panY;
   iconR=24;viewTop=top;viewBot=VH-bot;
 }
@@ -2408,6 +2409,7 @@ function renderSheet(){
   const clb=$('classB');if(clb)clb.onclick=takeClass;
   const rnb=$('rnB');if(rnb)rnb.onclick=()=>nameModal(false);
   const tpb=$('tipB');if(tpb)tpb.onclick=()=>{S.tipsOff=S.tipsOff?0:1;save();renderSheet();toast('good',S.tipsOff?'Tips are off':'Tips are on');};
+  const rsb=$('resetB');if(rsb)rsb.onclick=resetModal;
   const tpr=$('tipR');if(tpr)tpr.onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();renderSheet();toast('good','Tips will show again as you play');};
   el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
   const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeSheet();hud();nameModal(true,()=>{enterHome();toast('good',`${nurseryName()} is open: year 1`);});}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
@@ -2586,6 +2588,12 @@ function drawPhone(H,now){
 // ---------------- goals, gates and the magazine ----------------
 const NAME_IDEAS=['Prairie Bloom Growers','Big Sky Greenhouses','Sweetwater Plant Co.','Little Acre Nursery','Windbreak Greenhouses','Sundown Growers','Wildflower Row','Two Creeks Nursery'];
 const nurseryName=()=>(S&&S.name)||'Your nursery';
+function resetModal(){
+  modal(`<h2>Start over?</h2><p>This wipes ${esc(nurseryName())} completely: every year, the homestead, your cats, your stars and the tips you've seen. You start again from year 1 with the tutorial. It can't be undone.</p>
+    <div class="ab2"><button class="btn" type="button" id="rsNo">Keep playing</button><button class="btn" type="button" id="rsYes" style="background:var(--bad);color:#fff">Start over</button></div>`);
+  $('rsNo').onclick=closeModal;
+  $('rsYes').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}window.__resetting=true;location.reload();};
+}
 function nameModal(first,after){
   const idea=NAME_IDEAS[Math.floor(Math.random()*NAME_IDEAS.length)];
   modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every Best Homes and Gardens ranking.</p>
@@ -2774,7 +2782,7 @@ function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
-  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="rnB">Rename</button><button type="button" class="rnm" id="tipB">${S.tipsOff?'Tips on':'Tips off'}</button><button type="button" class="rnm" id="tipR">Replay tips</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="rnB">Rename</button><button type="button" class="rnm" id="tipB">${S.tipsOff?'Tips on':'Tips off'}</button><button type="button" class="rnm" id="tipR">Replay tips</button><button type="button" class="rnm bad" id="resetB">Start over</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
@@ -2998,7 +3006,7 @@ $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b
 // ---------------- modal, save ----------------
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
-function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
+function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
 function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.tips){d.tips={};const vet=d.hist.length>0||d.year>1;const m=k=>d.tips[k]=1;if(vet)['place','start','pot','queue','water','pest','fix','load','goal','phone'].forEach(m);if((d.crew||[]).length)m('crew');if(Object.values(d.up||{}).some(Boolean))m('up');if(d.floors>1)m('house');if(d.show)m('show');if((d.crew||[]).some(r=>r.role==='prize'))m('prize');if(d.home&&Object.keys(d.home).length)m('home');if((d.owned||[]).length>7)m('gen');}
   if(!d.homeV){d.homeV=1;d.cats=['anna'];d.stars=d.hist.reduce((a,r)=>a+(r.stars||0)+(r.met?3:0),0);d.home={};d.catHouse=1;d.office=1;}if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:13},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:13},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
