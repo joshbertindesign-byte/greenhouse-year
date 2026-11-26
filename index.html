@@ -190,7 +190,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .av .ring{position:absolute;inset:0;width:48px;height:48px;transform:rotate(-90deg)}
 .av .rt{fill:#fff;stroke:#e4e0d3;stroke-width:4}
 .av .rp{fill:none;stroke:var(--go);stroke-width:4;stroke-dasharray:144.5;stroke-dashoffset:144.5;stroke-linecap:round}
-.av .ai{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;position:relative}
+.av .ai{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;position:relative;overflow:hidden}.av .ai img{width:100%;height:100%}
+.face{display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;flex:none}.face img{width:100%;height:100%}
+.gpick{margin:14px 0 4px}.gpick>span{display:block;font-size:13px;font-weight:700;color:var(--mute);letter-spacing:.04em;margin-bottom:6px}.gpick>div{display:flex;gap:10px}.gp{flex:1;display:flex;align-items:center;gap:10px;border:3px solid var(--line);background:#fff;border-radius:16px;padding:8px 12px;font:inherit;color:inherit;cursor:pointer}.gp img{width:54px;height:54px}.gp b{font-size:17px}.gp.on{border-color:var(--go);background:#f2faf3}
 .av.idle .ai{filter:grayscale(.85);opacity:.55}
 .av.walk .rt{stroke:#bfe3c8}
 .av .af{position:absolute;right:-2px;bottom:-2px;background:var(--hud);color:#fff;border:2px solid #fff;border-radius:8px;font-size:11px;min-width:20px;height:20px;display:grid;place-items:center;padding:0 3px}
@@ -1256,6 +1258,10 @@ const vecImg={},vecCan={};let vecK=0;
 function prepArt(){
   for(const id in ART.vector)if(!vecImg[id]){const im=new Image();im.onload=()=>{vecCan[id]=null;};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(ART.vector[id][4]);vecImg[id]=im;}
 }
+const SKINS=[['#ffd8b8','#ffd3b0','#c98a63'],['#f0c098','#ebba90','#b57a50'],['#c98f62','#c48a5e','#8a5a36'],['#9a6440','#94603d','#5e3a20'],['#6e4630','#6a432e','#3e2618']];
+const HAIRS=[['#8a5631','#6a3e22'],['#2a2220','#14100e'],['#d9b25a','#a8843a'],['#b5532a','#7f3a1c'],['#a9a9a9','#707070']];
+const LOOKS=[[0,0],[2,1],[3,1],[1,2],[4,1],[0,3],[2,0],[1,1],[3,0],[0,4]];
+const lookOf=r=>{const k=String(r&&r.id||'0');let h=0;for(const ch of k)h=(h*31+ch.charCodeAt(0))>>>0;return'lk'+(h%LOOKS.length);};
 const RECOLOR={
   pot0:[['url(#gPot)','#3a3f3c'],['#a9512c','#1f2321'],['#f6a576','#5d655f']],
   pot2:[['url(#gPot)','#3f97bf'],['#a9512c','#24607d'],['#f6a576','#a6def0']],
@@ -1264,6 +1270,7 @@ const RECOLOR={
   gold:[['#246346','#7a5a0e'],['#2f7d57','#a8801a'],['#3f9a6c','#d9b44a'],['#7fcfa0','#f0d27a'],['#8fdcae','#f7e3a0']],
   marble:[['url(#gFloor)','#f6f1fa'],['#e3d8c4','#e2d8ec'],['#d9ccb4','#cfc2dd']],
   heat:[['url(#gCream)','#e2edf5'],['#f0dcb8','#c8d8e5'],['url(#gCreamR)','#a9bccb'],['#ef5b4c','#2f8fd6'],['#d6473a','#2577b8'],['#ffe9c7','#eaf4fb'],['#b3936a','#6f8496']]};
+LOOKS.forEach(([sk,hr],i)=>{RECOLOR['lk'+i]=[...SKINS[0].map((c,k)=>[c,SKINS[sk][k]]),...HAIRS[0].map((c,k)=>[c,HAIRS[hr][k]])].filter(([a,b])=>a!==b);});
 function artDef(id){
   let d=ART.vector[id];if(d||!id.includes('|'))return d;
   const [b,v]=id.split('|'),B=ART.vector[b];if(!B)return null;let svg=B[4];
@@ -1516,8 +1523,8 @@ function petCat(c){
 }
 function drawPerson(w,shirt,now){
   const x=w.x,y=w.y,z=w.y<0?0:w.f*FH,walking=w.path.length>0,working=w.task&&!walking&&w.leg!=='lift',b=walking?Math.abs(Math.sin(now/95))*3:working?Math.abs(Math.sin(now/140))*2:0;
-  const who=w===me?'grower':'crew',face=w.face||'front';
-  const id=working?(Math.floor(now/320)%2?`${who}_work`:`${who}_front_0`):`${who}_${face}_${walking?Math.floor(now/170)%2:0}`;
+  const who=w===me?growerId():'crew_'+w.role,face=w.face||'front',lk=w===me?'':'|'+lookOf(w.rec);
+  const id=(working?(Math.floor(now/320)%2?`${who}_work`:`${who}_front_0`):`${who}_${face}_${walking?Math.floor(now/170)%2:0}`)+lk;
   spr(id,x-.5,y-.5,z+6);
   if(working&&w.work>0){const need=workOf(w.task)*(w===me?1:slowOf(w.rec)),f=clamp(w.work/need,0,1),p=P(x,y,66+z);
     cx.fillStyle='rgba(0,0,0,.35)';rr(p[0]-22,p[1]-5,44,10,5);cx.fill();cx.fillStyle='#6fe08a';rr(p[0]-20,p[1]-3,40*f,6,3);cx.fill();}
@@ -1595,19 +1602,19 @@ function draw(now){
   camZ+=(viewF*FH-camZ)*Math.min(1,dt*7);if(Math.abs(viewF*FH-camZ)<.5)camZ=viewF*FH;
   cx.setTransform(DPR,0,0,DPR,0,0);
   drawGround();drawHomestead(now);drawTrucks(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
-  const dockers=[me,...staff].filter(w=>w.y<0).sort((a,b)=>(a.x+a.y)-(b.x+b.y));dockers.forEach(w=>drawPerson(w,SHIRT[w.role],now));
+  const dockers=[...(S.phase==='home'?[]:[me]),...staff].filter(w=>w.y<0).sort((a,b)=>(a.x+a.y)-(b.x+b.y));dockers.forEach(w=>drawPerson(w,SHIRT[w.role],now));
   drawWeather(dt);
   const built=builtH(),dep=H=>H.ox+H.oy+8;
   built.filter(H=>H.L<viewF).sort((a,b)=>a.L-b.L||dep(a)-dep(b)).forEach(drawGhostFloor);
   if(viewF===0&&S.phase==='plan'&&S.floors<4)drawNextPlot(HOUSES[S.floors]);
   const items=built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)}));
   if(viewF===0){
-    for(const w of [me,...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
+    for(const w of [...(S.phase==='home'?[]:[me]),...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
     for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
     if(mouse&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
-  if(viewF===0)drawSign();
+  if(viewF===0&&S.phase!=='home')drawSign();
   drawLabels();drawCounts();drawFloats(now);drawIcons();
 }
 function drawHouse(H,now){
@@ -1617,7 +1624,7 @@ function drawHouse(H,now){
   L.push({d:u.x+u.y+1,f:()=>drawUnit(H)});
   for(const p of PROPS){const l=upLv(p.k);if(l&&!H.show)L.push({d:H.ox+p.x+H.oy+p.y+1,f:()=>spr(`${p.k}_${l}`,H.ox+p.x,H.oy+p.y,H.L*FH+6)});}
   if(S.floors>4&&(H.L>0||S.floors>H.h+4))L.push({d:lf.x+lf.y+1.2,f:()=>drawLift(H)});
-  for(const w of [me,...staff]){if(w.y>=0&&inH(w.x,w.y,w.f)&&!((w.leg==='lift'||w.leg==='home')&&w.ride>0))L.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});}
+  for(const w of [...(S.phase==='home'?[]:[me]),...staff]){if(w.y>=0&&inH(w.x,w.y,w.f)&&!((w.leg==='lift'||w.leg==='home')&&w.ride>0))L.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});}
   if(H.h===0&&S.cats.length)L.push({d:H.ox+BOWL.x+H.oy+BOWL.y+.6,f:()=>spr('catbowls',H.ox+BOWL.x,H.oy+BOWL.y,H.L*FH+6)});
   for(const c of liveCats())if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
   if(mouse&&inH(mouse.x,mouse.y,0))L.push({d:mouse.x+mouse.y-.02,f:()=>drawMouse(now)});
@@ -1672,27 +1679,27 @@ const hasBuild=k=>LOTS.some(l=>lotState(l.id).b===k);
 const catCap=()=>CATHOUSE[S.catHouse||1];
 let homeSel=null,panX=0,panY=0;
 function enterHome(){
-  $('toasts').innerHTML='';S.phase='home';homeSel=null;panX=null;panY=0;viewF=0;focusH=-1;closeSheet();closeModal();save();layout();hud();renderHome();
+  $('toasts').innerHTML='';hgReset();S.phase='home';homeSel=null;panX=null;panY=0;viewF=0;focusH=-1;closeSheet();closeModal();save();layout();hud();renderHome();
   if(!S.homeSeen&&!window.__quiet){S.homeSeen=1;save();modal(`<h2>Your homestead</h2><p>Between years you come home. Spend the stars you earn on clearing land, building, and adopting greenhouse cats. Miley is already settled in the cat house.</p>
     <div class="steps"><div>${svgIcon('star',40)}<span><b>Earn stars:</b> each year's Best Homes and Gardens rating pays its stars, hitting your goal pays 3 more, and now and then a star pops up in a greenhouse. Tap it before it fades.</span></div>
     <div>${svgIcon('crew',40)}<span><b>Clear and build:</b> tap a pile of debris to clear it (you might find a star underneath), then tap the empty plot to build.</span></div>
     <div>${catURL?`<img src="${catURL('anna')}" width="40" height="40" alt="">`:''}<span><b>Cats:</b> tap the cat house to adopt more. Each cat helps in her own way.</span></div></div>
     <button class="btn go" id="hmOk" type="button">Let's go</button>`);$('hmOk').onclick=closeModal;}
 }
-function leaveHome(){if(S.phase!=='home')return;$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
+function leaveHome(){if(S.phase!=='home')return;flushHJobs();$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
 function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);return false;}S.stars-=n;return true;}
-function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost)return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
-  const find=rnd()<.3?(rnd()<.3?2:1):0;if(find){S.stars+=find;floats.push({x:L.x+1,y:L.y+1,f:0,text:`+${find} ★`,color:'#c98a00',t0:performance.now()});toast('good',`Found ${find===1?'a star':'two stars'} under the ${L.deb==='brush'?'brush':L.deb==='rocks'?'rocks':L.deb==='stump'?'old stump':'junk'}!`);}
-  else toast('good','Cleared. Ready to build');save();renderHome();}
-function buildLot(id,k){const B=BUILDS[k],st=lotState(id);if(!st.clear||st.b)return;if(B.uniq&&hasBuild(k))return;if(!spendStars(B.cost))return;S.home[id]={clear:true,b:k};toast('good',`${B.n} built`);save();renderHome();}
-function adoptCat(id){if(catOn(id))return;if(S.cats.length>=catCap()){toast('bad','The cat house is full. Expand it first');return;}if(!spendStars(CAT_COST))return;S.cats.push(id);const c=CATS.find(x=>x.id===id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='sit';c.t=4;toast('cat',`${c.name} moved into the cat house`);save();renderHome();}
-function growCatHouse(){const l=S.catHouse||1;if(l>=3)return;if(!spendStars(CATHOUSE_COST[l+1]))return;S.catHouse=l+1;toast('good',`The cat house now has room for ${catCap()}`);save();renderHome();}
-function growOffice(){if((S.office||1)>=2)return;if(!spendStars(OFFICE_COST))return;S.office=2;toast('good','Bigger office: the phone rings longer now');save();renderHome();}
+function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
+  const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});save();renderHome();}
+function buildLot(id,k){const B=BUILDS[k],st=lotState(id);if(!st.clear||st.b||jobFor(id))return;if(B.uniq&&hasBuild(k))return;if(!spendStars(B.cost))return;S.home[id]={clear:true,b:k};addHJob({lot:id,kind:'build',prev:{clear:true},b:k});save();renderHome();}
+function adoptCat(id){if(catOn(id))return;if(S.cats.length>=catCap()){toast('bad','The cat house is full. Expand it first');return;}if(!spendStars(CAT_COST))return;S.cats.push(id);const c=CATS.find(x=>x.id===id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='sit';c.t=4;addHJob({lot:CH_LOT().id,kind:'greet',cat:id});save();renderHome();}
+function growCatHouse(){const l=S.catHouse||1;if(l>=3||HJ.some(j=>j.kind==='grow'&&j.lot===CH_LOT().id))return;if(!spendStars(CATHOUSE_COST[l+1]))return;S.catHouse=l+1;addHJob({lot:CH_LOT().id,kind:'grow',prev:l});save();renderHome();}
+function growOffice(){if((S.office||1)>=2)return;if(!spendStars(OFFICE_COST))return;S.office=2;addHJob({lot:OF_LOT().id,kind:'grow',prev:1});save();renderHome();}
 function renderHome(){
   const P0=$('homeP');P0.hidden=S.phase!=='home';if(P0.hidden)return;
   const L=homeSel&&lotOf(homeSel),st=L?lotState(L.id):{},stars=S.stars||0,star=n=>`<b class="stp">★ ${n}</b>`;
   let body='';
   if(!L)body=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around.':''}</p>`;
+  else if(jobFor(L.id)&&!L.pre){const j=jobFor(L.id);body=`<div class="hmt"><b>${j.kind==='clear'?'Clearing':'Building '+BUILDS[j.b].n.toLowerCase()}</b><span>${j.working?'Your grower is on it':'Queued for your grower'}</span></div>`;}
   else if(L.pre==='cathouse'){const cap=catCap(),l=S.catHouse||1;
     body=`<div class="hmt"><b>Cat house</b><span>${S.cats.length}/${cap} cats</span>${l<3?`<button class="btn sun sm" type="button" id="chGrow"${stars<CATHOUSE_COST[l+1]?' disabled':''}>Room for ${CATHOUSE[l+1]} · ★ ${CATHOUSE_COST[l+1]}</button>`:''}</div>
       <div class="adopt">${CATS.map(c=>{const on=catOn(c.id),full=S.cats.length>=cap;return`<button type="button" class="ad${on?' on':''}" data-adopt="${c.id}"${on||full||stars<CAT_COST?' disabled':''}><img src="${catURL(c.id)}" alt=""><b>${c.name}</b><small>${CAT_INFO[c.id]}</small><em>${CAT_BONUS[c.id]}</em><span class="cs">${on?'Lives here':full?'No room':`Adopt · ★ ${CAT_COST}`}</span></button>`;}).join('')}</div>`;}
@@ -1717,56 +1724,85 @@ function homeTap(e){
   homeSel=best&&bd<TW*sc*1.6?best.id:null;renderHome();
 }
 // drawing helpers for homestead pieces (world coordinates)
-function hipRoof(x,y,w,d,z,h,col,dk){const rx1=x+w*.3,rx2=x+w*.7,ry=y+d/2,a=P(x,y,z),b=P(x+w,y,z),c=P(x+w,y+d,z),dd=P(x,y+d,z),r1=P(rx1,ry,z+h),r2=P(rx2,ry,z+h);
-  poly([a,b,r2,r1],dk);poly([a,dd,r1],dk);poly([dd,c,r2,r1],col,'rgba(0,0,0,.18)');poly([b,c,r2],shade(col,.85),'rgba(0,0,0,.18)');}
-function faceRect(x0,y,x1,z0,z1,col){poly([P(x0,y,z0),P(x1,y,z0),P(x1,y,z1),P(x0,y,z1)],col);}
-function sideRect(x,y0,y1,z0,z1,col){poly([P(x,y0,z0),P(x,y1,z0),P(x,y1,z1),P(x,y0,z1)],col);}
-function tree(x,y,s,col){box(x-.08,y-.08,0,.16,.16,18*s,'#7a5232');const [X,Y]=P(x,y,18*s+10*s);cx.fillStyle=col||'#4f9a4a';for(const [dx,dy,r] of [[-6,2,9],[6,2,9],[0,-5,10],[0,4,9]]){cx.beginPath();cx.arc(X+dx*s*sc,Y+dy*s*sc,r*s*sc,0,7);cx.fill();}cx.fillStyle='rgba(255,255,255,.18)';cx.beginPath();cx.arc(X-4*s*sc,Y-6*s*sc,4*s*sc,0,7);cx.fill();}
-function groundPatch(L,col){poly([P(L.x,L.y,1),P(L.x+3,L.y,1),P(L.x+3,L.y+3,1),P(L.x,L.y+3,1)],col,'rgba(0,0,0,.08)');}
-function drawDebris(L){const x=L.x,y=L.y,r=k=>tileHash(x*7+k,y*3+k);
-  if(L.deb==='brush'){for(let k=0;k<7;k++){const [X,Y]=P(x+.6+r(k)*1.8,y+.6+r(k+9)*1.8,6);cx.fillStyle=k%2?'#7a8a3a':'#8a6a3a';cx.beginPath();cx.arc(X,Y,(8+r(k+3)*6)*sc,0,7);cx.fill();cx.strokeStyle='#5a4a2a';cx.lineWidth=1.2*sc;cx.beginPath();cx.moveTo(X-6*sc,Y);cx.lineTo(X+5*sc,Y-6*sc);cx.stroke();}}
-  if(L.deb==='rocks'){for(let k=0;k<6;k++){const [X,Y]=P(x+.5+r(k)*2,y+.5+r(k+5)*2,3);cx.fillStyle=k%2?'#9aa0a3':'#b7bbbd';cx.strokeStyle='#6d7375';cx.lineWidth=1*sc;cx.beginPath();cx.ellipse(X,Y,(7+r(k)*5)*sc,(4+r(k+2)*3)*sc,0,0,7);cx.fill();cx.stroke();}}
-  if(L.deb==='stump'){box(x+1.1,y+1.1,0,.9,.9,10,['#c8a070','#7a5232','#6a4528']);const [X,Y]=P(x+1.55,y+1.55,10);cx.strokeStyle='#8a6038';cx.lineWidth=1*sc;for(const rr_ of [3,6]){cx.beginPath();cx.ellipse(X,Y,rr_*sc,rr_*.5*sc,0,0,7);cx.stroke();}for(let k=0;k<3;k++){const [X2,Y2]=P(x+.4+r(k)*2.2,y+.4+r(k+4)*2.2,4);cx.fillStyle='#7a8a3a';cx.beginPath();cx.arc(X2,Y2,6*sc,0,7);cx.fill();}}
-  if(L.deb==='junk'){box(x+.5,y+.6,0,.8,.7,9,['#b98a5a','#8a6038','#7a5530']);box(x+1.6,y+1.4,0,.7,.7,7,['#c9b38a','#9a845e','#8a7652']);for(let k=0;k<2;k++){const [X,Y]=P(x+1.6+k*.5,y+.6+k*.3,5);cx.strokeStyle='#2a2a2a';cx.lineWidth=4*sc;cx.beginPath();cx.ellipse(X,Y,7*sc,3.5*sc,0,0,7);cx.stroke();}}
+// scenery around the homestead
+const HSCEN=(()=>{const out=[],h=(a,b)=>tileHash(a*3.1+b,b*7.7-a);
+  for(let u=-2.4;u<=21.5;u+=2.1)out.push({k:h(u,1)<.3?'h_pine':h(u,2)<.55?'h_tree2':'h_tree',u:u+h(u,3)*.7,v:-17.3+h(u,4)*.7});
+  for(let v=-15.6;v<=-5.5;v+=2.3){out.push({k:h(v,5)<.4?'h_pine':'h_tree',u:-2.0+h(v,6)*.5,v:v+h(v,9)*.4});out.push({k:h(v,7)<.5?'h_pine':'h_tree2',u:20.7+h(v,8)*.5,v:v+h(v,10)*.4});}
+  return out;})();
+// the grower at home: walks the paths between plots and does the work you order
+const HROWS=[-3.45,-7.45,-11.45],HCOLS=[-.5,3.5,7.5,11.5,15.5,19.5];
+let hg=null,HJ=[],hJob=null,hPuffs=[];
+const CH_LOT=()=>LOTS.find(l=>l.pre==='cathouse'),OF_LOT=()=>LOTS.find(l=>l.pre==='office'),FARM_LOT=()=>LOTS.find(l=>l.pre==='farm');
+function hgReset(){hg={x:9.5,y:-3.45,path:[],face:'front',idle:1.5};HJ=[];hJob=null;hPuffs=[];}
+const hSpot=L=>({x:L.x+1.5,y:L.y+3.55});
+const jobFor=id=>HJ.find(j=>j.lot===id);
+function hRoute(fx,fy,tx,ty){if(Math.abs(fy-ty)<.05)return[{x:tx,y:ty}];let c=HCOLS[0],bd=1e9;for(const k of HCOLS){const d=Math.abs(k-fx)+Math.abs(k-tx);if(d<bd){bd=d;c=k;}}return[{x:c,y:fy},{x:c,y:ty},{x:tx,y:ty}];}
+function addHJob(j){if(!hg)hgReset();j.dur=j.dur||(j.kind==='clear'?2.2:j.kind==='greet'?1.2:2.8);HJ.push(j);renderHome();}
+const JOBN={clear:'Clearing',build:'Building',grow:'Building',greet:'Settling in'};
+function finishHJob(j,quiet){
+  HJ=HJ.filter(x=>x!==j);if(hJob===j)hJob=null;const L=lotOf(j.lot),c=hSpot(L),fl=(t,col)=>floats.push({x:L.x+1.5,y:L.y+1.5,f:0,text:t,color:col,t0:performance.now()});
+  if(j.kind==='clear'){if(j.find){fl(`+${j.find} ★`,'#c98a00');toast('good',`Found ${j.find===1?'a star':'two stars'} under the ${({brush:'brush',rocks:'rocks',stump:'old stump',junk:'junk'})[L.deb]}!`);}else if(!quiet)toast('good','Cleared. Ready to build');}
+  if(j.kind==='build'){fl('✦','#2e7d4a');if(!quiet)toast('good',`${BUILDS[j.b].n} built`);}
+  if(j.kind==='grow'){fl('✦','#2e7d4a');if(!quiet)toast('good',L.pre==='office'?'Bigger office: the phone rings longer now':`The cat house now has room for ${catCap()}`);}
+  if(j.kind==='greet'){const ct=CATS.find(x=>x.id===j.cat);fl('♥','#e2552f');if(!quiet)toast('cat',`${ct.name} moved into the cat house`);}
+  renderHome();
 }
-function drawBuild(L,k){const x=L.x,y=L.y;
-  if(k==='garden'){box(x+.2,y+.2,0,2.6,2.6,4,['#c27a4a','#9a5a34','#8a4f2c']);box(x+.35,y+.35,4,2.3,2.3,1,['#6e5038','#5a4230','#4b3727']);const cs=['petunia','geranium','hydrangea','mum'];let i=0;for(const [u,v] of [[.3,.3],[1.3,.3],[.3,1.3],[1.3,1.3]])spr(`${cs[i++]}_3`,x+u,y+v,-13);}
-  if(k==='beds'){for(const [u,v,c] of [[.2,.4,'petunia'],[1.6,.4,'vinca'],[.2,1.8,'begonia'],[1.6,1.8,'mum']]){box(x+u,y+v,0,1.2,.9,3,['#8a5a34','#6e4a2c','#5e3f26']);spr(`${c}_3`,x+u-.1,y+v-.05,-15);}}
-  if(k==='stand'){box(x+.4,y+1,0,2.2,1,14,['#d9b07a','#a87a48','#946a3e']);const z=30;poly([P(x+.2,y+.8,z),P(x+2.8,y+.8,z),P(x+2.8,y+2.2,z-6),P(x+.2,y+2.2,z-6)],'#e9e3d6');for(let i=0;i<5;i++)poly([P(x+.2+i*.52,y+.8,z),P(x+.46+i*.52,y+.8,z),P(x+.46+i*.52,y+2.2,z-6),P(x+.2+i*.52,y+2.2,z-6)],'#d8433b');for(const u of [.3,2.6])box(x+u,y+2,0,.1,.1,z-6,'#7a5232');spr('petunia_3',x+.6,y+.9,-10);spr('mum_3',x+1.5,y+.9,-10);}
-  if(k==='shed'){box(x+.6,y+.6,0,1.8,1.6,22,['#9fb3a0','#7d917e','#6a7e6b']);hipRoof(x+.45,y+.45,2.1,1.9,22,10,'#5d6b62','#4a564e');faceRect(x+1.1,y+2.2,x+1.7,0,14,'#4a564e');}
-  if(k==='pergola'){for(const [u,v] of [[.4,.4],[2.4,.4],[.4,2.4],[2.4,2.4]])box(x+u,y+v,0,.14,.14,34,'#e9e0cc');for(const v of [.4,1.4,2.4])box(x+.3,y+v,34,2.4,.12,2,'#d9ccb0');box(x+.4,y+.4,36,.12,2.2,2,'#d9ccb0');box(x+2.4,y+.4,36,.12,2.2,2,'#d9ccb0');for(let i=0;i<6;i++){const [X,Y]=P(x+.5+tileHash(i,x)*2,y+.5+tileHash(y,i)*2,37);cx.fillStyle=i%2?'#5aa04a':'#7bbf5a';cx.beginPath();cx.arc(X,Y,6*sc,0,7);cx.fill();}box(x+1,y+1.2,0,1,.4,8,'#8a6a4a');}
-  if(k==='pond'){const [X,Y]=P(x+1.5,y+1.5,1);cx.fillStyle='#8a7a5a';cx.beginPath();cx.ellipse(X,Y,TW*sc*1.25,TH*sc*1.25,0,0,7);cx.fill();cx.fillStyle='#4f9fd0';cx.beginPath();cx.ellipse(X,Y,TW*sc*1.1,TH*sc*1.1,0,0,7);cx.fill();cx.fillStyle='rgba(255,255,255,.35)';cx.beginPath();cx.ellipse(X-14*sc,Y-5*sc,14*sc,4*sc,0,0,7);cx.fill();for(const [dx,dy] of [[18,6],[-8,10],[26,-6]]){cx.fillStyle='#5aa04a';cx.beginPath();cx.ellipse(X+dx*sc,Y+dy*sc,6*sc,3*sc,0,0,7);cx.fill();}cx.fillStyle='#ff9ec4';cx.beginPath();cx.arc(X+18*sc,Y+5*sc,2.2*sc,0,7);cx.fill();}
-  if(k==='orchard'){tree(x+.8,y+.8,1,'#4f9a4a');tree(x+2.2,y+1,1.1,'#5aa652');tree(x+1.3,y+2.3,.95,'#4a9046');const [X,Y]=P(x+2.2,y+1,48);cx.fillStyle='#f29a4a';for(const [dx,dy] of [[-5,2],[4,-3],[2,5]]){cx.beginPath();cx.arc(X+dx*sc,Y+dy*sc,2.2*sc,0,7);cx.fill();}}
+function flushHJobs(){while(HJ.length)finishHJob(HJ[0],true);hJob=null;}
+function stepHome(dt){
+  if(!hg)hgReset();
+  hPuffs=hPuffs.filter(p=>performance.now()-p.t0<900);
+  if(hg.path.length){const n=hg.path[0],dx=n.x-hg.x,dy=n.y-hg.y,d=Math.hypot(dx,dy),sp=4.2*dt;if(d>.01)hg.face=dx+dy>=0?'front':'back';if(d<=sp){hg.x=n.x;hg.y=n.y;hg.path.shift();}else{hg.x+=dx/d*sp;hg.y+=dy/d*sp;}return;}
+  if(hJob){if(!hJob.working){hJob.working=true;hJob.t=0;renderHome();}hJob.t+=dt;
+    if(hJob.kind==='clear'&&rnd()<dt*9){const L=lotOf(hJob.lot);hPuffs.push({x:L.x+.6+rnd()*1.8,y:L.y+.8+rnd()*1.8,t0:performance.now(),r:4+rnd()*4});}
+    if(hJob.t>=hJob.dur)finishHJob(hJob);return;}
+  if(HJ.length){hJob=HJ[0];const sp=hSpot(lotOf(hJob.lot));hg.path=hRoute(hg.x,hg.y,sp.x,sp.y);return;}
+  if((hg.idle-=dt)<=0){hg.idle=4+rnd()*6;const L=pick(LOTS.filter(l=>l.pre||lotState(l.id).b)),sp=hSpot(L);hg.path=hRoute(hg.x,hg.y,sp.x+(rnd()-.5)*1.4,sp.y);
+    if(L.pre==='cathouse')setTimeout(()=>{if(S.phase==='home'&&hg&&!hJob)floats.push({x:hg.x,y:hg.y,f:0,text:'♥',color:'#e2552f',t0:performance.now()});},2600);}
 }
-function drawFarmhouse(L){const x=L.x,y=L.y;box(x+.3,y+.5,0,2.6,2.2,30,['#f3ead6','#e2d4b8','#cfc0a2']);hipRoof(x+.15,y+.35,2.9,2.5,30,18,'#a2463a','#7e352c');
-  faceRect(x+1.4,y+2.7,x+1.9,0,20,'#7a5232');faceRect(x+.6,y+2.7,x+1.1,10,20,'#9fd3e8');faceRect(x+2.2,y+2.7,x+2.7,10,20,'#9fd3e8');sideRect(x+2.9,y+.9,y+1.5,10,20,'#9fd3e8');sideRect(x+2.9,y+1.8,y+2.4,10,20,'#9fd3e8');box(x+.3,y+2.7,0,2.6,.35,2,'#b9ad95');box(x+2.3,y+.6,30,.3,.3,16,'#8a6a5a');}
-function drawCatHouse(L){const x=L.x,y=L.y,l=S.catHouse||1;
-  box(x+.4,y+.7,0,1.7,1.6,20,['#e07b4a','#c2603a','#a85230']);hipRoof(x+.28,y+.58,1.94,1.84,20,11,'#5d4a36','#4a3a2a');const [X,Y]=P(x+1.25,y+2.3,7);cx.fillStyle='#3a2a20';cx.beginPath();cx.ellipse(X,Y,5.5*sc,6.5*sc,0,0,7);cx.fill();
-  if(l>=2){box(x+1.9,y+1.2,0,1,1.1,12,['#e9a05a','#c9803e','#b07036']);hipRoof(x+1.85,y+1.15,1.1,1.2,12,7,'#5d4a36','#4a3a2a');const [X2,Y2]=P(x+2.9,y+1.75,5);cx.fillStyle='#3a2a20';cx.beginPath();cx.ellipse(X2,Y2,3.4*sc,4*sc,0,0,7);cx.fill();}
-  if(l>=3){box(x+.25,y+.25,0,.14,.14,34,'#c9a77a');for(const [z,s] of [[14,.7],[24,.6],[34,.5]])box(x+.1,y+.1,z,s,s,2,'#e9d7b0');}
-  }
-function drawOffice(L){const x=L.x,y=L.y,big=(S.office||1)>=2;box(x+.4,y+.6,0,big?2.4:1.9,1.8,24,['#dfe7ea','#b9c6cc','#a3b1b8']);box(x+.3,y+.5,24,(big?2.4:1.9)+.2,2,3,'#6a7a80');
-  faceRect(x+.7,y+2.4,x+1.2,0,16,'#5d6b62');
-  // ribbon wall on the front
-  const rib=S.hist.filter(h=>h.ribbon!=null&&h.ribbon>=0),w0=x+1.35,w1=x+(big?2.65:2.2);faceRect(w0,y+2.41,w1,6,20,'#c9a77a');
-  const colr=['#7a2fb8','#c99a12','#8a96a3','#9a5b26','#2f7a8a'];rib.slice(-8).forEach((h,i)=>{const u=w0+.15+(i%4)*((w1-w0-.3)/3.2),z=i<4?16:10,[X,Y]=P(u,y+2.42,z);cx.fillStyle=colr[h.ribbon];cx.beginPath();cx.arc(X,Y,2.4*sc,0,7);cx.fill();cx.fillRect(X-1.2*sc,Y,2.4*sc,3.5*sc);});
+const growerId=()=>S&&S.gender==='f'?'growerf':'grower';
+function drawHomeGrower(now){
+  const g=growerId();let id;
+  if(hg.path.length)id=`${g}_${hg.face}_${Math.floor(now/170)%2}`;
+  else if(hJob&&hJob.working)id=hJob.kind==='clear'?`${g}_shovel${Math.floor(hJob.t/.32)%2}`:hJob.kind==='greet'?`${g}_front_0`:`${g}_hammer${Math.floor(hJob.t/.26)%2}`;
+  else id=`${g}_front_0`;
+  spr(id,hg.x-.5,hg.y-.5,0);
+}
+function drawRibbons(L,l){
+  const x=L.x,y=L.y,rib=S.hist.filter(h=>h.ribbon!=null&&h.ribbon>=0),w0=x+1.35,w1=x+(l>=2?2.65:2.2);
+  const colr=['#7a2fb8','#c99a12','#8a96a3','#9a5b26','#2f7a8a'];rib.slice(-8).forEach((h,i)=>{const u=w0+.15+(i%4)*((w1-w0-.3)/3.2),z=i<4?16:10,[X,Y]=P(u,y+2.42,z);cx.fillStyle=colr[h.ribbon];cx.beginPath();cx.arc(X,Y,2.6*sc,0,7);cx.fill();cx.fillRect(X-1.3*sc,Y,2.6*sc,4*sc);cx.fillStyle='rgba(255,255,255,.6)';cx.beginPath();cx.arc(X,Y,1*sc,0,7);cx.fill();});
+}
+function lotLook(L){const j=jobFor(L.id);if(L.pre==='cathouse')return{l:j&&j.kind==='grow'?j.prev:(S.catHouse||1)};if(L.pre==='office')return{l:j&&j.kind==='grow'?j.prev:(S.office||1)};if(L.pre)return{};return j&&j.prev?j.prev:lotState(L.id);}
+function drawLot(L){
+  const v=lotLook(L),j=jobFor(L.id);
+  if(L.pre==='farm')return spr('h_farm',L.x,L.y,0);
+  if(L.pre==='cathouse')return spr('h_cats_'+v.l,L.x,L.y,0);
+  if(L.pre==='office'){spr('h_office_'+v.l,L.x,L.y,0);drawRibbons(L,v.l);return;}
+  if(!v.clear)return spr('h_deb_'+L.deb,L.x,L.y,0);
+  if(j&&j.kind==='build'&&j.working)return spr('h_frame',L.x,L.y,0);
+  if(v.b)spr('h_'+v.b,L.x,L.y,0);
 }
 function drawHomestead(now){
   const home=S.phase==='home';
   poly([P(-.4,-4.3,0),P(19.4,-4.3,0),P(19.4,-3.05,0),P(-.4,-3.05,0)],'#d8cdb2','rgba(0,0,0,.06)');
-  for(let x=1.5;x<19;x+=4)poly([P(x,-5,0),P(x+1,-5,0),P(x+1,-4.3,0),P(x,-4.3,0)],'#d8cdb2');
-  for(const L of LOTS_D){const st=lotState(L.id);if(L.pre)groundPatch(L,'#cfc3a6');else if(!st.clear){groundPatch(L,'rgba(120,92,50,.22)');}
-    if(!L.pre&&!st.b){cx.save();cx.setLineDash([5*sc,5*sc]);cx.strokeStyle=st.clear?'rgba(110,80,40,.6)':'rgba(110,80,40,.3)';cx.lineWidth=2*sc;cx.beginPath();const q=[P(L.x,L.y,1),P(L.x+3,L.y,1),P(L.x+3,L.y+3,1),P(L.x,L.y+3,1)];cx.moveTo(...q[0]);q.slice(1).forEach(v=>cx.lineTo(...v));cx.closePath();cx.stroke();cx.restore();}}
-  for(const L of LOTS_D){const st=lotState(L.id);
-    if(L.pre==='farm')drawFarmhouse(L);else if(L.pre==='cathouse')drawCatHouse(L);else if(L.pre==='office')drawOffice(L);
-    else if(!st.clear)drawDebris(L);else{groundPatch(L,st.b?'rgba(120,90,50,.12)':'#d8c49a');if(st.b)drawBuild(L,st.b);}
+  poly([P(-.4,-8,0),P(19.4,-8,0),P(19.4,-7,0),P(-.4,-7,0)],'rgba(216,205,178,.55)');poly([P(-.4,-12,0),P(19.4,-12,0),P(19.4,-11,0),P(-.4,-11,0)],'rgba(216,205,178,.55)');
+  for(const c of HCOLS)poly([P(c-.5,-12,0),P(c+.5,-12,0),P(c+.5,-4.3,0),P(c-.5,-4.3,0)],'rgba(216,205,178,.55)');
+  for(const L of LOTS_D){if(L.pre)continue;const v=lotLook(L);
+    if(v.clear&&!v.b){poly([P(L.x+.15,L.y+.15,0),P(L.x+2.85,L.y+.15,0),P(L.x+2.85,L.y+2.85,0),P(L.x+.15,L.y+2.85,0)],'#cdb48a','rgba(110,80,40,.25)');for(let k=1;k<6;k++){const a=P(L.x+.15+k*.45,L.y+.2,0),b=P(L.x+.15+k*.45,L.y+2.8,0);cx.strokeStyle='rgba(120,90,50,.25)';cx.lineWidth=1.5*sc;cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke();}
+      cx.save();cx.setLineDash([5*sc,5*sc]);cx.strokeStyle='rgba(110,80,40,.55)';cx.lineWidth=2*sc;cx.beginPath();const q=[P(L.x,L.y,0),P(L.x+3,L.y,0),P(L.x+3,L.y+3,0),P(L.x,L.y+3,0)];cx.moveTo(...q[0]);q.slice(1).forEach(v=>cx.lineTo(...v));cx.closePath();cx.stroke();cx.restore();}}
+  const items=[...LOTS_D.map(L=>({d:L.x+L.y+3,f:()=>drawLot(L)})),...HSCEN.map(o=>({d:o.u+o.v,f:()=>spr(o.k,o.u,o.v,0)}))];
+  if(home){
+    if(!hg)hgReset();
+    items.push({d:hg.x+hg.y,f:()=>drawHomeGrower(now)});
+    const hide=HJ.filter(j=>j.kind==='greet').map(j=>j.cat),spots=[[5.7,-4.45],[6.5,-4.25],[4.55,-4.3],[7.0,-4.55],[5.1,-4.15],[6.1,-4.6]];
+    liveCats().filter(c=>!hide.includes(c.id)).forEach((c,i)=>{const [u,v]=spots[i%6],pose=['sit','sleep','sit','sit','sleep','sit'][i%6];items.push({d:u+v,f:()=>sprFlip(`cat_${c.id}_${pose}`,u-.5,v-.5,0,i%2===1)});});
   }
+  items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
+  for(const p of hPuffs){const t=(now-p.t0)/900,[X,Y]=P(p.x,p.y,8+t*26);cx.globalAlpha=(1-t)*.7;cx.fillStyle='#c9b48a';cx.beginPath();cx.arc(X,Y,(p.r+t*8)*sc,0,7);cx.fill();cx.globalAlpha=1;}
   if(!home)return;
-  liveCats().forEach((c,i)=>{const pose=['sit','sleep','sit','sit','sleep','sit'][i%6];sprFlip(`cat_${c.id}_${pose}`,4.2+i*.75,-4.9+(i%2)*.45,0,i%2===1);});
-  for(const L of LOTS){const st=lotState(L.id),[X,Y]=P(L.x+1.5,L.y+1.5,44),sel=homeSel===L.id;
-    let lab=null;if(!L.pre&&!st.clear)lab=`★ ${L.cost}`;else if(!L.pre&&st.clear&&!st.b)lab='+';else if(L.pre==='cathouse')lab=`${S.cats.length}/${catCap()} cats`;
-    if(sel){poly([P(L.x,L.y,2),P(L.x+3,L.y,2),P(L.x+3,L.y+3,2),P(L.x,L.y+3,2)],'rgba(242,194,48,.25)','#c98a00');}
-    if(lab){cx.save();cx.font=`700 ${Math.round(clamp(13*sc+6,11,16))}px Outfit,sans-serif`;const w=cx.measureText(lab).width+16,h=24;cx.fillStyle=sel?'#c98a00':lab==='+'?'#2e7d4a':'#173426';rr(X-w/2,Y-h/2,w,h,12);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(lab,X,Y+1);cx.restore();}
+  for(const L of LOTS){const st=lotLook(L),j=jobFor(L.id),[X,Y]=P(L.x+1.5,L.y+1.5,L.pre?70:44),sel=homeSel===L.id;
+    let lab=null;if(j)lab=j===hJob&&j.working?null:'Queued';else if(!L.pre&&!st.clear)lab=`★ ${L.cost}`;else if(!L.pre&&st.clear&&!st.b)lab='+';else if(L.pre==='cathouse')lab=`${S.cats.length}/${catCap()} cats`;
+    if(sel){poly([P(L.x,L.y,1),P(L.x+3,L.y,1),P(L.x+3,L.y+3,1),P(L.x,L.y+3,1)],'rgba(242,194,48,.22)','#c98a00');}
+    if(lab){cx.save();cx.font=`700 ${Math.round(clamp(13*sc+6,11,16))}px Outfit,sans-serif`;const w=cx.measureText(lab).width+16,h=24;cx.fillStyle=sel?'#c98a00':lab==='+'?'#2e7d4a':lab==='Queued'?'#5d6b62':'#173426';rr(X-w/2,Y-h/2,w,h,12);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(lab,X,Y+1);cx.restore();}
   }
 }
 
@@ -1848,7 +1884,7 @@ function renderTray(){
     traySig=sig;
     $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.care||t.type,28)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?(isPhone()?'Tap icons to queue jobs':'Tap the big icons to give your grower jobs'):'Plan the period, then start it'}</span>`;
     $('laneC').hidden=!staff.length;
-    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}">${glyph(w.role,22)}</span>${w.role==='prize'?'<b class="af">★</b>':S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
+    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}"><img src="${personURL('crew_'+w.role+'_front_0|'+lookOf(w.rec))}" alt=""></span>${w.role==='prize'?'<b class="af">★</b>':S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
     if(crewPop)renderCrewPop();
   }
   const th=$('tray').offsetHeight;if(th!==trayH){trayH=th;layout();}
@@ -2173,10 +2209,10 @@ function renderSheet(){
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
       ${prizeHTML(plan)}
-      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
+      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
-      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
+      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
@@ -2297,10 +2333,10 @@ function rushHire(o){
   S.crew.push(r);syncStaff();return r;
 }
 function missedModal(warn,stay,gone,due){
-  const row=(r,txt,cls)=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="${cls||''}">${txt}</span></div></div>`;
+  const row=(r,txt,cls)=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="${cls||''}">${txt}</span></div></div>`;
   modal(`<h2>${gone.length?(gone.length>1?`${gone.length} of your crew quit`:`${esc(gone[0].name)} quit`):'Payday missed'}</h2>
     <p>You had ${fmt(Math.max(0,S.cash))} and payroll was ${fmt(due)}, so nobody got paid. ${gone.length?'Unpaid twice in a row, they walked. Anyone else who misses the next payday may walk too.':'Everyone keeps working and is owed the back pay. Miss the next payday too and people may quit.'}</p>
-    <div class="roles">${gone.map((r,i)=>`<div class="role qr" id="gq${i}">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="neg">Quit. Was ${fmt(r.wage)}/period${r.owed?`, walked off owed ${fmt(r.owed)}`:''}</span></div><span class="rqb"><button class="btn sun" type="button" data-rh="${i}">Hire on the spot · ${fmt(rushWage(r))}/period</button><button class="btn" type="button" data-rx="${i}">Leave it</button></span></div>`).join('')}
+    <div class="roles">${gone.map((r,i)=>`<div class="role qr" id="gq${i}">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span class="neg">Quit. Was ${fmt(r.wage)}/period${r.owed?`, walked off owed ${fmt(r.owed)}`:''}</span></div><span class="rqb"><button class="btn sun" type="button" data-rh="${i}">Hire on the spot · ${fmt(rushWage(r))}/period</button><button class="btn" type="button" data-rx="${i}">Leave it</button></span></div>`).join('')}
     ${stay.map(r=>row(r,`Missed ${r.missed} paydays in a row. Stayed, for now. Owed ${fmt(r.owed)}.`,'neg')).join('')}
     ${warn.map(r=>row(r,`Missed this payday. Owed ${fmt(r.owed)}.`)).join('')}</div>
     ${gone.length?`<p class="credit">On-the-spot hires cost more than the people they replace, start slow, and still quit if they go unpaid. Their first period's wage is added to the next payday.</p>`:''}
@@ -2405,10 +2441,12 @@ function nameModal(first,after){
   modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every Best Homes and Gardens ranking.</p>
     <label class="nmf"><span>Nursery name</span><input id="nmIn" maxlength="28" autocomplete="off" value="${esc(S.name||'')}" placeholder="${esc(idea)}"></label>
     <div class="nmi">${NAME_IDEAS.filter(n=>n!==S.name).slice(0,4).map(n=>`<button type="button" class="chip" data-nm="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+    <div class="gpick"><span>YOUR GROWER</span><div>${[['m','grower','Man'],['f','growerf','Woman']].map(([g,id,t])=>`<button type="button" class="gp${(S.gender||'m')===g?' on':''}" data-g="${g}"><img src="${personURL(id+'_front_0')}" alt=""><b>${t}</b></button>`).join('')}</div></div>
     <button class="btn go" id="nmGo" type="button">${first?'Open the nursery':'Save name'}</button>`);
   const inp=$('nmIn');setTimeout(()=>{try{inp.focus();}catch(e){}},50);
   $('mbox').querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{inp.value=b.dataset.nm;inp.focus();});
-  const go=()=>{S.name=(inp.value.trim()||idea).replace(/\s+/g,' ').slice(0,28);save();closeModal();hud();if(sheetOpen())renderSheet();if(after)after();};
+  let gen=S.gender||'m';$('mbox').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{gen=b.dataset.g;$('mbox').querySelectorAll('[data-g]').forEach(x=>x.classList.toggle('on',x===b));});
+  const go=()=>{S.gender=gen;S.name=(inp.value.trim()||idea).replace(/\s+/g,' ').slice(0,28);save();closeModal();hud();if(sheetOpen())renderSheet();if(after)after();};
   $('nmGo').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go();};
 }
 const STAGES=[
@@ -2654,6 +2692,9 @@ function boardMetrics(){
 const fURL={};
 function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
   return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
+function personURL(id){const k='p_'+id;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
+const crewFace=(r,px)=>`<span class="face" style="width:${px}px;height:${px}px;background:${IC[r.role].c}"><img src="${personURL('crew_'+r.role+'_front_0|'+lookOf(r))}" alt=""></span>`;
 function catURL(id){const k='cat_'+id;if(fURL[k])return fURL[k];const d=ART.vector['cat_'+id+'_sit'];if(!d)return'';
   return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
 const flowerImg=(k,px)=>`<img class="fi" src="${flowerURL(k,3)}" alt="" style="width:${px}px;height:${px}px">`;
@@ -2830,6 +2871,7 @@ function frame(now){
     if((uiT+=dt)>.15){uiT=0;hud();}
   }
   if(S.phase==='run'&&sheetOpen())renderSheetLite();
+  if(S.phase==='home')stepHome(dt);
   stepCats(dt);renderTray();draw(now);
   requestAnimationFrame(frame);
 }

@@ -307,59 +307,203 @@ for crop in TYPE:
         add(f'{crop}_{st}', flat(crop, st))
 
 # ------------------------------------------------------------------ people
-def person(view='front', frame=0, shirt='#5ccf74', shirtD='#3a9e55', hat='straw', work=False):
-    b = ell(32, 55, 10, 3.4, '#1d3a24', 'opacity=".18"'); lo = 2 if frame else 0
-    jean, jeanD, boot = '#4f78d6', '#3a5aa8', '#7a4a2b'
-    # legs and boots
-    b += f'<rect x="26.5" y="{40-lo}" width="5" height="{12}" rx="2" fill="{jeanD}"/>'
-    b += f'<rect x="32.5" y="{40+lo*0}" width="5" height="{12-lo}" rx="2" fill="{jean}"/>'
-    b += f'<rect x="25.5" y="{50-lo}" width="6.5" height="4" rx="2" fill="{boot}"/><rect x="32" y="{50}" width="6.5" height="4" rx="2" fill="{boot}"/>'
-    # body
-    b += f'<rect x="23.5" y="27" width="17" height="16" rx="6" fill="{shirt}" stroke="{shirtD}" stroke-width=".8"/>'
-    if view == 'front':
-        b += f'<path d="M26,33 h12 v8 a3,3 0 0 1 -3,3 h-6 a3,3 0 0 1 -3,-3 Z" fill="{jean}" stroke="{jeanD}" stroke-width=".7"/>'
-        b += f'<path d="M27,33 L26.5,28 M37,33 L37.5,28" stroke="{jean}" stroke-width="1.8" stroke-linecap="round"/>'
-        b += circ(28.2, 33.6, .8, '#ffd36a') + circ(35.8, 33.6, .8, '#ffd36a') + f'<rect x="30" y="36" width="4" height="3" rx="1" fill="{jeanD}"/>'
-    else:
-        b += f'<path d="M26,35 h12 v6 a3,3 0 0 1 -3,3 h-6 a3,3 0 0 1 -3,-3 Z" fill="{jean}" stroke="{jeanD}" stroke-width=".7"/><path d="M27,35 L30,28 M37,35 L34,28" stroke="{jean}" stroke-width="1.8" stroke-linecap="round"/>'
-    # arms
-    sw = (2 if frame else -2) if not work else 0
-    if work:
-        b += f'<rect x="19.5" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(-35 22 30)"/>'
-        b += f'<rect x="39.5" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(35 42 30)"/>'
-        # watering can held out front
-        b += f'<path d="M40,38 h9 v7 a2,2 0 0 1 -2,2 h-5 a2,2 0 0 1 -2,-2 Z" fill="#4fa8ff" stroke="#1f6fd0" stroke-width=".8"/>'
-        b += f'<path d="M49,40 l6,-4" stroke="#1f6fd0" stroke-width="1.6" stroke-linecap="round"/><path d="M41,38 q3,-5 7,0" fill="none" stroke="#1f6fd0" stroke-width="1.2"/>'
-        b += ''.join(circ(56 + i * .6, 38 + i * 3, .9, '#8fd0ff') for i in range(3))
-        b += circ(43, 37, 2, '#ffd3b0', '#c98a63', .6)
-    else:
-        b += f'<rect x="19.5" y="{28+sw*.5}" width="5" height="12" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7"/>'
-        b += f'<rect x="39.5" y="{28-sw*.5}" width="5" height="12" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7"/>'
-        b += circ(22, 40.5 + sw * .5, 2.2, '#ffd3b0', '#c98a63', .6) + circ(42, 40.5 - sw * .5, 2.2, '#ffd3b0', '#c98a63', .6)
-    # head
-    b += circ(32, 21, 8.6, '#ffd8b8', '#c98a63', .8)
-    if view == 'front':
-        b += ell(28.4, 21.6, 1, 1.4, '#3a2b3d') + ell(35.6, 21.6, 1, 1.4, '#3a2b3d') + circ(28.1, 21.1, .35, '#ffffff') + circ(35.3, 21.1, .35, '#ffffff')
-        b += ell(26.4, 24.4, 1.8, 1.1, '#ff9a9a', 'opacity=".7"') + ell(37.6, 24.4, 1.8, 1.1, '#ff9a9a', 'opacity=".7"')
-        b += '<path d="M29.5,25.4 q2.5,2.4 5,0" fill="none" stroke="#7a3b3b" stroke-width="1" stroke-linecap="round"/>'
-    else:
-        b += circ(32, 21, 8.6, '#8a5631', '#6a3e22', .8)
-        b += '<path d="M25.5,24 q6.5,5 13,0" fill="none" stroke="#6a3e22" stroke-width=".8"/>'
-        b += ell(23.6, 22, 1.4, 2, '#ffd8b8', 'stroke="#c98a63" stroke-width=".6"') + ell(40.4, 22, 1.4, 2, '#ffd8b8', 'stroke="#c98a63" stroke-width=".6"')
+SKIN, HAND, SKO = '#ffd8b8', '#ffd3b0', '#c98a63'
+def hat_svg(hat, view):
+    b = ''
     if hat == 'straw':
         b += ell(32, 15.5, 14, 4.6, '#f7d77e', 'stroke="#c99f45" stroke-width=".9"')
         b += '<path d="M24.5,15 q0,-9 7.5,-9 q7.5,0 7.5,9 Z" fill="#fbe39a" stroke="#c99f45" stroke-width=".9"/>'
         b += '<path d="M24.7,13.4 q7.3,2.6 14.6,0 v2 q-7.3,2.6 -14.6,0 Z" fill="#ef5b4c"/>'
-    else:
-        b += '<path d="M23.6,18 q0,-10 8.4,-10 q8.4,0 8.4,10 Z" fill="#2f6fd6" stroke="#1f4f9e" stroke-width=".9"/>'
-        b += (ell(37.5, 17.6, 7, 2.2, '#2559b8') if view == 'front' else ell(26.5, 17.6, 6, 2, '#2559b8'))
+    elif hat == 'strawf':
+        b += ell(32, 15.5, 15, 4.8, '#f7d77e', 'stroke="#c99f45" stroke-width=".9"')
+        b += '<path d="M24.5,15 q0,-9 7.5,-9 q7.5,0 7.5,9 Z" fill="#fbe39a" stroke="#c99f45" stroke-width=".9"/>'
+        b += '<path d="M24.7,13.4 q7.3,2.6 14.6,0 v2 q-7.3,2.6 -14.6,0 Z" fill="#5fb2e8"/>'
+        b += (circ(37.6, 13.2, 2.1, '#ff8fc0', '#d0558f', .6) + circ(37.6, 13.2, .8, '#ffe27a') if view == 'front' else circ(26.4, 13.2, 2.1, '#ff8fc0', '#d0558f', .6))
+    elif hat.startswith('cap'):
+        c, cd = {'cap': ('#2f6fd6', '#1f4f9e'), 'capw': ('#f4f4f0', '#b8b8b0'), 'capd': ('#3a4248', '#22282c'), 'capt': ('#c2603a', '#8a3f22')}[hat]
+        b += f'<path d="M23.6,18 q0,-10 8.4,-10 q8.4,0 8.4,10 Z" fill="{c}" stroke="{cd}" stroke-width=".9"/>'
+        b += (ell(37.5, 17.6, 7, 2.2, cd) if view == 'front' else ell(26.5, 17.6, 6, 2, cd))
         b += circ(32, 8.6, 1.2, '#ffd36a')
+    elif hat == 'bucket':
+        b += '<path d="M21.5,17.5 q10.5,5 21,0 l-2,-3 q-8.5,3.5 -17,0 Z" fill="#c9b27a" stroke="#9a8450" stroke-width=".8"/>'
+        b += '<path d="M24,15.5 q0,-9 8,-9 q8,0 8,9 q-8,3 -16,0 Z" fill="#dcc68e" stroke="#9a8450" stroke-width=".9"/>'
+        b += '<path d="M24.2,13.6 q7.8,2.8 15.6,0" fill="none" stroke="#2a78d0" stroke-width="1.4"/>'
+    elif hat == 'hard':
+        b += ell(32, 16.8, 11.5, 3.2, '#f2b81f', 'stroke="#b88a10" stroke-width=".8"')
+        b += '<path d="M23.6,17 q0,-10.5 8.4,-10.5 q8.4,0 8.4,10.5 Z" fill="#ffd23a" stroke="#b88a10" stroke-width=".9"/>'
+        b += '<path d="M32,6.8 v9.5" stroke="#f2b81f" stroke-width="2.2"/>'
+    elif hat == 'sun':
+        b += ell(32, 15.8, 16.5, 5.2, '#f3e6c4', 'stroke="#b89d5a" stroke-width=".9"')
+        b += '<path d="M24.5,15.3 q0,-9 7.5,-9 q7.5,0 7.5,9 Z" fill="#faf0d4" stroke="#b89d5a" stroke-width=".9"/>'
+        b += '<path d="M24.7,13.6 q7.3,2.6 14.6,0 v2.2 q-7.3,2.6 -14.6,0 Z" fill="#7a2fb8"/>'
+        b += circ(38.2 if view == 'front' else 25.8, 13.8, 2.4, '#c99a12', '#8a6a12', .6) + circ(38.2 if view == 'front' else 25.8, 13.8, 1, '#7a2fb8')
     return b
-add('grower_front_0', person('front', 0)); add('grower_front_1', person('front', 1))
-add('grower_back_0', person('back', 0)); add('grower_back_1', person('back', 1))
-add('grower_work', person('front', 0, work=True))
-add('crew_front_0', person('front', 0, '#ffa34d', '#d77a2a', 'cap')); add('crew_front_1', person('front', 1, '#ffa34d', '#d77a2a', 'cap'))
-add('crew_back_0', person('back', 0, '#ffa34d', '#d77a2a', 'cap')); add('crew_back_1', person('back', 1, '#ffa34d', '#d77a2a', 'cap')); add('crew_work', person('front', 0, '#ffa34d', '#d77a2a', 'cap', work=True))
+
+def person(view='front', frame=0, st=None, work=None):
+    st = st or {}
+    shirt, shirtD = st.get('shirt', '#5ccf74'), st.get('shirtD', '#3a9e55')
+    hat, hair, hairD = st.get('hat', 'straw'), st.get('hair', '#8a5631'), st.get('hairD', '#6a3e22')
+    long_ = st.get('long', False); extra = st.get('extra', ())
+    coverall = 'coverall' in extra
+    b = ell(32, 55, 10, 3.4, '#1d3a24', 'opacity=".18"'); lo = 2 if frame else 0
+    jean, jeanD, boot = ('#7f8c96', '#56606b', '#3a3030') if coverall else ('#4f78d6', '#3a5aa8', '#7a4a2b')
+    if 'tank' in extra and view == 'back':
+        pass
+    # legs and boots
+    b += f'<rect x="26.5" y="{40-lo}" width="5" height="12" rx="2" fill="{jeanD}"/>'
+    b += f'<rect x="32.5" y="40" width="5" height="{12-lo}" rx="2" fill="{jean}"/>'
+    b += f'<rect x="25.5" y="{50-lo}" width="6.5" height="4" rx="2" fill="{boot}"/><rect x="32" y="50" width="6.5" height="4" rx="2" fill="{boot}"/>'
+    # braid behind the body when seen from the front
+    # body
+    b += f'<rect x="23.5" y="27" width="17" height="16" rx="6" fill="{shirt}" stroke="{shirtD}" stroke-width=".8"/>'
+    if coverall:
+        b += f'<rect x="25" y="34" width="14" height="8" rx="3" fill="{shirt}"/><path d="M32,28 v14" stroke="{shirtD}" stroke-width=".8"/>'
+        if view == 'front': b += '<rect x="34" y="30" width="4" height="3" rx=".8" fill="#4a555e"/><rect x="24.5" y="37" width="15" height="2.6" fill="#3a4248"/>' + circ(32, 38.3, 1.2, '#c9ced6')
+    elif 'apron' not in extra:
+        if view == 'front':
+            b += f'<path d="M26,33 h12 v8 a3,3 0 0 1 -3,3 h-6 a3,3 0 0 1 -3,-3 Z" fill="{jean}" stroke="{jeanD}" stroke-width=".7"/>'
+            b += f'<path d="M27,33 L26.5,28 M37,33 L37.5,28" stroke="{jean}" stroke-width="1.8" stroke-linecap="round"/>'
+            b += circ(28.2, 33.6, .8, '#ffd36a') + circ(35.8, 33.6, .8, '#ffd36a') + f'<rect x="30" y="36" width="4" height="3" rx="1" fill="{jeanD}"/>'
+        else:
+            b += f'<path d="M26,35 h12 v6 a3,3 0 0 1 -3,3 h-6 a3,3 0 0 1 -3,-3 Z" fill="{jean}" stroke="{jeanD}" stroke-width=".7"/><path d="M27,35 L30,28 M37,35 L34,28" stroke="{jean}" stroke-width="1.8" stroke-linecap="round"/>'
+    if 'apron' in extra:
+        if view == 'front':
+            b += '<path d="M25.5,30 h13 v13 a2.5,2.5 0 0 1 -2.5,2.5 h-8 a2.5,2.5 0 0 1 -2.5,-2.5 Z" fill="#efe2bd" stroke="#b8a170" stroke-width=".7"/>'
+            b += '<rect x="28" y="36" width="8" height="4" rx="1" fill="#e0cf9e" stroke="#b8a170" stroke-width=".5"/><path d="M29,36 v-3 M31,36 v-4" stroke="#8a5a3a" stroke-width="1"/>'
+        else:
+            b += '<path d="M24,36 h16" stroke="#efe2bd" stroke-width="1.6"/><path d="M30,36 l-1.5,4 M34,36 l1.5,4" stroke="#efe2bd" stroke-width="1.2"/>'
+    if 'vest' in extra:
+        if view == 'front':
+            b += '<path d="M23.8,29 q0,-2 3,-2 h2.2 l3,5 l3,-5 h2.2 q3,0 3,2 v11 q0,3 -3,3 h-10.4 q-3,0 -3,-3 Z" fill="#ffe14a" stroke="#d9b20f" stroke-width=".7"/>'
+            b += '<path d="M24,35 h16 M24,38.5 h16" stroke="#e9eef2" stroke-width="1.3"/>'
+        else:
+            b += '<rect x="23.8" y="27.4" width="16.4" height="15" rx="5" fill="#ffe14a" stroke="#d9b20f" stroke-width=".7"/><path d="M24,33 h16 M24,36.5 h16" stroke="#e9eef2" stroke-width="1.3"/><path d="M26,30 l12,9 M38,30 l-12,9" stroke="#e9eef2" stroke-width="1"/>'
+    if 'gvest' in extra:
+        if view == 'front':
+            b += '<path d="M23.8,29 q0,-2 3,-2 h2 l3,7 l3,-7 h2 q3,0 3,2 v11 q0,3 -3,3 h-10 q-3,0 -3,-3 Z" fill="#c99a12" stroke="#8a6a12" stroke-width=".7"/>'
+            b += circ(28, 32, 2, '#7a2fb8', '#4a1a70', .5) + f'<path d="M27,33.5 l-.8,3 l1.8,-1 l1.8,1 l-.8,-3" fill="#7a2fb8"/>' + circ(28, 32, .8, '#ffe27a')
+        else:
+            b += '<rect x="23.8" y="27.4" width="16.4" height="15" rx="5" fill="#c99a12" stroke="#8a6a12" stroke-width=".7"/>'
+    if 'tank' in extra:
+        if view == 'front':
+            b += '<path d="M26,27.5 v7 M38,27.5 v7" stroke="#2b3a33" stroke-width="1.8"/>' + poly([(21.5, 25), (24, 24), (24, 31), (21.5, 31.5)], '#ffd23a', '#b88a10', .6)
+        else:
+            b += '<rect x="24" y="24.5" width="16" height="19" rx="6" fill="#ffd23a" stroke="#b88a10" stroke-width=".9"/><rect x="29" y="22.5" width="6" height="3" rx="1.2" fill="#d23a3a"/><path d="M26,30 h12" stroke="#e8a50f" stroke-width="1"/>'
+            b += '<path d="M39,40 q5,1 6,-4" fill="none" stroke="#2b3a33" stroke-width="1.3"/>'
+    # arms
+    sw = (2 if frame else -2) if not work else 0
+    hand = lambda x, y: circ(x, y, 2.2, HAND, SKO, .6)
+    if work == 'can':
+        b += f'<rect x="19.5" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(-35 22 30)"/>'
+        b += f'<rect x="39.5" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(35 42 30)"/>'
+        b += f'<path d="M40,38 h9 v7 a2,2 0 0 1 -2,2 h-5 a2,2 0 0 1 -2,-2 Z" fill="#4fa8ff" stroke="#1f6fd0" stroke-width=".8"/>'
+        b += f'<path d="M49,40 l6,-4" stroke="#1f6fd0" stroke-width="1.6" stroke-linecap="round"/><path d="M41,38 q3,-5 7,0" fill="none" stroke="#1f6fd0" stroke-width="1.2"/>'
+        b += ''.join(circ(56 + i * .6, 38 + i * 3, .9, '#8fd0ff') for i in range(3))
+        b += circ(43, 37, 2, HAND, SKO, .6)
+    elif work:
+        # both arms reach forward to the job in hand
+        b += f'<rect x="21" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(-20 23 30)"/>'
+        b += f'<rect x="38" y="29" width="5" height="10" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7" transform="rotate(20 41 30)"/>'
+        if work == 'pot':
+            b += poly([(27, 37), (37, 37), (35.6, 44.5), (28.4, 44.5)], '#ee8656', '#c9643a', .8) + ell(32, 37, 5, 1.4, '#6a4129')
+            b += cluster(32, 33.5, 3.4, 'url(#gLeaf)', '#2f7a3f', 3) + circ(30.6, 32.6, 1.1, '#f26bb5') + circ(33.6, 33.2, 1, '#f26bb5')
+            b += hand(26.5, 40) + hand(37.5, 40)
+            b += '<path d="M44,42 l5,-6" stroke="#8a5a3a" stroke-width="1.6" stroke-linecap="round"/><path d="M48.4,36.6 l2.2,-2.6 l1,1.6 Z" fill="#b9c9d8" stroke="#56606b" stroke-width=".5"/>'
+        elif work == 'spray':
+            b += hand(26, 40) + hand(38, 39)
+            b += '<path d="M38,39 l12,-5" stroke="#2b3a33" stroke-width="1.6" stroke-linecap="round"/><path d="M26,40 q-4,3 -2,8" fill="none" stroke="#2b3a33" stroke-width="1.2"/>'
+            for i, (dx, dy, r) in enumerate(((52, 32, 2.4), (55, 30, 2), (56, 34, 1.8), (58.5, 31, 1.5), (54, 36, 1.4))):
+                b += circ(dx, dy, r, '#eafbe8', 'none', 1, 'opacity=".85"')
+        elif work == 'wrench':
+            b += hand(26, 40) + hand(40, 35)
+            b += '<path d="M40,35 l8,-8" stroke="#9aa5ad" stroke-width="2.4" stroke-linecap="round"/><path d="M46.5,25 a3,3 0 1 1 3.8,3.8 l-1.4,-1.4 l1,-1 l-1.4,-1.4 l-1,1 Z" fill="#9aa5ad" stroke="#56606b" stroke-width=".5"/>'
+            b += poly([(51, 22), (52.5, 24.5), (55, 23), (53, 26), (55.5, 27.5), (52, 27)], '#ffd23a')
+        elif work == 'box':
+            b += I_box_svg()
+            b += hand(24.5, 37) + hand(39.5, 37)
+        elif work in ('shovel0', 'shovel1'):
+            up = work == 'shovel0'
+            if up:
+                b += hand(27, 34) + hand(37, 39)
+                b += '<path d="M24,28 L44,46" stroke="#8a5a3a" stroke-width="2" stroke-linecap="round"/><path d="M42,44 l5,-1 l3,5 l-4,3 l-5,-2 Z" fill="#b9c9d8" stroke="#56606b" stroke-width=".7"/>'
+            else:
+                b += hand(29, 37) + hand(36, 42)
+                b += '<path d="M26,31 L42,52" stroke="#8a5a3a" stroke-width="2" stroke-linecap="round"/><path d="M40,50 l5,-1 l3,5 l-4,3 l-5,-2 Z" fill="#b9c9d8" stroke="#56606b" stroke-width=".7"/>'
+                b += circ(49, 55, 1.6, '#8a6a4a') + circ(52, 53, 1.2, '#a8805a') + circ(46, 57, 1.1, '#8a6a4a')
+        elif work in ('hammer0', 'hammer1'):
+            up = work == 'hammer0'
+            b += hand(26, 40)
+            if up:
+                b += hand(40, 30) + '<path d="M40,30 l3,-9" stroke="#8a5a3a" stroke-width="2" stroke-linecap="round"/><rect x="39" y="17.5" width="9" height="4" rx="1" fill="#6f7b84" stroke="#3a4248" stroke-width=".6" transform="rotate(20 43.5 19.5)"/>'
+            else:
+                b += hand(41, 38) + '<path d="M41,38 l8,2" stroke="#8a5a3a" stroke-width="2" stroke-linecap="round"/><rect x="47" y="36" width="4" height="9" rx="1" fill="#6f7b84" stroke="#3a4248" stroke-width=".6"/>'
+                b += '<path d="M53,38 l3,-2 M53,42 l3.5,0 M52.5,45 l2.5,2" stroke="#ffd23a" stroke-width="1.2" stroke-linecap="round"/>'
+        elif work == 'snips':
+            b += hand(27, 39) + hand(38, 37)
+            b += '<path d="M38,37 l7,-5 M38,37 l7,-2" stroke="#b9c9d8" stroke-width="1.4" stroke-linecap="round"/><path d="M36,38 l2,-1" stroke="#d23a3a" stroke-width="2.2" stroke-linecap="round"/>'
+            for x, y, r in ((48, 28, 2.2), (51, 33, 1.4), (45, 25, 1.2)):
+                b += f'<path d="M{x},{y-r} L{x+r*.3},{y-r*.3} L{x+r},{y} L{x+r*.3},{y+r*.3} L{x},{y+r} L{x-r*.3},{y+r*.3} L{x-r},{y} L{x-r*.3},{y-r*.3} Z" fill="#ffe27a"/>'
+    else:
+        b += f'<rect x="19.5" y="{28+sw*.5}" width="5" height="12" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7"/>'
+        b += f'<rect x="39.5" y="{28-sw*.5}" width="5" height="12" rx="2.5" fill="{shirt}" stroke="{shirtD}" stroke-width=".7"/>'
+        b += hand(22, 40.5 + sw * .5) + hand(42, 40.5 - sw * .5)
+        if 'wrench' in extra and view == 'front':
+            b += f'<path d="M42,{41-sw*.5} v6" stroke="#9aa5ad" stroke-width="1.8" stroke-linecap="round"/>'
+    # head
+    if long_ and view == 'front':
+        b += f'<path d="M23.6,20 q-1.5,9 1.2,13 h4 q-2,-5 -1.4,-11 Z" fill="{hair}" stroke="{hairD}" stroke-width=".6"/>'
+        b += f'<path d="M40.4,20 q1.5,9 -1.2,13 h-4 q2,-5 1.4,-11 Z" fill="{hair}" stroke="{hairD}" stroke-width=".6"/>'
+    b += circ(32, 21, 8.6, SKIN, SKO, .8)
+    if view == 'front':
+        b += ell(28.4, 21.6, 1, 1.4, '#3a2b3d') + ell(35.6, 21.6, 1, 1.4, '#3a2b3d') + circ(28.1, 21.1, .35, '#ffffff') + circ(35.3, 21.1, .35, '#ffffff')
+        if long_:
+            b += '<path d="M26.8,20.4 l-.9,-.8 M36.9,20.4 l.9,-.8" stroke="#3a2b3d" stroke-width=".6" stroke-linecap="round"/>'
+        b += ell(26.4, 24.4, 1.8, 1.1, '#ff9a9a', 'opacity=".7"') + ell(37.6, 24.4, 1.8, 1.1, '#ff9a9a', 'opacity=".7"')
+        if 'mask' in extra:
+            b += '<path d="M27.5,23.2 q4.5,-1.6 9,0 v3 q-4.5,3 -9,0 Z" fill="#e9eef2" stroke="#8a96a3" stroke-width=".6"/>' + circ(27.2, 25.6, 1.6, '#56606b') + circ(36.8, 25.6, 1.6, '#56606b')
+        else:
+            b += '<path d="M29.5,25.4 q2.5,2.4 5,0" fill="none" stroke="#7a3b3b" stroke-width="1" stroke-linecap="round"/>'
+        if long_:
+            b += f'<path d="M25,15.5 q7,4 14,0 v2.4 q-7,3 -14,0 Z" fill="{hair}"/>'
+    else:
+        b += circ(32, 21, 8.6, hair, hairD, .8)
+        b += f'<path d="M25.5,24 q6.5,5 13,0" fill="none" stroke="{hairD}" stroke-width=".8"/>'
+        b += ell(23.6, 22, 1.4, 2, SKIN, f'stroke="{SKO}" stroke-width=".6"') + ell(40.4, 22, 1.4, 2, SKIN, f'stroke="{SKO}" stroke-width=".6"')
+        if long_:
+            for i, y in enumerate((29, 32.2, 35.4, 38.4)):
+                b += ell(32, y, 2.6 - i * .25, 2, hair, f'stroke="{hairD}" stroke-width=".6"')
+            b += circ(32, 40.6, 1.3, '#5fb2e8')
+        if 'mask' in extra: b += '<path d="M23.8,23.6 q8.2,3 16.4,0" fill="none" stroke="#8a96a3" stroke-width=".8"/>'
+    b += hat_svg(hat, view)
+    if 'goggles' in extra and view == 'front':
+        b += '<rect x="26" y="9.5" width="12" height="3.6" rx="1.8" fill="#9fd0ff" stroke="#2b3a33" stroke-width=".8"/>'
+    return b
+
+def I_box_svg():
+    I = Iso(32, 41)
+    return I.box(-.15, -.15, .15, .15, 0, 8, '#e7c48a', '#c99a5a', '#b5864a', '#7a5a30', .7) + poly([I.P(-.15, -.02, 8), I.P(.15, -.02, 8), I.P(.15, .02, 8), I.P(-.15, .02, 8)], '#d0a868')
+
+PEOPLE = {
+    'grower':  dict(),
+    'growerf': dict(hat='strawf', long=True, hair='#7a4422', hairD='#56301a', shirt='#ff8fb2', shirtD='#d0587f'),
+    'crew_pot':   dict(shirt='#e98a5a', shirtD='#b85a30', hat='capt', extra=('apron',)),
+    'crew_water': dict(shirt='#5aaef5', shirtD='#2a78d0', hat='bucket'),
+    'crew_pest':  dict(shirt='#ff7a6a', shirtD='#c8402f', hat='capw', extra=('tank', 'mask', 'goggles')),
+    'crew_fix':   dict(shirt='#9aa7b2', shirtD='#56606b', hat='capd', extra=('coverall', 'wrench')),
+    'crew_load':  dict(shirt='#5ccf74', shirtD='#2c8a47', hat='hard', extra=('vest',)),
+    'crew_prize': dict(shirt='#fff6e0', shirtD='#c9b88a', hat='sun', extra=('gvest',)),
+}
+WORKT = {'grower': 'can', 'growerf': 'can', 'crew_pot': 'pot', 'crew_water': 'can', 'crew_pest': 'spray', 'crew_fix': 'wrench', 'crew_load': 'box', 'crew_prize': 'snips'}
+for who, st_ in PEOPLE.items():
+    for v in ('front', 'back'):
+        for fr in (0, 1): add(f'{who}_{v}_{fr}', person(v, fr, st_))
+    add(f'{who}_work', person('front', 0, st_, WORKT[who]))
+    if who.startswith('grower'):
+        for t in ('shovel0', 'shovel1', 'hammer0', 'hammer1'): add(f'{who}_{t}', person('front', 0, st_, t))
+# old crew ids stay valid
+for v in ('front', 'back'):
+    for fr in (0, 1): add(f'crew_{v}_{fr}', person(v, fr, PEOPLE['crew_pot']))
+add('crew_work', person('front', 0, PEOPLE['crew_pot'], 'pot'))
 
 # ------------------------------------------------------------------ heater
 def heater(broken=False):
@@ -613,6 +757,8 @@ def vbowls():
     b += bowl(.68, .44, '#3f7fc4', '#8fd0f2', wat)
     return b
 add('catbowls', vbowls())
+
+exec(open(__file__.replace('vector_gen.py', 'home_art.py')).read())
 
 # ------------------------------------------------------------------ write files
 defs = '\n'.join(DEFS)
