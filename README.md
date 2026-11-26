@@ -25,7 +25,9 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 - **Prize grower:** after three years of showcase judging and a Silver ribbon or better, you can hire a prize grower ($5,000 fee, $600 a period) to run the showcase house so you can move on. They start out distracted; one expensive horticulture class a year ($4,000 up to $30,000) raises their attentiveness, up to Best in Show quality.
 - **Phone calls:** a wall phone by the door of house 1 rings about once a period. Walk over in time and a caller asks for something (a discount, a rush order, a frost decision, a job seeker, a buyout offer and about 30 more, gated by level). Miss it and nothing happens.
 - **Losing:** the nursery closes if every customer writes you off, or if you end two years in a row below zero. Money comes from bank loans, not credit; missed paydays can make crew quit.
-- **Extras:** the seasons change the ground and weather. Pick which greenhouse cats live with you (Miley, Anna and Max) in the Upgrades tab; they wander, nap, chase the odd mouse and visit their food and water bowls. Tap one to pet it.
+- **Homestead:** between years you go home to the farm across the road. Spend stars on clearing debris (sometimes there's a star underneath), building a display garden, farm stand, tool shed, pergola, pond, fruit trees or flower beds, growing the cat house and office, and adopting cats. Stars come from each year's Best Homes and Gardens rating, 3 more for hitting your goal, and the odd star that pops up in a greenhouse (tap it before it fades). Showcase ribbons hang on the office wall. Start the next year when you're ready.
+- **Cats:** Miley starts in the cat house. Adopt Anna, Max, Gremlin, Beatrice and Minaou as space allows; each gives a small bonus (fewer pests, fewer breakdowns, more reputation, faster new hires, better prices, more stars). They wander the greenhouses, nap, chase the odd mouse and visit their bowls. Tap one to pet it.
+- **Extras:** the seasons change the ground and weather.
 
 ## Art
 

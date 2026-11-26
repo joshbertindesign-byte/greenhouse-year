@@ -507,13 +507,17 @@ for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklif
 VCOAT = {'anna':  dict(b='#fbf8f2', d='#c96f2c', w='#ffffff', o='#7a6656', eye='#3f8a3a', h='#f0a050', t='#4a4f57', ts='#9aa0a8',
                       patches=('#ee9a48', '#8e959e', '#5a3a28')),
          'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a'),
-         'max':   dict(b='#f2a04e', d='#c96a26', w='#e8913f', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a')}
+         'max':   dict(b='#f2a04e', d='#c96a26', w='#e8913f', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a'),
+         'gremlin': dict(b='#3a2b24', d='#2a1e19', w='#4a3a32', o='#1e1612', eye='#d9a52a', h='#3a2b24', t='#3a2b24', patches=('#c8732e', '#7a4a2a', '#d99a4e'), mz='#a39488', fh=False),
+         'beatrice': dict(b='#fbfbf8', d='#d9d6cf', w='#ffffff', o='#6a6660', eye='#3a7bd5', h='#fbfbf8', t='#fbfbf8', patches=('#232326', '#2e2e33', '#232326'), mz=None, fh=False, fluffy=True),
+         'minaou': dict(b='#2b221e', d='#1f1815', w='#3a2e28', o='#14100e', eye='#e0b23a', h='#2b221e', t='#2b221e', patches=('#c86a2a', '#5a3a28', '#d8893e'), mz=None, fh=False, small=True)}
 def vcat(name, pose):
     c = VCOAT[name]; o = c['o']; sw = .9
     b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
     stripes = (lambda pts: ''.join(f'<path d="{d}" stroke="{c["st"]}" stroke-width="1.7" fill="none" stroke-linecap="round"/>' for d in pts)) if 'st' in c else (lambda pts: '')
     hc, tc = c.get('h', c['b']), c.get('t', c['b'])
     def tail(d, w1=4.6, w2=3):
+        if c.get('fluffy'): w1, w2 = w1 * 1.7, w2 * 1.75
         t = f'<path d="{d}" fill="none" stroke="{o}" stroke-width="{w1}" stroke-linecap="round"/><path d="{d}" fill="none" stroke="{tc}" stroke-width="{w2}" stroke-linecap="round"/>'
         if 'ts' in c: t += f'<path d="{d}" fill="none" stroke="{c["ts"]}" stroke-width="{w2}" stroke-dasharray="1.3 2.1"/>'
         return t
@@ -528,8 +532,11 @@ def vcat(name, pose):
         if name == 'miley': h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
         if 'st' in c: h += ''.join(f'<path d="{p}" stroke="{c["st"]}" stroke-width="1.2" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.6},{y-5} v2', f'M{x+.6},{y-5.4} v2.3', f'M{x+2.8},{y-5} v2', f'M{x-5.6},{y+.6} h-1.6', f'M{x+6.4},{y+.6} h1.6'))
         if 'patches' in c:
-            h += ell(x + .6, y + 2.8, 3.2, 2.2, '#ffffff')
-            h += ''.join(f'<path d="{p}" stroke="#c9742e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.5},{y-5} v1.8', f'M{x+.5},{y-5.3} v2', f'M{x+2.5},{y-5} v1.8'))
+            if c.get('mz', '#ffffff'): h += ell(x + .6, y + 2.8, 3.2, 2.2, c.get('mz', '#ffffff'))
+            if c.get('fh', True): h += ''.join(f'<path d="{p}" stroke="#c9742e" stroke-width="1.1" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.5},{y-5} v1.8', f'M{x+.5},{y-5.3} v2', f'M{x+2.5},{y-5} v1.8'))
+            if name in ('gremlin', 'minaou'): h += ell(x - 2.6, y - 2.2, 2.4, 1.8, c['patches'][0]) + ell(x + 3, y + .6, 1.8, 1.4, c['patches'][1])
+            if name == 'beatrice': h += ell(x + 2.8, y - 3, 2.2, 1.7, c['patches'][0])
+            if name == 'beatrice': h += poly([(x - 4.6, y - 6.6), (x - 7.4, y - 8.2), (x - 7.2, y - 4.6)], '#ff7eb6', '#c2407e', .5) + poly([(x - 4.6, y - 6.6), (x - 2, y - 8.6), (x - 1.8, y - 5)], '#ff7eb6', '#c2407e', .5) + circ(x - 4.6, y - 6.6, 1, '#ff4f9a')
         if closed:
             h += f'<path d="M{x-3.6},{y-.2} q1.3,1.2 2.6,0 M{x+1.6},{y-.2} q1.3,1.2 2.6,0" stroke="{o}" stroke-width=".9" fill="none" stroke-linecap="round"/>'
         else:
@@ -548,6 +555,7 @@ def vcat(name, pose):
         b += stripes(['M27,37.5 q1,3 0,6', 'M31,37 q1,3 0,6.5', 'M35,37 q1,3 0,6.5'])
         b += head(43, 35)
     elif pose == 'sit':
+        if c.get('fluffy'): b += ell(33.5, 37, 7.5, 4.5, c['w'], f'stroke="{o}" stroke-width=".7"')
         b += tail('M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5')
         b += f'<path d="M24,52 q-1,-16 9,-17 q9,1 8,17 Z" fill="{c["b"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += patches('<path d="M24.4,51.6 q-1,-16 8.6,-16.6 q8.6,1 7.6,16.6 Z"/>', [(0, 26, 40.5, 3.8, 5), (2, 40, 39.5, 2.8, 4), (1, 37.5, 37, 3, 2.2)])
@@ -571,6 +579,7 @@ def vcat(name, pose):
         b += tail('M19,49 q8,6 22,2', 4.4, 2.8)
         b += head(39, 45, True)
         b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
+    if c.get('small'): b = f'<g transform="translate(32 52) scale(.84) translate(-32 -52)">{b}</g>'
     return b
 def vmouse(frame):
     b = ell(32, 50, 7, 1.8, '#1d3a24', 'opacity=".18"')
@@ -585,7 +594,7 @@ def vmouse(frame):
     b += f'<path d="M41,46.4 l2.6,-1 M41,46.8 l2.8,.4" stroke="#5d646d" stroke-width=".4"/>'
     return b
 add('mouse_0', vmouse(0)); add('mouse_1', vmouse(1))
-for _n in ('anna', 'miley', 'max'):
+for _n in ('anna', 'miley', 'max', 'gremlin', 'beatrice', 'minaou'):
     for _p in ('walk0', 'walk1', 'sit', 'sleep', 'eat'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
 def vbowls():
     I = Iso(); b = ''
