@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" id="vp" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Greenhouse Year</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Greenhouse">
+<meta name="theme-color" content="#173426">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -66,9 +73,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lane.h .card{width:58px;height:54px}
 .empty{color:var(--mute);font-size:15px;padding:0 6px}
 
-.sheet{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100vw,820px);height:94vh;max-height:94vh;overflow:hidden;background:#24402f;border-radius:30px 30px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.14);padding:12px 10px calc(26px + env(safe-area-inset-bottom));animation:up .28s ease-out;display:flex;flex-direction:column}
+.sheet{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100vw,820px);height:94vh;max-height:94vh;height:94dvh;max-height:94dvh;overflow:hidden;background:#24402f;border-radius:30px 30px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.14);padding:12px 10px calc(26px + env(safe-area-inset-bottom));animation:up .28s ease-out;display:flex;flex-direction:column}
 @keyframes up{from{transform:translate(-50%,40px);opacity:0}}
-@media (min-width:860px){.sheet{bottom:auto;top:50%;transform:translate(-50%,-50%);border-radius:44px;animation:none;width:min(calc(100vw - 32px),1180px);height:min(calc(100vh - 32px),800px);max-height:none;padding:20px 20px 32px;box-shadow:0 34px 70px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.25)}}
+@media (min-width:860px){.sheet{bottom:auto;top:50%;transform:translate(-50%,-50%);border-radius:44px;animation:none;width:min(calc(100vw - 32px),1180px);height:min(calc(100vh - 32px),800px);height:min(calc(100dvh - 32px),800px);max-height:none;padding:20px 20px 32px;box-shadow:0 34px 70px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.25)}}
 .bhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
 .bhead h2{margin:0;font-size:22px;font-weight:700;flex:1;min-width:180px}
 .bhead h2 small{display:block;font-size:14px;font-weight:400;color:var(--mute)}
@@ -124,7 +131,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .drag{position:fixed;z-index:9;pointer-events:none;border-radius:10px;opacity:.9;border:3px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 
 .modal{position:fixed;inset:0;z-index:10;background:rgba(10,25,16,.45);display:grid;place-items:center;padding:16px}
-.mbox{background:var(--paper);border-radius:22px;max-width:520px;width:100%;padding:22px;max-height:90vh;overflow:auto}
+.mbox{background:var(--paper);border-radius:22px;max-width:520px;width:100%;padding:22px;max-height:90vh;max-height:90dvh;overflow:auto}
 .mbox h2{margin:0 0 8px;font-size:24px}
 .mbox p{font-size:16px;line-height:1.5;margin:0 0 12px;color:#33433a}
 .steps{display:grid;gap:10px;margin:14px 0 18px}
@@ -308,6 +315,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tabs button{border:2px solid var(--line);background:#fff;border-radius:12px;padding:8px 14px;font-weight:700;font-size:15px}
 .tabs button.on{background:var(--hud);border-color:var(--hud);color:#fff}
 .ftabs{display:flex;gap:6px;margin:2px 0 8px}
+.hmap{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}.hmap.row{align-items:center}
+.hmap .hl0{font-size:12px;font-weight:700;color:var(--mute);align-self:center}
+.hml{display:flex;flex-direction:column;align-items:center;gap:2px}.hml small{font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.02em}
+.hmg{display:grid;grid-template-columns:repeat(2,30px);gap:3px}.hmap.row .hmg{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:34px}
+.hmap button{height:26px;border:2px solid var(--line);background:#fff;border-radius:7px;font-weight:700;font-size:13px;padding:0;line-height:1;color:var(--ink)}
+.hmap button.on{background:var(--hud);border-color:var(--hud);color:#fff}
+.hmap i{height:26px;border:2px dashed #e4e0d3;border-radius:7px}
+.fsel .hmap{margin-top:6px;gap:4px 8px}.fsel .hmap .hl0{flex-basis:100%;margin-bottom:-2px}.fsel .hmg{grid-template-columns:repeat(2,28px)}.fsel .hmap.row .hmg{grid-template-columns:none;grid-auto-columns:32px}.bh .hmap{margin:0 0 6px}
 .ftabs button{border:2px solid var(--line);background:#fff;border-radius:10px;padding:5px 10px;font-weight:600;font-size:14px}
 .ftabs button.on{border-color:var(--ink);background:#fff8dc}
 .roles{display:grid;gap:10px}
@@ -458,7 +473,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tierrow{display:flex;align-items:center;gap:10px;font-size:13px;color:#33463a}.tierrow .tchip{width:70px;text-align:center;font-size:13px;padding:3px 0}
 .lg{display:flex;align-items:center;gap:10px;font-size:14px}.lg b{width:34px}.lg .p{color:var(--go)}.lg .n{color:var(--bad)}
 
-.hstrip{position:fixed;left:8px;right:8px;z-index:5;display:flex;gap:6px;justify-content:center;pointer-events:none}
+.hstrip{position:fixed;left:0;right:0;z-index:5;display:flex;gap:6px;pointer-events:none;overflow-x:auto;scrollbar-width:none;padding:8px 10px 6px;margin-top:-8px}
+.hstrip::-webkit-scrollbar{display:none}.hstrip.ovf{pointer-events:auto}
+.hstrip>button{flex:none}.hstrip>button:first-child{margin-left:auto}.hstrip>button:last-child{margin-right:auto}
 .hstrip button{pointer-events:auto;position:relative;min-width:46px;height:44px;border:0;border-radius:14px;background:rgba(23,52,38,.88);color:#fff;font:700 16px Outfit,sans-serif;padding:0 10px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
 .hstrip button.on{background:#faf7ef;color:#16231b;box-shadow:0 0 0 3px #173426}
 .hstrip button small{display:block;font-size:10px;font-weight:600;opacity:.75;line-height:1;margin-top:-2px}
@@ -1516,6 +1533,10 @@ function renderFloors(){
 }
 let stripSig='';
 function houseLoad(h){const ts=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===h);return{n:ts.length,hot:ts.some(t=>t.due!=null&&!engaged(t)&&(t.due-S.t)<(t.due-t.born)*.35)};}
+function houseMap(cur,mk,lab){
+  if(S.floors<=4)return`<div class="hmap row">${lab?`<span class="hl0">${lab}</span>`:''}<div class="hmg">${Array.from({length:S.floors},(_,h)=>`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`).join('')}</div></div>`;
+  return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}</div>`;
+}
 function renderStrip(){
   const el=$('hstrip'),on=focusMode()&&!sheetOpen();el.hidden=!on;if(!on){stripSig='';return;}
   el.style.top=($('hud').offsetHeight+8)+'px';
@@ -1523,6 +1544,8 @@ function renderStrip(){
   const sig=focusH+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
   el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:''}</button>`).join('');
   el.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>focusHouse(+b.dataset.fh));
+  el.classList.toggle('ovf',el.scrollWidth>el.clientWidth+2);
+  const onB=el.querySelector('.on');if(onB&&el.classList.contains('ovf')){const l=onB.offsetLeft-el.clientWidth/2+onB.offsetWidth/2;el.scrollTo({left:Math.max(0,l),behavior:'smooth'});}
 }
 function focusHouse(h){
   if(!S||h>=S.floors)return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
@@ -1566,7 +1589,7 @@ function renderCrewPop(){
   el.hidden=false;
   el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
     <div class="cpt">Now: <b id="cpTask">${w.task?taskLabel(w.task):'Idle'}</b></div>
-    ${w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-cpf="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</div>`:''}`;
+    ${w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${houseMap(r.home,h=>`data-cpf="${h}"`,'Works in house')}</div>`:''}`;
   const tr=$('tray').getBoundingClientRect(),a=av?av.getBoundingClientRect():tr;
   el.style.bottom=(innerHeight-tr.top+8)+'px';el.style.left=clamp(a.left+a.width/2-150,8,innerWidth-308)+'px';
   $('cpX').onclick=()=>{crewPop=null;renderCrewPop();};
@@ -1846,7 +1869,7 @@ function renderSheet(){
       :`<div class="hc empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`;
     const sw=(st,txt)=>`<span><i style="${st}"></i>${txt}</span>`;
     const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
-    const ft=S.floors>1?`<div class="ftabs">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-bf="${f}" class="${boardF===f?'on':''}">${floorName(f)}${levels()>1?' · '+floorSpan(f):''}</button>`).join('')}</div>`:'';
+    const ft=S.floors>1?houseMap(boardF,h=>`data-bf="${h}"`,'House'):'';
     const coach=!S.coached&&placing?`<div class="coach" id="coach"><span>${HOVER?'Move across':'Tap or slide on'} the board to try spots. Each square is one bench for one period.</span><button type="button" id="coachX">Got it</button></div>`:'';
     if(isPhone()){
       body=(hof?pbarHTML(hof,peek,left):`<div class="hc empty" style="margin-bottom:8px"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`)
@@ -1864,7 +1887,7 @@ function renderSheet(){
     body=ledgerHTML();
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
-      <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
+      <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire${plan?'':' <span class="paused">Between periods</span>'}</h3>
       <div class="hires">${Object.entries(ROLES).map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
@@ -2380,6 +2403,8 @@ function boot(){
   else openSheet();
   requestAnimationFrame(frame);
   setTimeout(layout,300);
+  try{const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+    if(ios&&!standalone&&!localStorage.getItem('gy8tip')){localStorage.setItem('gy8tip','1');setTimeout(()=>toast('good','Tip: tap Share, then Add to Home Screen, to play full screen without the address bar'),4000);}}catch(e){}
 }
 boot();
 </script>
