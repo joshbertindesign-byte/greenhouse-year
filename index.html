@@ -3549,8 +3549,9 @@ function ledgerTable(){
 }
 function profitChart(){
   if(S.hist.length<2)return'';
-  const H=S.hist.slice(-12),mx=Math.max(1,...H.map(r=>Math.abs(r.profit))),W=H.length*34;
-  return`<svg class="pch" viewBox="0 0 ${W} 110" width="100%" height="110" preserveAspectRatio="none" aria-label="Profit by year">${H.map((r,i)=>{const h=Math.abs(r.profit)/mx*42,y=r.profit>=0?55-h:55;return`<rect x="${i*34+6}" y="${y}" width="22" height="${Math.max(1,h)}" rx="3" fill="${r.profit>=0?'#2e7d4a':'#c8402f'}"/><text x="${i*34+17}" y="108" text-anchor="middle" font-size="10" fill="#6b7a70">Y${r.year}</text>`;}).join('')}<line x1="0" x2="${W}" y1="55" y2="55" stroke="#cfc8b4"/></svg>`;
+  // fixed-width bars, centred: a short history stays compact instead of stretching across the page
+  const H=S.hist.slice(-12),mx=Math.max(1,...H.map(r=>Math.abs(r.profit))),W=Math.max(8,H.length)*34,x0=(W-H.length*34)/2;
+  return`<svg class="pch" viewBox="0 0 ${W} 110" width="100%" height="110" preserveAspectRatio="xMidYMid meet" style="max-width:${W*1.6}px;display:block;margin:0 auto" aria-label="Profit by year">${H.map((r,i)=>{const h=Math.abs(r.profit)/mx*42,y=r.profit>=0?55-h:55,x=x0+i*34;return`<rect x="${x+6}" y="${y}" width="22" height="${Math.max(1,h)}" rx="3" fill="${r.profit>=0?'#2e7d4a':'#c8402f'}"/><text x="${x+17}" y="108" text-anchor="middle" font-size="10" fill="#6b7a70">Y${r.year}</text>`;}).join('')}<line x1="${x0}" x2="${x0+H.length*34}" y1="55" y2="55" stroke="#cfc8b4"/></svg>`;
 }
 function ledgerHTML(){
   const st=stage(),warn=[];
