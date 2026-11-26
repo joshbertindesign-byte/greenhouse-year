@@ -18,6 +18,7 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 - **Work:** tap the icons over the greenhouse to queue jobs. Crew pick up work on their home floor and get faster with experience.
 - **Trucks:** trucks queue at the dock. A truck that comes up short pauses the game so you can buy plants in or ship short.
 - **Upgrades:** eleven upgrades, from pots and soil to watering booms, grow lights, a forklift and ladybugs. Each one shows up in the greenhouses.
+- **Your nursery:** name it when you start (or rename it from the Ledger tab). The name goes on a roadside sign, the tablet and every magazine ranking.
 - **Goals and levels:** each year has a goal (full trucks, operating profit, sales, reputation or a magazine rating). Hitting it moves you up a level, from Backyard grower to Legend, and unlocks more upgrades, varieties and houses. Miss it and you try again next year.
 - **Best Homes and Gardens:** at the end of each year a fictional magazine ranks the best nurseries out of five stars. The Ledger tab keeps every year's ranking and stats.
 - **Losing:** the nursery closes if every customer writes you off, or if you end two years in a row below zero. Money comes from bank loans, not credit; missed paydays can make crew quit.

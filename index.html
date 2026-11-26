@@ -128,6 +128,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .mbox h2{margin:0 0 8px;font-size:24px}
 .mbox p{font-size:16px;line-height:1.5;margin:0 0 12px;color:#33433a}
 .steps{display:grid;gap:10px;margin:14px 0 18px}
+.nmf{display:block;margin:12px 0 8px}.nmf span{display:block;font-size:13px;font-weight:700;color:var(--mute);margin-bottom:4px}
+.nmf input{width:100%;box-sizing:border-box;font:inherit;font-size:20px;font-weight:700;padding:12px 14px;border:3px solid var(--line);border-radius:14px;background:#fff;color:var(--ink)}
+.nmf input:focus{outline:none;border-color:var(--go)}
+.nmi{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}.nmi .chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;color:#3c4a40;cursor:pointer}
+.rnm{vertical-align:middle;margin-left:6px;border:2px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font:inherit;font-size:12px;font-weight:700;color:#3c4a40;cursor:pointer}
 .steps div{display:flex;gap:12px;align-items:center;font-size:16px;line-height:1.35}
 .kv{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:17px;margin:12px 0 18px}
 .kv b{text-align:right}
@@ -644,7 +649,7 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna','miley','max'],stage:1,hist:[],redYears:0,lost:null,yres:null,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
+    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna','miley','max'],name:'',stage:1,hist:[],redYears:0,lost:null,yres:null,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
     ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
@@ -1320,6 +1325,19 @@ function stepCats(dt){
     }else if((c.t-=dt)<=0){if(c.mode==='eat'){c.eatSpot=null;c.meal=70+Math.random()*80;c.mode='sit';c.t=2+Math.random()*2;if(Math.random()<.3)floats.push({x:c.x,y:c.y,f:0,text:'♥',color:'#e2552f',t0:performance.now()});continue;}catWander(c);}
   }
 }
+function drawSign(){
+  const nm=nurseryName(),k=sc;
+  cx.save();cx.font=`700 ${Math.round(11*k)}px Outfit,system-ui,sans-serif`;
+  const tw0=cx.measureText(nm).width,top0=$('hud').offsetHeight+6,bot0=innerHeight-(trayH||0)-6;
+  const mu=S.floors>1?20:9,mv=S.floors>2?16:7,C=[[1.2,-3.4],[mu+1.7,mv*.35],[mu*.3,mv+1.4],[mu+.9,mv+1]].map(([u,v])=>P(u,v,0));
+  const [X,Y]=C.find(([x,y])=>y-50*k>top0&&y+6*k<bot0&&x-(tw0/2+12*k)>4&&x+(tw0/2+12*k)<innerWidth-4)||C[0];
+  const tw=tw0,bw=tw+18*k,bh=22*k,top=Y-46*k;
+  cx.fillStyle='rgba(29,58,36,.18)';cx.beginPath();cx.ellipse(X,Y,bw*.45,5*k,0,0,Math.PI*2);cx.fill();
+  cx.fillStyle='#6b4a2b';cx.fillRect(X-bw*.36-2*k,top+bh-2*k,4*k,Y-top-bh+2*k);cx.fillRect(X+bw*.36-2*k,top+bh-2*k,4*k,Y-top-bh+2*k);
+  rr(X-bw/2,top,bw,bh,5*k);cx.fillStyle='#2d5a3a';cx.fill();cx.lineWidth=2*k;cx.strokeStyle='#f3ead2';cx.stroke();
+  cx.fillStyle='#fff6dc';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(nm,X,top+bh/2+.5*k);
+  cx.restore();
+}
 function sprFlip(id,u,v,z,flip){
   if(!flip)return spr(id,u,v,z);
   const X=P(u,v,z)[0];cx.save();cx.translate(X,0);cx.scale(-1,1);cx.translate(-X,0);const ok=spr(id,u,v,z);cx.restore();return ok;
@@ -1428,6 +1446,7 @@ function draw(now){
     if(mouse&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
+  if(viewF===0)drawSign();
   drawLabels();drawCounts();drawFloats(now);drawIcons();
 }
 function drawHouse(H,now){
@@ -1866,7 +1885,7 @@ function renderSheet(){
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
   const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
-  el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}${dock?'':`<div class="bfoot"><span class="hint">${hint}</span></div>`}</div>${dock}</div><div class="bzl">GREENHOUSE YEAR</div>`;
+  el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}${dock?'':`<div class="bfoot"><span class="hint">${hint}</span></div>`}</div>${dock}</div><div class="bzl">${esc(nurseryName()).toUpperCase()}</div>`;
   if(keep)$('scr').scrollTop=keep;
   if(tab==='orders'&&$('board'))renderBoard();
   el.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{if(placing)cancelPlacing(true);tab=b.dataset.tab;sel=null;renderSheet();});
@@ -1887,9 +1906,10 @@ function renderSheet(){
   const go=$('goB');if(go)go.onclick=()=>{if(placing)cancelPlacing(true);sel=null;tryStart();};
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
+  const rnb=$('rnB');if(rnb)rnb.onclick=()=>nameModal(false);
   el.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{toggleCat(b.dataset.cat);renderSheet();});
   el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
-  const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();openSheet();toast('good','Fresh start: year 1, three varieties');}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
+  const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeSheet();hud();nameModal(true,()=>{openSheet();toast('good',`${nurseryName()} is open: year 1`);});}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
   el.querySelectorAll('[data-gen]').forEach(b=>b.onclick=e=>{e.stopPropagation();buyGen(b.dataset.gen);});
   const gu=$('gUp');if(gu)gu.onclick=()=>growPlot(sel.plot,1);
   const gd=$('gDn');if(gd)gd.onclick=()=>growPlot(sel.plot,-1);
@@ -1982,6 +2002,19 @@ function checkRed(){
   loanModal('neg',-S.cash);
 }
 // ---------------- goals, gates and the magazine ----------------
+const NAME_IDEAS=['Prairie Bloom Growers','Big Sky Greenhouses','Sweetwater Plant Co.','Little Acre Nursery','Windbreak Greenhouses','Sundown Growers','Wildflower Row','Two Creeks Nursery'];
+const nurseryName=()=>(S&&S.name)||'Your nursery';
+function nameModal(first,after){
+  const idea=NAME_IDEAS[Math.floor(Math.random()*NAME_IDEAS.length)];
+  modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every Best Homes and Gardens ranking.</p>
+    <label class="nmf"><span>Nursery name</span><input id="nmIn" maxlength="28" autocomplete="off" value="${esc(S.name||'')}" placeholder="${esc(idea)}"></label>
+    <div class="nmi">${NAME_IDEAS.filter(n=>n!==S.name).slice(0,4).map(n=>`<button type="button" class="chip" data-nm="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+    <button class="btn go" id="nmGo" type="button">${first?'Open the nursery':'Save name'}</button>`);
+  const inp=$('nmIn');setTimeout(()=>{try{inp.focus();}catch(e){}},50);
+  $('mbox').querySelectorAll('[data-nm]').forEach(b=>b.onclick=()=>{inp.value=b.dataset.nm;inp.focus();});
+  const go=()=>{S.name=(inp.value.trim()||idea).replace(/\s+/g,' ').slice(0,28);save();closeModal();hud();if(sheetOpen())renderSheet();if(after)after();};
+  $('nmGo').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go();};
+}
 const STAGES=[
   {n:'Backyard grower',c:'#8a6a3a',goal:{k:'full',n:8}},
   {n:'Market grower',c:'#6f8f3a',goal:{k:'profit',n:2500}},
@@ -2032,7 +2065,7 @@ function magScore(y,rep){
 function rivalTable(year,me){
   const h=i=>{const n=Math.sin((year*7.13+i*3.71)*12.9898)*43758.5453;return n-Math.floor(n);};
   const L=RIVALS.map((name,i)=>{const base=38+i*5.6,sc=Math.round(clamp(base+Math.min(year,14)*1.1+(h(i)-.5)*14,20,96));return{name,score:sc,stars:sc>=86?5:sc>=72?4:sc>=57?3:sc>=42?2:1};});
-  L.push({name:'Your nursery',score:me.score,stars:me.stars,me:true});
+  L.push({name:nurseryName(),score:me.score,stars:me.stars,me:true});
   L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
   return L;
 }
@@ -2069,7 +2102,7 @@ function magazineHTML(R0){
   return`<div class="mag"><div class="mast"><small>THE YEAR ${r.year} NURSERY ISSUE</small><b>Best Homes <span>and</span> Gardens</b></div>
     <div class="mcov">${pics}</div>
     <h3>The best nurseries of year ${r.year}</h3>
-    <div class="mme"><div><small>YOUR NURSERY</small>${starStr(r.stars,30)}<span>Ranked <b>#${r.rank}</b> of ${r.of}</span></div><div class="msc"><b>${r.score}</b><small>points</small></div></div>
+    <div class="mme"><div><small>${esc(nurseryName()).toUpperCase()}</small>${starStr(r.stars,30)}<span>Ranked <b>#${r.rank}</b> of ${r.of}</span></div><div class="msc"><b>${r.score}</b><small>points</small></div></div>
     <div class="judges"><small>WHAT THE JUDGES LOOKED AT</small>${bar('Trucks shipped full',P.fill,35)}${bar('Customer love',P.rep,25)}${bar('Operating profit',P.profit,25)}${bar('Variety grown',P.variety,15)}</div>
     <ol class="mlist">${t.map((x,i)=>`<li class="${x.me?'me':''}"><span class="rk">${i+1}</span><span class="nm">${esc(x.name)}</span>${starStr(x.stars,14)}</li>`).join('')}</ol>
     <div class="kv mstats"><span>Sales</span><b>${fmt(r.rev)}</b><span>Operating profit</span><b style="color:${r.op<0?'var(--bad)':'var(--go)'}">${fmt(r.op)}</b><span>After building and upgrades</span><b style="color:${r.profit<0?'var(--bad)':'var(--go)'}">${fmt(r.profit)}</b><span>Full / short / missed</span><b>${r.full} / ${r.short} / ${r.failed}</b><span>Reputation</span><b>${r.rep}</b></div></div>`;
@@ -2101,13 +2134,13 @@ function yearGoalModal(R0){
 }
 function gameOver(){
   S.phase='over';save();hud();if(window.__quiet)return;
-  const why=S.lost==='bank'?['The bank closed the nursery','Two years in a row ended below zero.']:['Nobody will buy from you','Every customer has written you off.'];
+  const why=S.lost==='bank'?[`The bank closed ${esc(nurseryName())}`,'Two years in a row ended below zero.']:['Nobody will buy from you','Every customer has written you off.'];
   const best=S.hist.reduce((a,r)=>Math.max(a,r.stars),0);
   modal(`<div class="over"><svg width="120" height="80" viewBox="0 0 120 80" aria-hidden="true"><rect x="8" y="22" width="104" height="46" rx="6" fill="#c8402f" stroke="#7a1f14" stroke-width="3"/><path d="M40 22l20-16 20 16" fill="none" stroke="#5d4a36" stroke-width="3"/><circle cx="60" cy="6" r="3" fill="#5d4a36"/><text x="60" y="54" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="#fff">CLOSED</text></svg>
-    <h2>${why[0]}</h2><p>${why[1]} You ran the nursery for ${S.hist.length} year${S.hist.length===1?'':'s'} and reached ${stg(stage()).n.toLowerCase()} (level ${stage()}).${best?` Best ranking: ${best} star${best>1?'s':''}.`:''}</p></div>
+    <h2>${why[0]}</h2><p>${why[1]} You ran ${esc(nurseryName())} for ${S.hist.length} year${S.hist.length===1?'':'s'} and reached ${stg(stage()).n.toLowerCase()} (level ${stage()}).${best?` Best ranking: ${best} star${best>1?'s':''}.`:''}</p></div>
     ${ledgerTable()}
     <button class="btn go" id="ovNew" type="button">Start a new nursery</button>`);
-  $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();openSheet();hud();toast('good','Fresh start: year 1');};
+  $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();hud();nameModal(true,()=>{openSheet();toast('good',`${nurseryName()} is open: year 1`);});};
 }
 function ledgerTable(){
   if(!S.hist.length)return'<p class="norail">Your first Best Homes and Gardens ranking comes out at the end of year 1.</p>';
@@ -2122,7 +2155,7 @@ function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
-  return`<div class="bhead"><h2>Ledger<small>Hit each year's goal to reach the next level and unlock more upgrades, varieties and houses. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="rnB">Rename</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties and houses. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
@@ -2316,7 +2349,7 @@ function welcome(){
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
   <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties and houses. At year end Best Homes and Gardens ranks the best nurseries out of five stars.</span></div></div>
   <button class="btn go" id="wGo" type="button">Plan early winter</button>`);
-  $('wGo').onclick=()=>{S.welcomed=true;closeModal();openSheet();};
+  $('wGo').onclick=()=>{S.welcomed=true;closeModal();if(!S.name)nameModal(true,()=>openSheet());else openSheet();};
 }
 
 // ---------------- loop ----------------
@@ -2343,6 +2376,7 @@ function boot(){
   if(S.phase==='over'||S.lost)gameOver();
   else if(S.phase==='done')yearEnd();
   else if(!S.welcomed)welcome();
+  else if(!S.name)nameModal(true,()=>openSheet());
   else openSheet();
   requestAnimationFrame(frame);
   setTimeout(layout,300);
