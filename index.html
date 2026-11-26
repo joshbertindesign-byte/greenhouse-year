@@ -330,6 +330,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hmap button.on{background:var(--hud);border-color:var(--hud);color:#fff}
 .hmap i{height:26px;border:2px dashed #e4e0d3;border-radius:7px}
 .hmap button.shb{background:#fff6d8;border-color:#e2c46a;color:#8a6a12}.hmap button.shb.on{background:#8a6a12;border-color:#8a6a12;color:#fff}.hmg.one{grid-template-columns:30px!important}.hmap.row .shb{margin-left:4px}
+.ccap{font-size:13px;font-weight:700;background:#e6f3e9;color:var(--go);border-radius:999px;padding:3px 10px;vertical-align:middle;margin-left:6px}.ccap.full{background:#fdecea;color:var(--bad)}
+.capnote{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 2px 8px;font-size:13px;color:var(--mute)}
 .prizec{display:flex;gap:12px;align-items:flex-start;background:#fffaf0;border:2px solid #ecd9a0;border-radius:16px;padding:12px 14px;margin-bottom:12px}.prizec .rn{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.prizec .rn b{font-size:17px}.prizec .rn>span{font-size:14px;color:var(--mute);line-height:1.35}.prizec .btn{align-self:flex-start;margin-top:6px}
 .pgate{display:flex;flex-direction:column;gap:2px;margin-top:6px;font-size:13px;color:var(--mute)}.pgate .gok{color:var(--go);font-weight:700}
 .cls{display:flex;align-items:center;gap:10px;margin-top:8px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 10px}.cls span{flex:1}.cls b{display:block;font-size:14px}.cls small{font-size:12px;color:var(--mute)}
@@ -690,6 +692,7 @@ const floorSpan=f=>levelName(lvOf(f));
 
 // ---------------- icons ----------------
 const IC={
+  crew:{c:'#3c6e8f',f:['M12 3.5a3.6 3.6 0 1 1 0 7.2a3.6 3.6 0 1 1 0-7.2z','M5 20.5c0-4 3.1-7 7-7s7 3 7 7z'],s:[]},
   phone:{c:'#e2552f',f:['M6.6 3.5h3l1.6 4.4-2.1 1.5a12 12 0 0 0 5.5 5.5l1.5-2.1 4.4 1.6v3a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 4.6 5.6a2 2 0 0 1 2-2.1z'],s:[]},
   prize:{c:'#b8860b',f:['M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z'],s:[]},
   mist:{c:'#2f9bb3',f:['M9 9h6v10.5a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z','M10 5h4v4h-4z'],s:['M14 6h3','M19.5 4.5l1.5-1','M20 7h2','M19.5 9.5l1.5 1']},
@@ -2009,8 +2012,9 @@ function renderSheet(){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
       ${prizeHTML(plan)}
       <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
-      <h3 style="margin:16px 2px 6px;font-size:18px">Hire${plan?'':' <span class="paused">Between periods</span>'}</h3>
-      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
+      <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
+      ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
+      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}>${svgIcon(k,34)}<span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
@@ -2046,7 +2050,7 @@ function renderSheet(){
   const pg=$('pvGo');if(pg)pg.onclick=confirmPv;
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
-  el.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;hire(b.dataset.hire);const r=S.crew[S.crew.length-1];toast('good',`${r.name} joins as a ${ROLES[r.role].name.toLowerCase()}`);renderSheet();traySig='';renderTray();});
+  el.querySelectorAll('[data-hire]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan'||!crewRoom())return;hire(b.dataset.hire);const r=S.crew[S.crew.length-1];toast('good',`${r.name} joins as a ${ROLES[r.role].name.toLowerCase()}`);renderSheet();traySig='';renderTray();});
   el.querySelectorAll('[data-fire]').forEach(b=>b.onclick=()=>{const r=fireCrew(b.dataset.fire);if(r)toast('bad',`You let ${r.name} go`);renderSheet();traySig='';renderTray();});
   el.querySelectorAll('[data-home]').forEach(b=>b.onclick=()=>{setHome(b.dataset.home,+b.dataset.f);renderSheet();traySig='';renderTray();});
   const x=$('shX');if(x)x.onclick=closeSheet;
@@ -2171,7 +2175,7 @@ const CALLS=[
  {id:'rush',lv:2,max:2,when:()=>ownedCand(S.period+1,S.period+2).length>0,make(){const n=pick(custAt(1).length?custAt(1):CUST),cd=wpick(ownedCand(S.period+1,S.period+2)),of=mkOffer(cd,1.4,true);of.cust=n;of.qty=ri(6,10);
    return{who:n,av:custAv(n,48),say:`"We're in a bind. Can you get us ${of.qty} ${crop(cd.k).name.toLowerCase()} by ${PN[cd.p].toLowerCase()}? We'll pay 40% over."`,opts:[{t:'Let me check the board',fx:`Opens the board with the order: ${fmt(of.qty*of.price)}`,go(){return popOffer(of);}},{t:'Can\'t fit it',fx:'No change',go(){}}]};}},
  {id:'early',lv:2,when:()=>!!moveCand(),make(){const pl=moveCand();if(!pl)return null;const o=orderOf(pl);return{who:o.cust,av:custAv(o.cust,48),say:`"Any chance our ${o.qty} ${crop(pl.crop).name.toLowerCase()} could come a period early, ${PN[pl.e-1].toLowerCase()} instead of ${PN[pl.e].toLowerCase()}?"`,opts:[{t:'We can do that',fx:`Moves it one period earlier on the board · +5 reputation with ${short1(o.cust)}`,go(){pl.s--;pl.e--;o.p--;custRep(o.cust,5,'shipped early for them');}},{t:'It has to stay',fx:'No change',go(){}}]};}},
- {id:'applicant',lv:2,make(){const role=pick(['water','pot','pest','fix','load']),wage=Math.round(ROLES[role].cost*1.2/5)*5;return{who:'Job seeker',av:svgIcon(role,48),say:`"I ran the ${ROLES[role].name.toLowerCase()} crew at a big nursery in Lubbock for six years. Looking for something closer to home."`,opts:[{t:'You\'re hired',fx:`${ROLES[role].name} at full speed from day one · ${fmt(wage)}/period`,go(){hire(role);const r=S.crew[S.crew.length-1];r.n=VET;r.wage=wage;traySig='';}},{t:'We\'re full up',fx:'No change',go(){}}]};}},
+ {id:'applicant',lv:2,when:()=>crewRoom()>0,make(){const role=pick(['water','pot','pest','fix','load']),wage=Math.round(ROLES[role].cost*1.2/5)*5;return{who:'Job seeker',av:svgIcon(role,48),say:`"I ran the ${ROLES[role].name.toLowerCase()} crew at a big nursery in Lubbock for six years. Looking for something closer to home."`,opts:[{t:'You\'re hired',fx:`${ROLES[role].name} at full speed from day one · ${fmt(wage)}/period`,go(){hire(role);const r=S.crew[S.crew.length-1];r.n=VET;r.wage=wage;traySig='';}},{t:'We\'re full up',fx:'No change',go(){}}]};}},
  {id:'bank',lv:2,when:()=>loanRoom()>=2000,make(){const a=Math.min(5000,Math.floor(loanRoom()/1000)*1000);return{who:'First Prairie Bank',av:svgIcon('cash',48),say:'"We\'re running a growers\' special this month: 3% a period instead of 6%."',opts:[{t:`Borrow ${fmt(a)} at 3%`,fx:'Paid back over 4 periods like any loan',go(){if(takeLoan(a))S.loans[S.loans.length-1].rate=.03;}},{t:'Not right now',fx:'No change',go(){}}]};}},
  {id:'complain',lv:3,when:()=>(S.ys.shorted||[]).length>0,make(){const x=pick(S.ys.shorted),cr=Math.round(x.value*.15);return{who:x.cust,av:custAv(x.cust,48),say:'"That last truck came up short and our shelves were empty all weekend. What are you going to do about it?"',opts:[{t:'Credit them',fx:`−${fmt(cr)} · +8 reputation with ${short1(x.cust)}`,go(){S.cash-=cr;S.ys.buy+=cr;custRep(x.cust,8,'made good on a short truck');S.ys.shorted=S.ys.shorted.filter(y=>y!==x);}},{t:'Stand firm',fx:`−4 reputation with ${short1(x.cust)}`,go(){custRep(x.cust,-4,'refused a credit');S.ys.shorted=S.ys.shorted.filter(y=>y!==x);}}]};}},
  {id:'club',lv:3,make(){return{who:'Big Country Garden Club',av:svgIcon('pop',48),say:'"Twenty of our members would love a tour of your greenhouses. Could you show us around?"',opts:[{t:'Give the tour',fx:'You\'re busy for a little while · +2 reputation with every customer',go(){S.busyUntil=S.t+12;S.busyWhat='Giving a tour';repAll(2,'garden club tour');}},{t:'Too busy',fx:'No change',go(){}}]};}},
@@ -2260,6 +2264,11 @@ const STAGES=[
 const GATE_UP={pots:[1,4,8],soil:[1,3,7],hose:[1,2,7],bugs:[1,5],heat:[2,6],vents:[2,5],boom:[3,6],potter:[3,6],fork:[4,7],lights:[4,8],roll:[5,8]};
 const GATE_GEN={vinca:1,begonia:2,geranium:2,fern:3,kale:3,hydrangea:4,poinsettia:6};
 const HOUSE_CAP=[1,1,2,3,4,6,8,10,12,12,12];
+const CREW_CAP=[2,2,4,6,9,12,16,20,26,32,40];
+const crewCap=()=>CREW_CAP[Math.min(stage(),CREW_CAP.length-1)];
+const crewN=()=>S.crew.filter(r=>r.role!=='prize').length;
+const crewRoom=()=>Math.max(0,crewCap()-crewN());
+const crewGate=()=>CREW_CAP.findIndex(c=>c>crewN());
 const RIVALS=['Prairie Rose Nursery','Bluebonnet Growers','Cedar Hollow Greenhouses','Mesquite Flats Farm','Twin Oaks Nursery','High Plains Greenhouse','Copper Canyon Growers','Red River Plant Co.','Sandhill Perennials'];
 const stage=()=>Math.min(S.stage||1,STAGES.length);
 const stg=i=>STAGES[Math.min(i,STAGES.length)-1];
@@ -2273,6 +2282,7 @@ function rewardsOf(g){ // what opens when you reach stage g
   for(const k in GATE_UP)GATE_UP[k].forEach((gg,l)=>{if(gg===g)out.push({t:'up',k,l});});
   for(const k in GATE_GEN)if(GATE_GEN[k]===g)out.push({t:'gen',k});
   if(HOUSE_CAP[g]>HOUSE_CAP[g-1])out.push({t:'house',n:HOUSE_CAP[g]});
+  if(CREW_CAP[g]>CREW_CAP[g-1])out.push({t:'crew',n:CREW_CAP[g]});
   if(g===10)out.push({t:'trophy'});
   if(g>10)out.push({t:'cash',n:5000});
   return out;
@@ -2280,6 +2290,7 @@ function rewardsOf(g){ // what opens when you reach stage g
 function rewardTile(r){
   if(r.t==='up'){const U=UPS[r.k];return`<div class="rw">${svgIcon(U.icon,42)}<b>${U.lv[r.l]}</b><small>${U.name}</small></div>`;}
   if(r.t==='gen')return`<div class="rw"><img src="${flowerURL(r.k,3)}" alt="" class="rwp"><b>${CROPS[r.k].name}</b><small>Genetics</small></div>`;
+  if(r.t==='crew')return`<div class="rw">${svgIcon('crew',42)}<b>Up to ${r.n} crew</b><small>Hiring</small></div>`;
   if(r.t==='house')return`<div class="rw">${svgIcon('floor',42)}<b>Up to ${r.n} houses</b><small>Building</small></div>`;
   if(r.t==='trophy')return`<div class="rw">${trophySVG(42)}<b>Golden Trowel</b><small>Trophy</small></div>`;
   return`<div class="rw">${svgIcon('cash',42)}<b>${fmt(r.n)} bonus</b><small>Prize money</small></div>`;
@@ -2410,10 +2421,10 @@ function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
-  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="rnB">Rename</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties and houses. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="rnB">Rename</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
-    <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
+    <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
     <h3 class="lh3">Best Homes and Gardens rankings</h3>${profitChart()}${ledgerTable()}`;
 }
 function buyGen(k){
@@ -2638,7 +2649,7 @@ function welcome(){
   <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
-  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties and houses. At year end Best Homes and Gardens ranks the best nurseries out of five stars.</span></div></div>
+  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end Best Homes and Gardens ranks the best nurseries out of five stars.</span></div></div>
   <button class="btn go" id="wGo" type="button">Plan early winter</button>`);
   $('wGo').onclick=()=>{S.welcomed=true;closeModal();if(!S.name)nameModal(true,()=>openSheet());else openSheet();};
 }
