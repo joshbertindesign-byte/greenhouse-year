@@ -297,7 +297,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tk .cal i{display:block;height:13px;border-radius:3px;background:#efece2;font-style:normal;font-size:9px;line-height:13px;color:#fff;text-align:center;font-weight:700}
 .tk .cal i.past{background:#dcd8cc}
 .tk .cropsrow{display:flex;gap:4px;flex-wrap:wrap}
-.hb.gear{font-size:20px;padding:8px 12px}
+.hb.gear{padding:0;width:44px;height:44px;justify-content:center;order:99;flex:none}
+@media (max-width:600px){.hud .when{flex:1 1 calc(100% - 52px)!important}.hud .hb.gear{order:0;width:38px;height:38px;padding:0!important}.hud .yr i{width:9px!important}.hud .yr{gap:3px}}
+.setl{display:flex;flex-direction:column;gap:8px;margin-top:6px}.setr{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.setr>span{flex:1;display:flex;flex-direction:column}.setr>span b{font-size:17px}.setr>span small{color:var(--mute);font-size:13.5px;line-height:1.35}.setr .btn{flex:none}
+.setr.bad{border-color:#f0c8bf;background:#fff7f4}.mbox .setabout{margin:14px 2px 0;color:var(--mute);font-size:12.5px;line-height:1.45}
 .nowline{position:absolute;width:3px;background:#16231b;border-radius:2px;pointer-events:none;z-index:3;box-shadow:0 0 0 2px rgba(255,255,255,.7)}
 .blk{flex-direction:column;justify-content:center;align-items:center;padding:0 3px}
 .blk .bx{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;line-height:1.1;min-width:0;max-width:100%;text-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -347,6 +351,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .gqr{display:flex;gap:12px;align-items:center;margin:4px 0 12px;text-align:left}.gqr canvas{width:46%;max-width:230px;height:auto;aspect-ratio:1;border-radius:12px;border:3px solid #173426;flex:none}.gqr>div{display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}.gqr b{font-size:15px}.gqr small{color:var(--mute);font-size:12.5px}
 .gscan{position:relative;background:#173426;border-radius:14px;overflow:hidden;aspect-ratio:1;max-height:50dvh;margin:6px auto 12px;display:grid;place-items:center}.gscan video{width:100%;height:100%;object-fit:cover}.gscan span{position:absolute;left:10px;right:10px;bottom:10px;color:#fff;background:rgba(0,0,0,.55);border-radius:10px;padding:8px 10px;font-size:14px;text-align:center}
 .gfrow{display:flex;gap:8px;margin-top:8px}.gfrow .btn{flex:1;background:#fff;border:2px solid var(--line);color:var(--ink)}.gthx{text-align:center;font-size:16px}
+.usub{display:flex;gap:4px;background:#ece5d2;border-radius:12px;padding:4px;margin:12px 0 14px;overflow-x:auto;scrollbar-width:none}
+.usub button{flex:1 1 0;min-width:0;white-space:nowrap;border:0;background:transparent;border-radius:9px;padding:9px 14px;font:inherit;font-weight:600;font-size:15px;color:var(--mute);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
+@media (max-width:600px){.usub button{padding:9px 4px;font-size:14px;gap:4px}}
 .tbh{flex-wrap:wrap}.tbh h2{flex:1 1 320px}
 .tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:8px;margin-top:10px}
 .tcard{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 10px 6px 4px;flex-wrap:wrap}.tcard.rdy{border-color:#e2a91f;background:#fffaf0}.tcard.empty{background:#faf7ee}
@@ -603,6 +611,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <canvas id="cv"></canvas>
 <header class="hud" id="hud">
   <div class="when"><b id="hWhen">Year 1</b><div class="yr" id="hYr"></div></div>
+  <button class="hb gear" id="bSet" type="button" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></button>
   <div class="stat"><small>Cash</small><b id="hCash">$0</b><small class="cred" id="hCred"></small></div>
   <div class="stat tap" id="hRepB"><small><span class="lng">Reputation</span><span class="shr">Rep</span></small><b id="hRep">50</b></div>
   <div class="stat tap goal" id="hGoalB"><small>Goal</small><b id="hGoal">0/10</b><i class="gm"><i id="hGoalP"></i></i></div>
@@ -1733,8 +1742,8 @@ function draw(now){
   const items=[...built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)})),...treeItems()];
   if(viewF===0){
     for(const w of [...(noMe()?[]:[me]),...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
-    for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
-    if(mouse&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
+    if(S.phase!=='home')for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
+    if(mouse&&S.phase!=='home'&&houseAtXY(Math.floor(mouse.x),Math.floor(mouse.y),0)<0)items.push({d:mouse.x+mouse.y,f:()=>drawMouse(now)});
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   if(viewF===0&&S.phase!=='home')drawSign();
@@ -1749,7 +1758,7 @@ function drawHouse(H,now){
   if(S.floors>4&&(H.L>0||S.floors>H.h+4))L.push({d:lf.x+lf.y+1.2,f:()=>drawLift(H)});
   for(const w of [...(noMe()?[]:[me]),...staff]){if(w.y>=0&&inH(w.x,w.y,w.f)&&!((w.leg==='lift'||w.leg==='home')&&w.ride>0))L.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});}
   if(H.h===0&&S.cats.length)L.push({d:H.ox+BOWL.x+H.oy+BOWL.y+.6,f:()=>spr('catbowls',H.ox+BOWL.x,H.oy+BOWL.y,H.L*FH+6)});
-  for(const c of liveCats())if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
+  if(S.phase!=='home')for(const c of liveCats())if(inH(c.x,c.y,c.f))L.push({d:c.x+c.y-.01,f:()=>drawCat(c,now)});
   if(mouse&&inH(mouse.x,mouse.y,0))L.push({d:mouse.x+mouse.y-.02,f:()=>drawMouse(now)});
   L.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   drawUpgrades(H,now);
@@ -2121,15 +2130,19 @@ const TIPS=[
    {el:'.hires',t:'Each hire does one kind of job in their own house, on their own. They start slow and speed up the longer they stay.',ok:1,done:()=>S.crew.length>0}]},
  {id:'up',tag:'UPGRADES',when:()=>inPlan()&&!Object.values(S.up||{}).some(Boolean)&&(S.period>=4||S.year>1)&&Object.entries(UPS).some(([k,U])=>upOpen(k,0)&&S.cash>=U.cost[0]+800),steps:[
    {el:'[data-tab="build"]',t:'You can afford your first upgrade. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="equip"]',t:'Open Equipment.',guide:1,done:()=>upSub==='equip'},
    {el:'.uprow',t:'Upgrades help in every house, every period, for good. More open as you level up.',ok:1}]},
  {id:'house',tag:'ROOM TO GROW',when:()=>inPlan()&&S.floors===1&&houseCap()>1&&S.cash>=FLOOR_COST[1]+1500,steps:[
    {el:'[data-tab="build"]',t:'You can build a second greenhouse. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="houses"]',t:'Open Houses.',guide:1,done:()=>upSub==='houses'},
    {el:'#buildB',t:'Another house means 8 more benches and more orders. It adds upkeep every period, so keep the benches full.',ok:1}]},
  {id:'gen',tag:'NEW VARIETY',when:()=>inPlan()&&Object.keys(GATE_GEN).some(k=>GATE_GEN[k]<=stage()&&GATE_GEN[k]>1&&!S.owned.includes(k)),steps:[
    {el:'[data-tab="build"]',t:'A new variety is available. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="gen"]',t:'Open Varieties.',guide:1,done:()=>upSub==='gen'},
    {el:'.gens',t:'Buy genetics to grow a crop. Each variety brings its own orders and seasons.',ok:1}]},
  {id:'show',tag:'SHOWCASE HOUSE',when:()=>inPlan()&&S.showOpen&&!S.show,steps:[
    {el:'[data-tab="build"]',t:'Your showcase house is ready to build. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="houses"]',t:'Open Houses.',guide:1,done:()=>upSub==='houses'},
    {el:'#showB',t:'Prize flowers sell high and compete for ribbons, but only you can care for them until you hire a prize grower.',ok:1}]},
  {id:'prize',tag:'PRIZE GROWER',when:()=>inPlan()&&prizeOpen()&&!prizeR(),steps:[
    {el:'[data-tab="crew"]',t:'You can hire a prize grower now. Open the Crew tab.',guide:1,done:()=>tab==='crew'},
@@ -2626,21 +2639,18 @@ function renderSheet(){
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
+    const subs=upSubs();if(!subs.some(x=>x[0]===upSub))upSub='equip';
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work in every greenhouse, last for good and show up in the houses. You can buy them any time.</small></h2></div>
-      ${bankHTML(plan)}
-      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}
-      
-      <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).filter(([k])=>!isShowCrop(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
-      <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
+      <div class="usub" role="tablist">${subs.map(([k,n,b])=>`<button type="button" data-sub="${k}" class="${upSub===k?'on':''}">${n}${b?`<span class="n">${b}</span>`:''}</button>`).join('')}</div>
+      ${upSub==='bank'?bankHTML(plan):upSub==='gen'?`<h3 style="margin:4px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
+      <div class="gens">${Object.entries(CROPS).filter(([k])=>!isShowCrop(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Cats are adopted at the homestead between years, with stars. Each one helps in her own way.</p>
-      <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>
-      <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
+      <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>`:`${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}`}`;
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):tab==='trees'?'Tree sales count toward this year\u2019s revenue.':`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
   const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
@@ -2658,6 +2668,7 @@ function renderSheet(){
   const pg=$('pvGo');if(pg)pg.onclick=confirmPv;
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
+  el.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{upSub=b.dataset.sub;renderSheet();$('scr').scrollTop=0;});
   el.querySelectorAll('[data-plant]').forEach(b=>b.onclick=()=>plantModal(+b.dataset.plant));
   el.querySelectorAll('[data-sell]').forEach(b=>b.onclick=()=>sellModal(+b.dataset.sell));
   el.querySelectorAll('[data-fh-go]').forEach(b=>b.onclick=()=>{closeSheet();if(focusMode())focusHouse(FIELD_H);});
@@ -2671,13 +2682,8 @@ function renderSheet(){
   const shb=$('showB');if(shb)shb.onclick=buildShow;
   const pzb=$('prizeB');if(pzb)pzb.onclick=hirePrize;
   const clb=$('classB');if(clb)clb.onclick=takeClass;
-  const rnb=$('rnB');if(rnb)rnb.onclick=()=>nameModal(false);
   const gfb=$('giftB');if(gfb)gfb.onclick=giftMenu;
-  const tpb=$('tipB');if(tpb)tpb.onclick=()=>{S.tipsOff=S.tipsOff?0:1;save();renderSheet();toast('good',S.tipsOff?'Tips are off':'Tips are on');};
-  const rsb=$('resetB');if(rsb)rsb.onclick=resetModal;
-  const tpr=$('tipR');if(tpr)tpr.onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();renderSheet();toast('good','Tips will show again as you play');};
   el.querySelectorAll('[data-loan]').forEach(b=>b.onclick=()=>{if(S.phase!=='plan')return;takeLoan(+b.dataset.loan);renderSheet();});
-  const ng=$('newG');if(ng)ng.onclick=()=>{if(ng.dataset.sure){try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeSheet();hud();nameModal(true,()=>{enterHome();toast('good',`${nurseryName()} is open: year 1`);});}else{ng.dataset.sure=1;ng.textContent='Tap again to wipe this game';ng.classList.add('sun');}};
   el.querySelectorAll('[data-gen]').forEach(b=>b.onclick=e=>{e.stopPropagation();buyGen(b.dataset.gen);});
   const gu=$('gUp');if(gu)gu.onclick=()=>growPlot(sel.plot,1);
   const gd=$('gDn');if(gd)gd.onclick=()=>growPlot(sel.plot,-1);
@@ -2874,6 +2880,22 @@ function drawPhone(H,now){
 // ---------------- goals, gates and the magazine ----------------
 const NAME_IDEAS=['Prairie Bloom Growers','Big Sky Greenhouses','Sweetwater Plant Co.','Little Acre Nursery','Windbreak Greenhouses','Sundown Growers','Wildflower Row','Two Creeks Nursery'];
 const nurseryName=()=>(S&&S.name)||'Your nursery';
+function settingsModal(){
+  const row=(id,b,sm,btn,cls='')=>`<div class="setr ${cls}"><span><b>${b}</b><small>${sm}</small></span><button class="btn ${cls==='bad'?'':'sm'}" type="button" id="${id}"${cls==='bad'?' style="background:var(--bad);color:#fff"':''}>${btn}</button></div>`;
+  modal(`<h2>Settings</h2><div class="setl">
+    ${row('stName','Nursery and grower',`${esc(nurseryName())} · ${(S.gender||'m')==='f'?'woman':'man'} grower`,'Change')}
+    ${row('stTips','Tips',S.tipsOff?'Off. Turn them on to get pointers the first time you meet something new.':'On. A short pointer the first time you meet something new.',S.tipsOff?'Turn on':'Turn off')}
+    ${row('stReplay','Replay tips','Shows every tip again as it comes up, including the ones you’ve seen.','Replay')}
+    ${row('stReset','Start over','Wipes this nursery, the homestead, your cats and stars. It can’t be undone.','Start over','bad')}
+    </div><p class="setabout">Greenhouse Year. QR gift cards use jsQR (Apache 2.0) and qrcode-generator (MIT).</p>
+    <div class="ab2"><button class="btn go" type="button" id="stX">Done</button></div>`);
+  $('stX').onclick=closeModal;
+  $('stName').onclick=()=>nameModal(false);
+  $('stTips').onclick=()=>{S.tipsOff=S.tipsOff?0:1;if(S.tipsOff){tipCur=null;}save();settingsModal();};
+  $('stReplay').onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();closeModal();toast('good','Tips will show again as you play');};
+  $('stReset').onclick=resetModal;
+}
+$('bSet').onclick=()=>{if(placing)cancelPlacing(true);settingsModal();};
 function resetModal(){
   modal(`<h2>Start over?</h2><p>This wipes ${esc(nurseryName())} completely: every year, the homestead, your cats, your stars and the tips you've seen. You start again from year 1 with the tutorial. It can't be undone.</p>
     <div class="ab2"><button class="btn" type="button" id="rsNo">Keep playing</button><button class="btn" type="button" id="rsYes" style="background:var(--bad);color:#fff">Start over</button></div>`);
@@ -2944,6 +2966,11 @@ function rewardsOf(g){ // what opens when you reach stage g
 }
 function spriteURL(id,vb){const k='s_'+id+vb;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';const m=d[4].match(/viewBox="[^"]*" width="\d+" height="\d+"/);
   return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?d[4].replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):d[4]);}
+let upSub='equip';
+function upSubs(){
+  const gens=Object.keys(CROPS).filter(k=>!isShowCrop(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0);
+  return[['equip','Equipment',0],['gen','Varieties',gens],['houses','Houses',house],['bank','Bank',0]];
+}
 function treesHTML(plan){
   const cap=fieldCap(),win=treeWindow(),stars=S.stars||0,nxt=FIELD_CAP.find(([lv])=>lv>stage());
   const card=i=>{const t=treesOf()[i];
@@ -3117,7 +3144,7 @@ function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
-  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" id="rnB">Rename</button><button type="button" class="rnm" id="tipB">${S.tipsOff?'Tips on':'Tips off'}</button><button type="button" class="rnm" id="tipR">Replay tips</button><button type="button" class="rnm bad" id="resetB">Start over</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
