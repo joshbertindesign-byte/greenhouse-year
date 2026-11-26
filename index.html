@@ -3808,7 +3808,7 @@ $('bRing').innerHTML=glyph('phone',28);$('bRing').onclick=()=>{const t=S.tasks.f
 $('hRepB').onclick=()=>openSheet('cust');
 $('hGoalB').onclick=()=>openSheet('book');
 $('bGo').onclick=()=>tryStart();
-let speed=1;const BASE_PACE=2.1;
+let speed=1;const BASE_PACE=1.85;
 $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b)return;if(matchMedia('(max-width:600px)').matches&&b.classList.contains('on'))b=$('speed').querySelector(`[data-s="${speed===1?2:1}"]`);speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
 
 // ---------------- modal, save ----------------
