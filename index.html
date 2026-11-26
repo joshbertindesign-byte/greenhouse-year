@@ -201,6 +201,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .blk.fb .bx{background:rgba(20,30,24,.42);border-radius:7px;padding:1px 4px}.blk.ghost.fb .bx{background:rgba(255,255,255,.72);text-shadow:none}
 .blk.hf .bx{margin-left:calc(var(--fs,40px) * .9)}
 .blk.st-plan .fl:not(.bg),.blk.ghost .fl:not(.bg){opacity:.85}
+.hpic{width:58px;height:58px;flex:none;margin:-6px 2px -6px -4px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
+.ppic{width:34px;height:34px;flex:none;margin:-6px 0 -6px -2px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.2))}
+.npic{width:30px;height:30px;flex:none;margin:-4px 0}
 .crop .fi{vertical-align:-5px;margin:-3px 4px -3px -4px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
 .cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px;max-width:640px}
 @media (max-width:600px){.catc{padding:8px 6px 10px}.catc img{width:60px;height:60px}.catc small{font-size:12px;min-height:46px}}
@@ -1693,14 +1696,14 @@ function handHTML(of,noShapes){
   if(of.contract){
     const dl=of.dl,crops=[...new Set(dl.map(d=>d.crop))],cur=placing&&placing.of===of?placing.cur:null,C0=crop(dl[0].crop),lc=lockedCrop(of);
     return`<div class="hc" style="--c:#6b4fc8;--cs:#ddd3f5">${head}
-    <div class="r2"><span class="ctag">Contract · ${of.label}</span><b class="pr" style="font-size:30px">${fmt(offerValue(of)*potM())}</b></div>
+    <div class="r2">${plantPic((cur||dl[0]).crop,'hpic')}<span class="ctag">Contract · ${of.label}</span><b class="pr" style="font-size:30px">${fmt(offerValue(of)*potM())}</b></div>
     <div class="r2" style="flex-wrap:wrap">${crops.map(k=>cropPill(k)).join('')}<small style="color:#4f5c54">${dl.length} deliveries, ${PSH[dl[0].p-C0.g+1]} to ${PSH[dl[dl.length-1].p]}</small></div>
     ${cur?`<div class="cur"><span>Delivery ${placing.k+1} of ${of.n}: <b>${cur.qty} ${crop(cur.crop).name.toLowerCase()}</b>, ships ${PN[cur.p].toLowerCase()}</span>${noShapes?'':shapes(cur)}</div>`:''}${lc&&!noShapes?unlockBtn(lc):''}</div>`;
   }
   const C=crop(of.crop),lk=!owns(of.crop),mine=placing&&placing.cur===of,f0=forms(of)[0];
   const info=flexible(of)?`<span>${tico('cal',15)}Wants it by <b>${PN[of.p].toLowerCase()}</b></span><span>${tico('sun',15,'#c98a00')}Peak season <b>${(PEAK[of.crop]||[]).map(p=>PN[p].toLowerCase()).join(', ')}</b></span>`:`<span>${tico('cal',15)}Ships <b>${PN[of.p].toLowerCase()}</b> (fixed date)</span>`;
   return`<div class="hc" style="--c:${C.color};--cs:${C.color}33">${head}
-  <div class="r2">${cropPill(of.crop)}<b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
+  <div class="r2">${plantPic(of.crop,'hpic')}${cropPill(of.crop,null,1)}<b>${of.qty} flats</b><b class="pr">${fmt(valAt(of,of.p))}</b></div>
   <div class="r3">${info}</div>
   ${mine&&noShapes?'':mine?shapes(of):`<div class="r4"><small>Shape</small><span class="fm on" style="cursor:default">${shapeHTML(f0.h,f0.g,C.color,11)}<small>Standard</small></span></div>`}
   ${lk&&!noShapes?unlockBtn(of.crop):''}</div>`;
@@ -1709,8 +1712,8 @@ let drawer=false;
 const isPhone=()=>innerWidth<=860;
 function pbarHTML(of,peek,left){
   const x=placing?placing.cur:null,C=crop((x||of).crop),col=of.contract?'#6b4fc8':C.color,lc=lockedCrop(of);
-  const l1=of.contract?`<span class="crop" style="background:#6b4fc8">Contract ×${of.n}</span><span class="due">${x?`Delivery ${placing.k+1}: ${x.qty} ${C.name.toLowerCase()}, ship ${PSH[x.p]}`:esc(short1(of.cust))}</span><b class="pr">${fmt(offerValue(of)*potM())}</b>`
-    :`${cropPill((x||of).crop,C.name)}<span class="q">${of.qty}</span><span class="due">${flexible(of)?'by':'ships'} ${PSH[of.p]} · ${esc(short1(of.cust))}</span><b class="pr">${fmt(valAt(of,of.p))}</b>`;
+  const l1=of.contract?`${plantPic((x||of.dl[0]).crop,'ppic')}<span class="crop" style="background:#6b4fc8">Contract ×${of.n}</span><span class="due">${x?`Delivery ${placing.k+1}: ${x.qty} ${C.name.toLowerCase()}, ship ${PSH[x.p]}`:esc(short1(of.cust))}</span><b class="pr">${fmt(offerValue(of)*potM())}</b>`
+    :`${plantPic((x||of).crop,'ppic')}${cropPill((x||of).crop,C.name,1)}<span class="q">${of.qty}</span><span class="due">${flexible(of)?'by':'ships'} ${PSH[of.p]} · ${esc(short1(of.cust))}</span><b class="pr">${fmt(valAt(of,of.p))}</b>`;
   const nx=`<span class="nxt">${peek.map(o=>{const f=o.contract?null:forms(o)[0],c2=o.contract?'#6b4fc8':crop(o.crop).color;return f?shapeHTML(f.h,f.g,c2,6):shapeHTML(1,2,c2,6);}).join('')}${left} left</span>`;
   const l2=lc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${crop(lc).name.toLowerCase()} ${fmt(GEN[lc])}</button>${nx}`:x?`${formsHTML(x).btns}${nx}`:nx;
   return`<div class="pbar" style="--c:${col}"><button type="button" class="pb1" id="pbT" aria-expanded="${drawer}">${l1}<span class="chev">▾</span></button><div class="pb2">${l2}</div></div>`;
@@ -1761,7 +1764,7 @@ function sortedOffers(list){
   return list.slice().sort((a,b)=>(offerOwned(b)-offerOwned(a))||(key(a)-key(b)));
 }
 let lastTab='';
-function nxHTML(of){const C=crop(of.crop),f=of.contract?null:forms(of)[0],col=of.contract?'#6b4fc8':C.color;return`<div class="m">${f?shapeHTML(f.h,f.g,col,8):shapeHTML(1,2,col,8)}<span><b>${of.contract?`Contract ×${of.n}`:`${of.qty} ${C.name.toLowerCase()}`}</b><small>${of.contract?`${[...new Set(of.dl.map(d=>CROPS[d.crop].name))].join(', ')} · from ${PSH[of.dl[0].p]}`:`Due ${PSH[of.p]} · ${fmt(valAt(of,of.p))}`}</small></span></div>`;}
+function nxHTML(of){const C=crop(of.crop),f=of.contract?null:forms(of)[0],col=of.contract?'#6b4fc8':C.color;return`<div class="m">${plantPic(of.contract?of.dl[0].crop:of.crop,'npic')}${f?shapeHTML(f.h,f.g,col,8):shapeHTML(1,2,col,8)}<span><b>${of.contract?`Contract ×${of.n}`:`${of.qty} ${C.name.toLowerCase()}`}</b><small>${of.contract?`${[...new Set(of.dl.map(d=>CROPS[d.crop].name))].join(', ')} · from ${PSH[of.dl[0].p]}`:`Due ${PSH[of.p]} · ${fmt(valAt(of,of.p))}`}</small></span></div>`;}
 function renderSheet(){
   const el=$('sheet');if(el.hidden)return;
   const plan=S.phase==='plan',c=S.period;
@@ -1968,7 +1971,8 @@ function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const
 function catURL(id){const k='cat_'+id;if(fURL[k])return fURL[k];const d=ART.vector['cat_'+id+'_sit'];if(!d)return'';
   return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
 const flowerImg=(k,px)=>`<img class="fi" src="${flowerURL(k,3)}" alt="" style="width:${px}px;height:${px}px">`;
-const cropPill=(k,txt)=>`<span class="crop" style="background:${CROPS[k].color}">${flowerImg(k,20)}${txt??CROPS[k].name}</span>`;
+const cropPill=(k,txt,noImg)=>`<span class="crop" style="background:${CROPS[k].color}">${noImg?'':flowerImg(k,20)}${txt??CROPS[k].name}</span>`;
+const plantPic=(k,cls)=>`<img class="${cls}" src="${flowerURL(k,3)}" alt="${CROPS[k].name}">`;
 function blkInner(wide,text){return`${wide?`<span class="bi">${glyph('pot',15)}</span>`:''}<span class="bt">${text}</span>${wide?`<span class="bi">${glyph('load',15)}</span>`:''}`;}
 function blkHTML(o){
   // o: {cls,color,left,top,w,h,st,name,count,short,val,fut,rm,id,ghost}

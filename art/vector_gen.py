@@ -463,7 +463,7 @@ for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklif
 VCOAT = {'anna':  dict(b='#fbf8f2', d='#c96f2c', w='#ffffff', o='#7a6656', eye='#3f8a3a', h='#f0a050', t='#4a4f57', ts='#9aa0a8',
                       patches=('#ee9a48', '#8e959e', '#5a3a28')),
          'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a'),
-         'max':   dict(b='#f2a04e', d='#c96a26', w='#fff3e2', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a')}
+         'max':   dict(b='#f2a04e', d='#c96a26', w='#e8913f', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a')}
 def vcat(name, pose):
     c = VCOAT[name]; o = c['o']; sw = .9
     b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
@@ -481,7 +481,7 @@ def vcat(name, pose):
         h = poly([(x - 5.5, y - 2), (x - 4.5, y - 8.5), (x - 1, y - 4.5)], hc, o, sw) + poly([(x + 5.5, y - 2), (x + 4.5, y - 8.5), (x + 1, y - 4.5)], c['patches'][2] if 'patches' in c else hc, o, sw)
         h += poly([(x - 4.4, y - 3), (x - 4, y - 7), (x - 2, y - 4.6)], '#ffb3c0') + poly([(x + 4.4, y - 3), (x + 4, y - 7), (x + 2, y - 4.6)], '#ffb3c0')
         h += ell(x, y, 6.4, 5.6, hc, f'stroke="{o}" stroke-width="{sw}"')
-        if name in ('miley', 'max'): h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
+        if name == 'miley': h += ell(x + .5, y + 2.4, 3.6, 2.6, c['w'])
         if 'st' in c: h += ''.join(f'<path d="{p}" stroke="{c["st"]}" stroke-width="1.2" fill="none" stroke-linecap="round"/>' for p in (f'M{x-1.6},{y-5} v2', f'M{x+.6},{y-5.4} v2.3', f'M{x+2.8},{y-5} v2', f'M{x-5.6},{y+.6} h-1.6', f'M{x+6.4},{y+.6} h1.6'))
         if 'patches' in c:
             h += ell(x + .6, y + 2.8, 3.2, 2.2, '#ffffff')
@@ -500,14 +500,14 @@ def vcat(name, pose):
             b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.6" fill="{c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += ell(32, 43, 12, 6.5, c['b'], f'stroke="{o}" stroke-width="{sw}"')
         b += patches(ell(32, 43, 11.5, 6, '#000'), [(0, 27.5, 38.2, 7.2, 4.6), (1, 36.8, 38, 5.2, 4.2), (2, 21, 40.8, 4.2, 4.2), (0, 41, 41, 3, 2.6), (2, 32.5, 37.4, 2.2, 1.8)])
-        if name in ('miley', 'max'): b += ell(33, 46.5, 8, 2.6, c['w'])
+        if name == 'miley': b += ell(33, 46.5, 8, 2.6, c['w'])
         b += stripes(['M27,37.5 q1,3 0,6', 'M31,37 q1,3 0,6.5', 'M35,37 q1,3 0,6.5'])
         b += head(43, 35)
     elif pose == 'sit':
         b += tail('M26,51 q-9,1 -8,-5 q.5,-2 2.5,-1.5')
         b += f'<path d="M24,52 q-1,-16 9,-17 q9,1 8,17 Z" fill="{c["b"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += patches('<path d="M24.4,51.6 q-1,-16 8.6,-16.6 q8.6,1 7.6,16.6 Z"/>', [(0, 26, 40.5, 3.8, 5), (2, 40, 39.5, 2.8, 4), (1, 37.5, 37, 3, 2.2)])
-        b += ell(33.5, 45, 4.4, 6, c['w'])
+        if name != 'max': b += ell(33.5, 45, 4.4, 6, c['w'])
         b += stripes(['M26,42 q2,1 3,0', 'M26,46 q2,1 3,0'])
         b += ell(30.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"') + ell(36.5, 51.5, 2.4, 1.6, c['w'], f'stroke="{o}" stroke-width=".7"')
         b += head(33.5, 30)
@@ -517,7 +517,7 @@ def vcat(name, pose):
             b += f'<rect x="{lx-1.6}" y="47" width="3.4" height="5.5" rx="1.6" fill="{c["w"]}" stroke="{o}" stroke-width="{sw}"/>'
         b += ell(31, 45, 11.5, 6, c['b'], f'stroke="{o}" stroke-width="{sw}"')
         b += patches(ell(31, 45, 11, 5.5, '#000'), [(0, 26.5, 40.5, 7, 4.4), (1, 35.5, 40.2, 5, 4), (2, 20, 43, 4, 4)])
-        if name in ('miley', 'max'): b += ell(32, 48.5, 7.5, 2.4, c['w'])
+        if name == 'miley': b += ell(32, 48.5, 7.5, 2.4, c['w'])
         b += stripes(['M25,39.8 q1,3 0,6', 'M29,39.2 q1,3 0,6.5', 'M33,39.2 q1,3 0,6.5'])
         b += head(45, 46, True)
     else:  # sleep: curled loaf
