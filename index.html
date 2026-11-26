@@ -2208,15 +2208,17 @@ function confirmPv(){
     dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d,'you swapped out their order'));
     if(ev.gone.length)toast(ev.rep.length?'bad':'good',`Swapped out ${ev.gone.length} order${ev.gone.length>1?'s':''}${ev.rep.length?': '+ev.rep.map(x=>`${x.d} with ${short1(x.cust)}`).join(', '):''}`);
     if(!place(placing.cur,top0)){toast('bad','No room there');renderSheet();return;}
-    pv=null;advancePlacing();renderSheet();hud();
+    pv=null;advancePlacing();if(popDone())return;renderSheet();hud();
   });
 }
+// mid-period, once the last pop-up is placed or binned, get back to work
+function popDone(){if(S.phase!=='run'||placing||queue().length||tab!=='orders')return false;closeSheet();return true;}
 function binHand(){
   if(placing){const P0=placing;placing=null;sel=null;pv=null;
     if(P0.of.contract){dropOrders(P0.placed);S.contracts=S.contracts.filter(c=>c.id!==P0.cid);}
     S.offers=S.offers.filter(x=>x!==P0.of);}
   else{const q=queue();if(q[0])S.offers=S.offers.filter(x=>x!==q[0]);}
-  renderSheet();hud();
+  if(popDone())return;renderSheet();hud();
 }
 function canNudge(pl,d,avoid){
   const s=pl.s+d,e=pl.e+d;if(s<minStart()||e>7||e<0)return false;
