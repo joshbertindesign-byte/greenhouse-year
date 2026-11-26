@@ -220,7 +220,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stat .shr{display:none}
 .stat.goal{min-width:64px}.stat.goal .gm{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:3px;overflow:hidden}.stat.goal .gm i{display:block;height:100%;width:0;background:#f2c230;border-radius:2px}
 .stat.goal.met .gm i{background:#7fd08f}.stat.goal.met b{color:#bff0c8}
-@media (max-width:600px){.stat .lng{display:none}.stat .shr{display:inline}.stat{padding:4px 8px}.stat.goal{min-width:50px}.hud .hb{padding:8px 10px}.seg button{padding:6px 9px!important;font-size:14px!important}}
+@media (max-width:600px){.stat .lng{display:none}.stat .shr{display:inline}.stat{padding:4px 8px}.stat b{font-size:16px}.stat small{font-size:11px}.stat.goal{min-width:50px}.hud .hb{padding:8px 9px}.hud .hb .lng{display:none}.hud{column-gap:6px!important}.when b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.when .yr{flex:none;margin-left:8px}.yr i{width:12px!important}.seg button{padding:6px 9px!important;font-size:14px!important}.seg button:not(.on){display:none}.seg button.on{background:none}}
 @media (min-width:861px) and (max-width:1380px){.ttop .st.st2{display:none}.ttabs button{padding-left:10px!important;padding-right:10px!important}}
 .stars{color:#e2a91f;letter-spacing:1px;white-space:nowrap;line-height:1}.stars i{font-style:normal;color:#d9d2bf}
 .lockc{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#fff;background:var(--sc,#6b7a70);border-radius:999px;padding:6px 10px;white-space:nowrap;opacity:.9}
@@ -516,14 +516,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 
 .rail{position:fixed;right:calc(6px + env(safe-area-inset-right));z-index:5;width:60px;background:rgba(23,52,38,.9);border-radius:18px;padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);overflow-y:auto;scrollbar-width:none}
 .rail>small{font-size:9px;font-weight:800;letter-spacing:.08em;color:#cfe3d4;text-align:center;line-height:1.1}
-.ri{position:relative;width:50px;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:none;padding:0;color:#fff;font:inherit;cursor:pointer}
-.ri .rg{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--rc) calc(var(--p)*1turn),rgba(255,255,255,.16) 0)}
-.ri .rg>span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
-.ri b{font-size:11px;font-weight:700;line-height:1.1}
-.ri i{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:#fff;color:#173426;font:800 11px/18px Outfit,sans-serif;font-style:normal;padding:0 4px;text-align:center}
-.ri.hot .rg{animation:rhot .6s ease-in-out infinite alternate}@keyframes rhot{from{transform:scale(1)}to{transform:scale(1.08)}}
-.ri.q{opacity:.55}.ri.q b::after{content:' ✓'}
-.ri.ring .rg>span{animation:ringb .5s ease-in-out infinite alternate}
+.rli{position:relative;width:50px;display:flex;flex-direction:column;align-items:center;gap:1px;border:0;background:none;padding:0;color:#fff;font:inherit;cursor:pointer}
+.rli .rg{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--rc) calc(var(--p)*1turn),rgba(255,255,255,.16) 0)}
+.rli .rg>span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
+.rli b{font-size:11px;font-weight:700;line-height:1.1}
+.rli i{position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;border-radius:9px;background:#fff;color:#173426;font:800 11px/18px Outfit,sans-serif;font-style:normal;padding:0 4px;text-align:center}
+.rli.hot .rg{animation:rhot .6s ease-in-out infinite alternate}@keyframes rhot{from{transform:scale(1)}to{transform:scale(1.08)}}
+.rli.q{opacity:.55}.rli.q b::after{content:' ✓'}
+.rli.rling .rg>span{animation:ringb .5s ease-in-out infinite alternate}
 .hstrip{position:fixed;left:calc(8px + env(safe-area-inset-left));right:calc(8px + env(safe-area-inset-right));z-index:5;display:flex;gap:6px;justify-content:center;pointer-events:none}
 .hstrip>button{flex:none}
 .hstrip.pick .ar{min-width:48px;font-size:26px;line-height:1;padding:0}
@@ -1839,7 +1839,7 @@ function renderRail(){
   el.style.top=($('hstrip').hidden?$('hud').offsetHeight+8:$('hstrip').offsetTop+$('hstrip').offsetHeight+8)+'px';el.style.maxHeight=(innerHeight-parseFloat(el.style.top)-($('tray').offsetHeight+10))+'px';
   const sig=railIt.map(i=>i.key+':'+(i.n||0)+':'+(i.q?1:0)).join(',');
   if(sig!==railSig){railSig=sig;
-    $('railL').innerHTML=railIt.map(i=>`<button type="button" class="ri${i.q?' q':''}${i.k==='phone'?' ring':''}" data-rk="${i.key}" aria-label="${i.lab}${i.n?', '+i.n+' jobs':''}"><span class="rg" style="--rc:#fff;--p:1"><span style="background:${IC[i.k].c}">${glyph(i.k,24)}</span></span><b>${i.lab}</b>${i.n>1?`<i>${i.n}</i>`:''}</button>`).join('');
+    $('railL').innerHTML=railIt.map(i=>`<button type="button" class="rli${i.q?' q':''}${i.k==='phone'?' ring':''}" data-rk="${i.key}" aria-label="${i.lab}${i.n?', '+i.n+' jobs':''}"><span class="rg" style="--rc:#fff;--p:1"><span style="background:${IC[i.k].c}">${glyph(i.k,24)}</span></span><b>${i.lab}</b>${i.n>1?`<i>${i.n}</i>`:''}</button>`).join('');
     $('railL').querySelectorAll('[data-rk]').forEach(b=>b.onclick=()=>{const it=railIt.find(x=>x.key===b.dataset.rk);if(!it)return;if(it.h!=null)focusHouse(it.h);else if(it.t)enqueue(it.t);railSig='';});}
   $('railL').querySelectorAll('[data-rk]').forEach(b=>{const it=railIt.find(x=>x.key===b.dataset.rk);if(!it)return;const g=b.firstElementChild,c=it.left<=.25?'#ff6a5a':it.left<=.5?'#f2c230':'#7fe0a0';g.style.setProperty('--p',it.left.toFixed(3));g.style.setProperty('--rc',c);b.classList.toggle('hot',it.left<=.25&&!it.q);});
 }
@@ -1849,11 +1849,11 @@ function hud(){
   $('tray').hidden=S.phase==='home';
   $('hWhen').textContent=S.phase==='home'?`Year ${S.year} · Homestead`:S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':''}`;
   $('hYr').innerHTML=PN.map((_,i)=>`<i><b style="width:${i<c?100:i===c?(S.phase==='run'?S.t/PSEC*100:0):0}%"></b></i>`).join('');
-  $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
+  $('hCash').textContent=innerWidth<=600&&Math.abs(S.cash)>=100000?fmtK(S.cash):fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
   {const gp=goalProg();$('hGoal').textContent=gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=goalText(stg(stage()).goal)+' · '+gp.txt;$('hGoalB').classList.toggle('met',gp.pct>=1);}
-  $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').textContent=`Start ${PN[c].toLowerCase()}`;
+  $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').innerHTML=`Start<span class="lng"> ${PN[c].toLowerCase()}</span>`;
   $('bBoard').hidden=(S.phase==='plan'&&!sheetOpen())||S.phase==='home';$('bBoard').classList.toggle('open',sheetOpen());$('bRing').hidden=!(S.phase==='run'&&S.tasks.some(t=>t.type==='phone'))||railOn();$('bRing').style.top=($('hud').offsetHeight+(focusMode()?66:10))+'px';
   const n=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;$('bN').textContent=n||'';
   renderFloors();
@@ -2549,11 +2549,13 @@ function rivalTable(year,me){
   return L;
 }
 function goalText(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} stars from Best Homes and Gardens`,rep:`End the year with ${n}+ average reputation`,rank:`Be ranked #1 by Best Homes and Gardens`}[g.k];}
+const kk=n=>{const a=Math.abs(n);return a>=1000?(a/1000).toFixed(a>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(a));};
+const kk2=(a,b)=>`${a<0?'−':''}$${kk(a)}/${kk(b)}`;
 function goalProg(){
   const g=stg(stage()).goal,y=S.ys;
   if(g.k==='full')return{cur:y.full,n:g.n,txt:`${y.full}/${g.n} full trucks`,short:`${y.full}/${g.n}`,pct:y.full/g.n};
-  if(g.k==='profit'){const p=opProfit();return{cur:p,n:g.n,txt:`${fmt(p)} of ${fmt(g.n)} operating profit`,short:`${fmtK(p)}/${fmtK(g.n)}`,pct:p/g.n};}
-  if(g.k==='rev')return{cur:y.rev,n:g.n,txt:`${fmt(y.rev)} of ${fmt(g.n)} sold`,short:`${fmtK(y.rev)}/${fmtK(g.n)}`,pct:y.rev/g.n};
+  if(g.k==='profit'){const p=opProfit();return{cur:p,n:g.n,txt:`${fmt(p)} of ${fmt(g.n)} operating profit`,short:kk2(p,g.n),pct:p/g.n};}
+  if(g.k==='rev')return{cur:y.rev,n:g.n,txt:`${fmt(y.rev)} of ${fmt(g.n)} sold`,short:kk2(y.rev,g.n),pct:y.rev/g.n};
   if(g.k==='rep'){const r=Math.round(avgRep());return{cur:r,n:g.n,txt:`Reputation ${r} of ${g.n}`,short:`${r}/${g.n}`,pct:r/g.n};}
   const m=magScore(y,avgRep());
   if(g.k==='stars')return{cur:m.stars,n:g.n,txt:`On pace for ${m.stars} of ${g.n} stars`,short:`${'★'.repeat(m.stars)}`,pct:m.score/[0,0,42,57,72,86][g.n],star:true};
@@ -2879,7 +2881,7 @@ $('hRepB').onclick=()=>openSheet('cust');
 $('hGoalB').onclick=()=>openSheet('book');
 $('bGo').onclick=()=>tryStart();
 let speed=1;const BASE_PACE=2.4;
-$('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
+$('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b)return;if(matchMedia('(max-width:600px)').matches&&b.classList.contains('on'))b=$('speed').querySelector(`[data-s="${speed===1?2:1}"]`);speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
 
 // ---------------- modal, save ----------------
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
