@@ -980,7 +980,7 @@ function offerOpts(of,c0){
   return all.filter(a=>!all.some(b=>b!==a&&b.v>=a.v&&b.c<=a.c&&(b.v>a.v||b.c<a.c))).map(({v,nd})=>({v,nd}));
 }
 function logOffers(list){
-  if(!S.ys)return;const c0=minStart(),L=S.ys.olog=S.ys.olog||[];
+  if(!S.ys)return;const c0=minStart();if(!S.ys.olog){S.ys.olog=[];S.ys.ologFrom=S.period;}const L=S.ys.olog;
   for(const of of list){if(of.logged||!offerOwned(of))continue;of.logged=1;const o=offerOpts(of,c0);if(o&&o.length)L.push(o);}
 }
 // Greedy fractional fill of every bench-period with the densest options first; each offer is used at most once in total.
@@ -3137,7 +3137,7 @@ function closeYear(){
   if(met){S.stage=st+1;unlocked=rewardsOf(st+1);const cashR=unlocked.find(r=>r.t==='cash');if(cashR){S.cash+=cashR.n;rec.cash=Math.round(S.cash);}}
   if(S.investor&&S.year<=S.investor.until&&m.prof>0){const sh=Math.round(m.prof*S.investor.share);S.cash-=sh;rec.investor=sh;}
   if(S.ys.cover)rec.cover=S.ys.cover;
-  {const bd=planBound(S.ys),act=planActual();if(bd>=1500){const pct=Math.min(1,act/bd),T=PLAN_TIERS.find(t=>pct>=t.min);rec.plan={pct:Math.round(pct*100),act,bd};
+  {const bd=planBound(S.ys),act=planActual();if(bd>=1500&&S.ys.ologFrom===0){const pct=Math.min(1,act/bd),T=PLAN_TIERS.find(t=>pct>=t.min);rec.plan={pct:Math.round(pct*100),act,bd};
     if(T){rec.plan.tier=T.n;rec.plan.st=T.st;rec.plan.cash=Math.round(act*T.cash/50)*50;S.cash+=rec.plan.cash;rec.cash=Math.round(S.cash);}}}
   rec.starsEarned=m.stars+(met?3:0)+(rec.plan&&rec.plan.st||0);S.stars=(S.stars||0)+rec.starsEarned;
   S.redYears=S.cash<0?(S.redYears||0)+1:0;
