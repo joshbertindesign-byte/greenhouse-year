@@ -356,6 +356,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+@media (max-width:600px){.ttabs.many button:not(.on) .tl{display:none}.ttabs.many button{justify-content:center;min-height:44px}.ttabs.many button.on{grid-column:span 2}}
+.alm .alsec{border-top:1px solid #e3d9bd;padding:10px 0 4px;margin-top:8px}.alm h4{margin:0 0 6px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#8a6a2a;font-family:Outfit,sans-serif}
+.alm .alr{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:2px 0}.alm .alr span{color:#5d6b62}.alm .alr b{text-align:right}
+.alm ul{margin:0;padding-left:18px;font-size:15px;line-height:1.5}.alm p{font-size:15px;margin:4px 0}.alm .alnote{font-size:13.5px;color:#5d6b62}
+.alcal{display:grid;grid-template-columns:minmax(76px,auto) repeat(8,1fr);gap:3px 3px;align-items:center;font-family:Outfit,sans-serif}.alcal small{font-size:10.5px;text-align:center;color:#8a7a52}.alcal span{font-size:13px}
+.alcal i{height:14px;border-radius:4px;background:#efe9d8}.alcal i.ok{background:color-mix(in srgb,var(--c) 35%,#fff)}.alcal i.pk{background:var(--c)}
+.alm .regs{margin-top:6px;font-family:Outfit,sans-serif}
+.trend{margin:6px 2px;font-size:14px;color:var(--mute);display:flex;gap:6px;align-items:center;flex-wrap:wrap}.trend b{color:var(--ink)}
+.regs{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:6px}.regs>div{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:12px;padding:4px 10px 4px 4px}.regs img{width:40px;height:40px;flex:none}.regs span{display:flex;flex-direction:column}.regs small{color:var(--mute);font-size:12.5px}
 .vco{display:flex!important;flex-direction:column;align-items:flex-start;gap:2px}.vco .vcv{color:#2e7d4a!important;font-weight:700}
 .vcard{background:#f2f8ee;border:2px solid #b9dfc0;border-radius:14px;padding:10px 12px;margin-top:12px;display:flex;flex-direction:column;gap:6px}.vcard>span{color:var(--mute);font-size:14px}
 .vcl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.vcl small{width:100%;font-weight:700;color:var(--mute);font-size:11px;letter-spacing:.05em}.vcl>span{display:inline-flex;align-items:center;gap:4px;font-size:13px;background:#fff;border-radius:99px;padding:2px 8px 2px 2px}.vcl .ok{outline:2px solid #2e7d4a}.vcl .miss{opacity:.45;text-decoration:line-through}
@@ -755,8 +764,86 @@ const houseIds=()=>{const a=[...Array(S.floors).keys()];if(hasShow())a.push(SH);
 const builtH=()=>houseIds().map(h=>HOUSES[h]);
 const benchIds=()=>houseIds().flatMap(h=>[0,1,2,3,4,5,6,7].map(i=>h*8+i));
 const hName=h=>h===SH?'Showcase house':floorName(h);
-const FIELD_H=30;
-const lvOf=h=>h===FIELD_H?0:HOUSES[h].L;
+const FIELD_H=30,SUC_H=31;
+const lvOf=h=>h===FIELD_H||h===SUC_H?0:HOUSES[h].L;
+// ---- succulent house: plants carry over from year to year; customers walk in to buy them ----
+const SUC_LV=12,SUC_COST=12000,SUC_OH=150,SUC_EXP=6000,SUCO={ox:-11,oy:9};
+const SUCS={echeveria:{n:'Echeveria',pup:60,m:1,c:'#6f9a92'},jade:{n:'Jade',pup:40,m:.85,c:'#3f8a3f'},aloe:{n:'Aloe',pup:50,m:.95,c:'#6f9a4a'},haworthia:{n:'Haworthia',pup:50,m:1,c:'#2f6a4a'},cactus:{n:'Barrel cactus',pup:80,m:1.25,c:'#5a8a2a'}};
+const SIZES=['Pup','Small','Medium','Specimen'],SIZE_AT=[0,3,8,16],SIZE_P=[0,120,340,720];
+const SUC_SLOTS=[...[1,2,3,5,6,7].map(x=>[x,1]),...[1,2,3,5,6,7].map(x=>[x,3]),...[1,2,3,4,5].map(x=>[x,5])];
+const SUC_SPOTS=[[7,6],[6,6],[5,6],[4,6]],SUC_COUNTER=[7,5];
+const REGS=[{n:'Rosa',look:'shop_b',z:2,sp:'echeveria',ps:[2,3,4]},{n:'Mr. Okafor',look:'shop_a',z:3,sp:'cactus',ps:[5,6,7]},{n:'Dana',look:'shop_d',z:1,sp:'haworthia',ps:[0,1,7]},
+  {n:'Luis',look:'shop_c',z:1,sp:'jade',ps:[3,4,5]},{n:'Priya',look:'shop_d',z:2,sp:'aloe',ps:[1,2,6]},{n:'The Hendersons',look:'shop_c',z:3,sp:null,ps:[6,7]}];
+const sucOn=()=>!!(S&&S.suc&&S.suc.built),sucCap=()=>S.suc&&S.suc.cap||12,sucPlants=()=>(S.suc&&S.suc.slots)||[];
+const sizeOf=pl=>pl.age>=SIZE_AT[3]?3:pl.age>=SIZE_AT[2]?2:pl.age>=SIZE_AT[1]?1:0;
+const trendM=sp=>S.alm&&S.alm.year===S.year?(sp===S.alm.hot?1.4:sp===S.alm.cold?.8:1):1;
+const sucPrice=(sp,z)=>Math.round(SIZE_P[z]*SUCS[sp].m*trendM(sp)/5)*5;
+const regWant=r=>({z:r.z,sp:r.sp||(S.alm&&S.alm.hot)||'echeveria'});
+function sucPick(){
+  const c=S.period,inS=REGS.filter(r=>r.ps.includes(c)&&!S.tasks.some(t=>t.type==='shop'&&t.who===r.n));
+  if(inS.length&&rnd()<.55){const r=pick(inS);return{who:r.n,look:r.look,want:regWant(r),reg:1};}
+  const have=[1,2,3].map(z=>sucPlants().filter(p=>p&&sizeOf(p)===z).length),mx=Math.max(...have);if(!mx)return null;
+  const z=pick([1,2,3].filter((_,i)=>have[i]===mx));
+  return{who:'A walk-in',look:pick(['shop_a','shop_b','shop_c','shop_d']),want:{z,sp:S.alm&&rnd()<.35?S.alm.hot:null}};
+}
+function sucSched(c){
+  if(!sucOn()||window.__quiet)return;
+  const n=2+(sucCap()>12?1:0)+([2,3,6,7].includes(c)?1:0)+ri(0,1);
+  for(let i=0;i<n;i++)S.events.push({at:PSEC*(.05+i*(.8/n)+rnd()*.07),k:'shopc'});
+  sucPlants().forEach((p,i)=>{if(!p)return;if(p.age===SIZE_AT[2]||p.age===SIZE_AT[3])S.events.push({at:PSEC*(.1+rnd()*.6),k:'succ',slot:i,job:'repot'});else if(rnd()<.035)S.events.push({at:PSEC*(.1+rnd()*.6),k:'succ',slot:i,job:'rot'});});
+}
+function sucFire(e){
+  if(e.k==='shopc'){const busy=S.tasks.filter(t=>t.type==='shop').map(t=>t.spot),spot=[0,1,2,3].find(i=>!busy.includes(i));if(spot==null)return;
+    const cu=sucPick();if(!cu)return;addTask({type:'shop',spot,...cu,born:S.t,due:S.t+26*gTimer()});
+    if(!window.__quiet)toast('shop',`${cu.who} ${cu.reg?'is':'came'} in for ${cu.want.z===3?'a specimen':`a ${SIZES[cu.want.z].toLowerCase()}`}${cu.want.sp?` ${SUCS[cu.want.sp].n.toLowerCase()}`:' succulent'}`,()=>jumpTo(SUC_H));return;}
+  if(e.k==='succ'){const p=sucPlants()[e.slot];if(!p||S.tasks.some(t=>t.type==='succ'&&t.slot===e.slot))return;addTask({type:'succ',slot:e.slot,job:e.job,born:S.t,due:Math.min(S.t+32*gTimer(),PSEC*.97)});
+    if(!window.__quiet)toast('succ',e.job==='repot'?`A ${SUCS[p.sp].n.toLowerCase()} has outgrown its pot`:`A ${SUCS[p.sp].n.toLowerCase()} is showing rot`,()=>jumpTo(SUC_H));}
+}
+function sucSell(t){
+  const w=t.want,pl=sucPlants().map((p,i)=>p?{...p,i,z:sizeOf(p)}:null).filter(p=>p&&p.z>=1);
+  const by=f=>pl.filter(f).sort((a,b)=>sucPrice(b.sp,b.z)-sucPrice(a.sp,a.z))[0];
+  let p=w.sp?by(p=>p.z===w.z&&p.sp===w.sp):null,kind='perfect';
+  if(!p){p=by(p=>p.z===w.z);kind='size';}
+  if(!p){p=pl.sort((a,b)=>Math.abs(a.z-w.z)-Math.abs(b.z-w.z)||b.z-a.z)[0];kind='sub';}
+  const at=P(SUCO.ox+SUC_COUNTER[0]+.5,SUCO.oy+SUC_COUNTER[1]+.5,0),fl=(text,color)=>floats.push({x:SUCO.ox+SUC_COUNTER[0]+.5,y:SUCO.oy+SUC_COUNTER[1]+.5,f:0,text,color,t0:performance.now()});
+  S.ys.sucN=(S.ys.sucN||0)+1;
+  if(!p){S.ys.sucLost=(S.ys.sucLost||0)+1;fl('Nothing to sell','#c8402f');if(!window.__quiet)toast('bad',`${t.who} left empty-handed: nothing big enough to sell`);return;}
+  let v=sucPrice(p.sp,p.z);if(kind==='perfect')v=Math.round(v*1.2);if(kind==='sub')v=Math.round(Math.min(v,sucPrice(p.sp,w.z))*.8);
+  S.suc.slots[p.i]=null;S.cash+=v;S.ys.rev+=v;S.ys.sucRev=(S.ys.sucRev||0)+v;if(kind==='perfect')S.ys.sucPerfect=(S.ys.sucPerfect||0)+1;if(kind==='sub')S.ys.sucSub=(S.ys.sucSub||0)+1;
+  fl(`+${fmt(v)}${kind==='perfect'?' ♥':''}`,kind==='sub'?'#c98a00':'#2e7d4a');
+  if(!window.__quiet&&kind!=='size')toast(kind==='perfect'?'good':'shop',kind==='perfect'?`${t.who} loved the ${SUCS[p.sp].n.toLowerCase()} and tipped: ${fmt(v)}`:`${t.who} settled for a ${SIZES[p.z].toLowerCase()} ${SUCS[p.sp].n.toLowerCase()}: ${fmt(v)}`);
+}
+function sucMiss(t){
+  if(t.type==='shop'){S.ys.sucN=(S.ys.sucN||0)+1;S.ys.sucLost=(S.ys.sucLost||0)+1;if(!window.__quiet)toast('bad',`${t.who} got tired of waiting and left`);return;}
+  const p=sucPlants()[t.slot];if(!p)return;
+  if(t.job==='rot'){S.suc.slots[t.slot]=null;if(!window.__quiet)toast('bad',`Lost a ${SUCS[p.sp].n.toLowerCase()} to rot`);}
+  else{p.age=Math.max(0,p.age-3);if(!window.__quiet)toast('bad',`The ${SUCS[p.sp].n.toLowerCase()} stayed root-bound and slowed down`);}
+}
+const sucTile=i=>({x:SUCO.ox+SUC_SLOTS[i][0],y:SUCO.oy+SUC_SLOTS[i][1]});
+function sucBlocked(x,y){if(!sucOn())return false;const lx=x-SUCO.ox,ly=y-SUCO.oy;if(lx<0||lx>8||ly<0||ly>6)return false;
+  if(lx===SUC_COUNTER[0]&&ly===SUC_COUNTER[1])return true;return SUC_SLOTS.slice(0,sucCap()).some(([a,b])=>a===lx&&b===ly);}
+function sucPlant(i,sp){const c=SUCS[sp].pup;if(!sucOn()||sucPlants()[i]||!spend(c,'a pup'))return;S.suc.slots[i]={sp,age:0};S.ys.plugs+=c;save();closeModal();renderSheet();hud();}
+function sucBuild(){if(sucOn()||stage()<SUC_LV||S.phase!=='plan')return;if(!spend(SUC_COST,'the succulent house'))return;S.ys.build=(S.ys.build||0)+SUC_COST;S.suc={built:1,cap:12,slots:Array(17).fill(null)};toast('good','Succulent house built. Plant pups from the Shop tab');save();renderSheet();hud();layout();}
+function sucExpand(){if(!sucOn()||sucCap()>12||S.phase!=='plan')return;if(!spend(SUC_EXP,'more display tables'))return;S.ys.build=(S.ys.build||0)+SUC_EXP;S.suc.cap=17;save();renderSheet();hud();}
+function drawSucGround(){
+  if(!sucOn()||viewF!==0)return;const ox=SUCO.ox,oy=SUCO.oy;
+  box(ox-.25,oy-.25,0,9.5,7.5,6,['#eadcbc','#cdb88c','#b9a274']);
+  for(let u=0;u<9;u++)spr('wall_back|desert',u+ox,oy,6);for(let v=0;v<7;v++)spr('wall_left|desert',ox,v+oy,6);
+
+}
+function sucItems(now){
+  if(!sucOn()||viewF!==0)return[];const out=[],ox=SUCO.ox,oy=SUCO.oy,cap=sucCap();
+  const rowsOf=[[0,3],[3,6],[6,9],[9,12],[12,17]];
+  for(const [a,b] of rowsOf){if(a>=cap)continue;for(let i=a;i<Math.min(b,cap);i++){const t=sucTile(i),nm=i===a?'bench_left':i===Math.min(b,cap)-1?'bench_right':'bench_mid',p=sucPlants()[i];
+    out.push({d:t.x+t.y+1,f:()=>{spr(nm,t.x,t.y,6);if(p)spr(`suc_${p.sp}_${sizeOf(p)}`,t.x,t.y,6);}});}}
+  const cx0=ox+SUC_COUNTER[0],cy0=oy+SUC_COUNTER[1];
+  out.push({d:cx0+cy0+1,f:()=>{box(cx0+.08,cy0+.08,6,.84,.84,26,['#e0b47a','#b8864e','#9a6e3a']);box(cx0+.3,cy0+.3,32,.4,.32,9,['#4a5560','#2f363d','#23292e']);}});
+  out.push({d:ox+oy+30,f:()=>{  const s0=P(ox+1.2,oy+7.3,8);cx.save();cx.font=`700 ${Math.round(clamp(11*sc+4,9,15))}px Outfit,sans-serif`;const t='Succulent house',w=cx.measureText(t).width+14;cx.fillStyle='#8a4a22';rr(s0[0]-w/2,s0[1]-11,w,22,6);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,s0[0],s0[1]+1);cx.restore();}});
+  for(const t of S.tasks.filter(t=>t.type==='shop')){const [sx,sy]=SUC_SPOTS[t.spot],k=clamp((S.t-t.born)/1.6,0,1),x=ox+8.6+(sx+.5-8.6)*k,y=oy+7.6+(sy+.5-7.6)*k,walk=k<1;
+    out.push({d:x+y,f:()=>spr(`${t.look}_${walk?'back':'front'}_${walk?Math.floor(now/170)%2:0}`,x-.5,y-.5,6)});}
+  return out;
+}
+
 // ---------------- the tree field: long crops, grower-only care ----------------
 const TREES={
   jmaple:{n:'Japanese maple',yrs:2,cash:3000,st:6,c:'#b8332a',note:'Quick to grow, fussy about pruning',prune:[1,5]},
@@ -781,7 +868,7 @@ const gradeL=g=>g>=90?'A':g>=75?'B':g>=55?'C':'D';
 const treeAt=(x,y)=>{if(!fieldOpen())return false;for(const k in treesOf()){const p=spotXY(+k);if(p.x===x&&p.y===y)return true;}return false;};
 function schedTreeJobs(c){
   if(!fieldOpen()||window.__quiet)return;
-  if(S.ys.wx==null){S.ys.wx=1;S.ys.dry=rnd()<.4;S.ys.frost=rnd()<.3;S.ys.storm=rnd()<.15;}
+  if(S.ys.wx==null)almGen();
   const storm=c===5&&S.ys.storm?Object.keys(treesOf()).sort(()=>rnd()-.5).slice(0,ri(1,3)).map(Number):[];
   for(const k in treesOf()){const t=treesOf()[k],T=TREES[t.sp],sp=+k,left=treeTot(t)-t.age;let job=null;
     if(t.sell)job='dig';
@@ -893,6 +980,8 @@ const IC={
   bug:{c:'#d23a3a',f:['M12 6.5c3.6 0 6 2.8 6 6.5s-2.7 6.5-6 6.5-6-2.8-6-6.5 2.4-6.5 6-6.5z'],s:['M9 4.5l1.5 2','M15 4.5l-1.5 2']},
   heat:{c:'#e2552f',f:['M12 3c1 3.5 5 5.2 5 10a5 5 0 0 1-10 0c0-2.4 1.3-3.6 2.4-4.6.2 1.6.9 2.6 2 3 0-3.2-.4-5.6.6-8.4z'],s:[]},
   tree:{c:'#2f7a3f',f:['M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z'],s:['M12 16v5']},
+  shop:{c:'#c9703a',f:['M6 8h12l-1 12H7z'],s:['M9 8V6.5a3 3 0 0 1 6 0V8']},
+  succ:{c:'#5a8a2a',f:['M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z','M7 15h10l-1.2 6H8.2z'],s:[]},
   star:{c:'#d9a400',f:['M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z'],s:[]},
   cat:{c:'#e0873f',f:['M4.6 10.2 5.4 3.6l4.4 3.7h4.4l4.4-3.7.8 6.6c1.4 5.2-1.9 9.3-7.4 9.3s-8.8-4.1-7.4-9.3z'],s:[]}};
 const P2D={};for(const k in IC)P2D[k]={f:IC[k].f.map(d=>new Path2D(d)),s:IC[k].s.map(d=>new Path2D(d))};
@@ -941,7 +1030,7 @@ const minStart=()=>S.phase==='plan'?S.period:S.period+1;
 const roundKey=()=>S.year*100+S.period*2+(S.phase==='plan'?0:1);
 const crewCost=()=>S.crew.reduce((a,r)=>a+r.wage,0);
 const SHOW_COST=15000,SHOW_OH=250;
-const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0))*(S.fixedYear===S.year?.75:1));
+const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(S.fixedYear===S.year?.75:1));
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
 
 // ---------------- placement ----------------
@@ -1155,12 +1244,14 @@ function genPopup(){
 // ---------------- tasks ----------------
 function addTask(t){t.id=S.nid++;t.born=t.born??S.t;S.tasks.push(t);return t;}
 function dropTask(t){S.tasks=S.tasks.filter(x=>x!==t);S.queue=S.queue.filter(x=>x!==t);}
-const taskF=t=>t.type==='load'||t.type==='phone'?0:t.type==='tree'?FIELD_H:t.type==='star'?t.h:t.type==='fix'?t.f:BENCH[t.bench].f;
-function workOf(t){if(t.type==='tree')return TJOB[t.job].w;const m=t.type==='pot'?[1,.75,.55][upLv('potter')]:t.type==='load'?[1,.7,.5][upLv('fork')]:t.type==='fix'?[1,.7,.5][upLv('heat')]*(hasBuild('shed')?.85:1):1;if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return(1.2+(pl?orderOf(pl).qty:10)*.09)*m;}return(t.rows?WORK[t.type]*t.rows.length:WORK[t.type])*m;}
+const taskF=t=>t.type==='load'||t.type==='phone'?0:t.type==='tree'?FIELD_H:t.type==='shop'||t.type==='succ'?SUC_H:t.type==='star'?t.h:t.type==='fix'?t.f:BENCH[t.bench].f;
+function workOf(t){if(t.type==='tree')return TJOB[t.job].w;if(t.type==='shop')return 1.4;if(t.type==='succ')return t.job==='repot'?1.8:1.2;const m=t.type==='pot'?[1,.75,.55][upLv('potter')]:t.type==='load'?[1,.7,.5][upLv('fork')]:t.type==='fix'?[1,.7,.5][upLv('heat')]*(hasBuild('shed')?.85:1):1;if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return(1.2+(pl?orderOf(pl).qty:10)*.09)*m;}return(t.rows?WORK[t.type]*t.rows.length:WORK[t.type])*m;}
 function taskLabel(t){
   if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return'Load '+(pl?crop(pl.crop).name:'');}
   if(t.type==='phone')return'Phone';
   if(t.type==='star')return'Grab the star';
+  if(t.type==='shop')return`${t.who==='A walk-in'?'Walk-in':t.who}: ${SIZES[t.want.z].toLowerCase()}${t.want.sp?' '+SUCS[t.want.sp].n.toLowerCase().replace('barrel ',''):''}`;
+  if(t.type==='succ'){const p=sucPlants()[t.slot];return(t.job==='repot'?'Repot ':'Treat rot: ')+(p?SUCS[p.sp].n.toLowerCase().replace('barrel ',''):'');}
   if(t.type==='tree'){const tr=treesOf()[t.spot];return TJOB[t.job].n+' '+(tr?TREES[tr.sp].n.toLowerCase().replace('japanese ','j. '):'tree');}
   if(t.type==='fix')return'Fix '+unitName(S.period).toLowerCase()+(t.f===SH?' in ★':S.floors>1?' in '+(t.f+1):'');
   const nm=t.type==='care'?CARE[t.care]:({pot:'Pot',water:'Water',pest:'Spray'})[t.type];
@@ -1172,6 +1263,8 @@ function target(t){
   if(t.type==='phone')return{x:HOUSES[0].ox+PHONE.x,y:HOUSES[0].oy+PHONE.y,f:0,h:0};
   if(t.type==='star')return{x:t.x,y:t.y,f:lvOf(t.h),h:t.h};
   if(t.type==='tree'){const p=spotXY(t.spot);return{x:p.x-1,y:p.y,f:0,h:FIELD_H};}
+  if(t.type==='shop')return{x:SUCO.ox+SUC_COUNTER[0],y:SUCO.oy+SUC_COUNTER[1]-1,f:0,h:SUC_H};
+  if(t.type==='succ'){const p=sucTile(t.slot);return{x:p.x,y:p.y+1,f:0,h:SUC_H};}
   if(t.type==='fix'){const u=unitOf(t.f);return{x:u.ax,y:u.ay,f:lvOf(t.f),h:t.f};}
   const b=BENCH[t.bench];return{x:b.ax,y:b.ay,f:b.lv,h:b.f};
 }
@@ -1190,6 +1283,8 @@ function complete(t){
   dropTask(t);
   if(t.type==='phone'){answerCall();return;}
   if(t.type==='tree'){treeDone(t);return;}
+  if(t.type==='shop'){sucSell(t);return;}
+  if(t.type==='succ'){const p=sucTile(t.slot);floats.push({x:p.x+.5,y:p.y+.5,f:0,text:'✓',color:'#2e7d4a',t0:performance.now()});return;}
   if(t.type==='star'){S.stars=(S.stars||0)+1;S.ys.starsFound=(S.ys.starsFound||0)+1;floats.push({x:t.x+.5,y:t.y+.5,f:lvOf(t.h),text:'+1 ★',color:'#c98a00',t0:performance.now()});toast('star','Star collected! Spend it at the homestead');return;}
   if(t.type==='load'&&pl&&!pl.done)ship(pl,t.truck);
 }
@@ -1296,7 +1391,8 @@ function walkableL(x,y,L){
   if(L>0)return false;
   if(x===6&&y===-1&&upLv('fork'))return false;
   if(x>=22&&treeAt(x,y))return false;
-  return x>=(hasShow()?-12:-1)&&x<=(fieldOpen()?31:20)&&y>=-1&&y<=16;
+  if(sucBlocked(x,y))return false;
+  return x>=(hasShow()||sucOn()?-12:-1)&&x<=(fieldOpen()?31:20)&&y>=-1&&y<=16;
 }
 const walkable=(x,y)=>walkableL(x,y,0);
 function stepOK(x,y,nx,ny,L){
@@ -1388,7 +1484,7 @@ function startPeriod(){
   if(!window.__quiet){const nc=(rnd()<.8?1:0)+(stage()>=9&&rnd()<.35?1:0);for(let i=0;i<nc;i++)S.events.push({at:PSEC*(.12+rnd()*.6),k:'call'});}
   S.plots.filter(pl=>pl.show&&!pl.done&&pl.s<=c&&pl.e>=c).forEach(pl=>{const n=pl.e===c?2:3;for(let i=0;i<n;i++)S.events.push({at:PSEC*(.12+i*(.72/n)+rnd()*.12),k:'care',plot:pl.id});});
   if(c>=2&&c<=5&&rnd()<.6)S.events.push({at:PSEC*(.15+rnd()*.3),k:'popup'});
-  schedTreeJobs(c);
+  schedTreeJobs(c);sucSched(c);
   if(!window.__quiet&&rnd()<(catOn('minaou')?.75:.5))S.events.push({at:PSEC*(.1+rnd()*.6),k:'star'});
   S.events.sort((a,b)=>a.at-b.at);
   closeSheet();hud();
@@ -1411,6 +1507,7 @@ function fire(e){
   if(e.k==='break'&&!S.broken[e.f]&&S.frostSafe!==ckey()){S.broken[e.f]=true;S.dmgT[e.f]=0;addTask({type:'fix',f:e.f,due:S.t+20});toast('fix',`${unitName(c)} down${S.floors>1||hasShow()?' in '+hName(e.f).toLowerCase():''}`,()=>jumpTo(e.f));}
   if(e.k==='popup')genPopup();
   if(e.k==='call')ringPhone();
+  if(e.k==='shopc'||e.k==='succ'){sucFire(e);return;}
   if(e.k==='tree'){const tr=treesOf()[e.spot];if(tr&&!S.tasks.some(t=>t.type==='tree'&&t.spot===e.spot)){addTask({type:'tree',spot:e.spot,job:e.job,born:S.t,due:Math.min(S.t+PSEC*.6*gTimer(),PSEC*.97)});toast('tree',`Tree field: ${TJOBL[e.job]} (${TREES[tr.sp].n.toLowerCase()})`,()=>jumpTo(FIELD_H));}}
   if(e.k==='star'){const hs=houseIds().filter(h=>h!==SH);for(let k=0;k<40;k++){const h=pick(hs),H=HOUSES[h],tx=H.ox+ri(0,8),ty=H.oy+ri(1,6);if(walkableL(tx,ty,H.L)&&!S.tasks.some(t=>t.type==='star')){addTask({type:'star',h,x:tx,y:ty,born:S.t,due:S.t+16});toast('star',`A star turned up in ${hName(h).toLowerCase()}! Tap it before it fades`,()=>jumpTo(h));break;}}}
 }
@@ -1423,6 +1520,7 @@ function tick(dt){
   for(const k of S.trucks)if((k.state==='line'||k.state==='dock')&&S.t>=k.deadline&&!(ask&&ask.truckId===k.id))truckLeaves(k,true);
   for(const t of S.tasks.slice()){
     if(t.type==='tree'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}treeMiss(t);continue;}
+    if((t.type==='shop'||t.type==='succ')&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}sucMiss(t);continue;}
     if(t.type==='star'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}toast('star','The star faded away');continue;}
     if(t.type==='phone'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}toast('phone','Missed a call');continue;}
     if(t.type==='care'&&S.t>=t.due){const pl=S.plots.find(p=>p.id===t.plot);if(pl){pl.q=Math.max(0,(pl.q??100)-15);float(BENCH[t.bench],`Missed ${CARE[t.care].toLowerCase()} −15`,'#c8402f');}dropTask(t);continue;}
@@ -1440,7 +1538,7 @@ function tick(dt){
   if(idleNow()){S.idleT=(S.idleT||0)+dt;if(S.t<1||S.idleT>3){const first=S.t<1,c=S.period;S.t=PSEC;if(!window.__quiet)toast('good',first?`Nothing growing in ${PN[c].toLowerCase()}. Skipping ahead; upkeep and wages still apply`:c===7?'Last truck is gone. Closing out the year':`Nothing left to do in ${PN[c].toLowerCase()}. Skipping ahead`);}}else S.idleT=0;
   if(S.t>=PSEC)endPeriod();
 }
-const idleNow=()=>!window.__noSkip&&!S.plots.some(pl=>!pl.done&&pl.s<=S.period)&&!S.trucks.some(k=>k.state==='coming'||k.state==='line'||k.state==='dock')&&!ask&&!S.offers.some(o=>o.popup)&&!S.tasks.some(t=>t.type==='phone'||t.type==='star'||t.type==='tree');
+const idleNow=()=>!window.__noSkip&&!sucOn()&&!S.plots.some(pl=>!pl.done&&pl.s<=S.period)&&!S.trucks.some(k=>k.state==='coming'||k.state==='line'||k.state==='dock')&&!ask&&!S.offers.some(o=>o.popup)&&!S.tasks.some(t=>t.type==='phone'||t.type==='star'||t.type==='tree');
 function busyFloat(){if(S.busyUntil&&S.t<S.busyUntil&&!S.busyShown){S.busyShown=1;float({x:me.x-.5,y:me.y-.5,f:me.f},S.busyWhat||'Busy','#2a78d0');}if(!(S.busyUntil&&S.t<S.busyUntil))S.busyShown=0;}
 function simStep(dt){busyFloat();
   for(const w of staff)stepWorker(w,dt,slowOf(w.rec));
@@ -1471,6 +1569,8 @@ function endPeriod(){
   if(fails){S.ys.failed+=fails;toast('bad',fails>1?`${fails} orders never got potted`:'An order never got potted');}
   S.tasks.filter(t=>t.type==='tree').forEach(treeMiss);
   for(const k in treesOf())treesOf()[k].age++;
+  S.tasks.filter(t=>t.type==='shop'||t.type==='succ').forEach(sucMiss);
+  sucPlants().forEach(p=>{if(p)p.age++;});
   S.tasks=[];S.queue=[];me.task=null;me.path=[];staff.forEach(w=>{w.task=null;w.path=[];});
   S.crew.forEach(r=>{if(r.n<VET)r.n++;});
   settleBooks();
@@ -1494,7 +1594,7 @@ function askRaises(){
   $('mbox').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>done(+b.dataset.ok,true));
   $('mbox').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>done(+b.dataset.no,false));
 }
-function nextYear(){S.entered=[];if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};}
+function nextYear(){S.entered=[];if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];if(sucOn())S.lastSuc={rev:S.ys.sucRev||0,sold:(S.ys.sucN||0)-(S.ys.sucLost||0),lost:S.ys.sucLost||0};S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};almGen();}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -1508,14 +1608,16 @@ function layout(){
   const top=$('hud').offsetHeight+16+(focusMode()?54:0),bot=$('tray').offsetHeight+8,tall=VH>VW*1.2,side=S&&S.floors>4&&!tall?84:0;
   TW=64;TH=32;
   if(S&&S.phase==='home'){layoutHome();return;}
-  const ff=focusMode()&&focusH===FIELD_H&&fieldOpen(),fm=ff||(focusMode()&&focusH>=0&&(focusH<S.floors||(focusH===SH&&hasShow()))),rx=ff?20:fm&&focusH===SH?HOUSES[SH].ox:0;
-  const pts=ff?[]:[[rx+2.5,-2.7,40],[rx+7.5,-2.7,40],...(fm?[]:[[rx+2,-5.2,22]])];
-  if(ff)pts.push([21.4,-.6,0],[30.6,-.6,0],[21.4,fieldY1(),0],[30.6,fieldY1(),0],[26,1,70]);else if(!fm&&fieldOpen()&&S.floors<=4)pts.push([30.6,-.6,0],[30.6,fieldY1(),0],[26,0,70]);
-  if(!ff)for(const H of fm?[HOUSES[focusH]]:[...HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))),...(S&&hasShow()?[HOUSES[SH]]:[])])pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
+  const fs=focusMode()&&focusH===SUC_H&&sucOn(),ff=focusMode()&&focusH===FIELD_H&&fieldOpen(),fm=fs||ff||(focusMode()&&focusH>=0&&(focusH<S.floors||(focusH===SH&&hasShow()))),rx=ff?20:fm&&focusH===SH?HOUSES[SH].ox:0;
+  const pts=ff||fs?[]:[[rx+2.5,-2.7,40],[rx+7.5,-2.7,40],...(fm?[]:[[rx+2,-5.2,22]])];
+  if(fs)pts.push([SUCO.ox-.4,SUCO.oy-.4,0],[SUCO.ox+9.4,SUCO.oy-.4,0],[SUCO.ox-.4,SUCO.oy+7.6,0],[SUCO.ox+9.4,SUCO.oy+7.6,0],[SUCO.ox,SUCO.oy,96]);
+  else if(ff)pts.push([21.4,-.6,0],[30.6,-.6,0],[21.4,fieldY1(),0],[30.6,fieldY1(),0],[26,1,70]);else if(!fm&&fieldOpen()&&S.floors<=4)pts.push([30.6,-.6,0],[30.6,fieldY1(),0],[26,0,70]);
+  if(!fm&&sucOn())pts.push([SUCO.ox-1.6,SUCO.oy+7.6,0],[SUCO.ox-1.2,SUCO.oy-.4,0]);
+  if(!ff&&!fs)for(const H of fm?[HOUSES[focusH]]:[...HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))),...(S&&hasShow()?[HOUSES[SH]]:[])])pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
   for(const [x,y,z] of pts){const X=(x-y)*TW/2,Y=(x+y)*TH/2-z;x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
   const rw=RAIL_W(),AW=VW-rw;
-  sc=clamp(Math.min((tall?AW*(ff?1.12:S&&S.floors>1&&!fm?1.12:1.3):AW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6);
+  sc=clamp(Math.min((tall?AW*(fs?1:ff?1.12:S&&S.floors>1&&!fm?1.12:1.3):AW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6);
   ox=AW/2-(x0+x1)/2*sc;oy=top+(VH-top-bot)/2-(y0+y1)/2*sc;
   iconR=clamp(15*sc+12,S&&S.floors>1?21:24,34);viewTop=top;viewBot=VH-bot;
   const fl=$('floors');fl.style.top=(tall?VH-bot-188:top+(VH-top-bot)/2-100)+'px';
@@ -1546,6 +1648,7 @@ const RECOLOR={
   pot3:[['url(#gPot)','#f3ead8'],['#a9512c','#b08a2a'],['#f6a576','#e9c25a']],
   roll:[['url(#gWoodTop)','#e3eaf0'],['url(#gWoodL)','#bccad6'],['url(#gWoodR)','#9fb0bf'],['#7a4423','#6c7d8c'],['#d98a45','#c8d3dc']],
   gold:[['#246346','#7a5a0e'],['#2f7d57','#a8801a'],['#3f9a6c','#d9b44a'],['#7fcfa0','#f0d27a'],['#8fdcae','#f7e3a0']],
+  desert:[['#246346','#7a3a1a'],['#2f7d57','#a8542a'],['#3f9a6c','#c9703a'],['#7fcfa0','#e8a070'],['#8fdcae','#f0b888']],
   marble:[['url(#gFloor)','#f6f1fa'],['#e3d8c4','#e2d8ec'],['#d9ccb4','#cfc2dd']],
   heat:[['url(#gCream)','#e2edf5'],['#f0dcb8','#c8d8e5'],['url(#gCreamR)','#a9bccb'],['#ef5b4c','#2f8fd6'],['#d6473a','#2577b8'],['#ffe9c7','#eaf4fb'],['#b3936a','#6f8496']]};
 LOOKS.forEach(([sk,hr],i)=>{RECOLOR['lk'+i]=[...SKINS[0].map((c,k)=>[c,SKINS[sk][k]]),...HAIRS[0].map((c,k)=>[c,HAIRS[hr][k]])].filter(([a,b])=>a!==b);});
@@ -1848,7 +1951,7 @@ function drawIcons(){
   const group=sc<.6&&S.floors>1,groups={},left=t=>t.due!=null?(t.due-S.t)/(t.due-t.born):9;
   const fOnly=focusMode()&&focusH>=0;
   for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF&&(!fOnly||taskF(t)===focusH)).sort((a,b)=>a.id-b.id)){
-    const p=t.type==='tree'?(()=>{const q=spotXY(t.spot);return P(q.x+.5,q.y+.5,74);})():t.type==='star'?P(t.x+.5,t.y+.5,40+ZB()):t.type==='phone'?P(HOUSES[0].ox+PHONE.x+.55,HOUSES[0].oy+.1,92+ZB()):t.type==='fix'?P(unitOf(t.f).x+.5,unitOf(t.f).y+.5,80+ZB()):P(BENCH[t.bench].x+1.5,BENCH[t.bench].y+.5,70+ZB());
+    const p=t.type==='tree'?(()=>{const q=spotXY(t.spot);return P(q.x+.5,q.y+.5,74);})():t.type==='shop'?P(SUCO.ox+SUC_SPOTS[t.spot][0]+.5,SUCO.oy+SUC_SPOTS[t.spot][1]+.5,78):t.type==='succ'?(()=>{const q=sucTile(t.slot);return P(q.x+.5,q.y+.5,56);})():t.type==='star'?P(t.x+.5,t.y+.5,40+ZB()):t.type==='phone'?P(HOUSES[0].ox+PHONE.x+.55,HOUSES[0].oy+.1,92+ZB()):t.type==='fix'?P(unitOf(t.f).x+.5,unitOf(t.f).y+.5,80+ZB()):P(BENCH[t.bench].x+1.5,BENCH[t.bench].y+.5,70+ZB());
     if(group){const key=taskF(t)+(t.care||t.type),g=groups[key]||(groups[key]={sx:0,sy:0,k:t.care||t.type,tasks:[]});g.sx+=p[0];g.sy+=p[1];g.tasks.push(t);continue;}
     items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:t.type==='care'?t.care:t.type,t,tasks:[t]});
   }
@@ -1880,13 +1983,13 @@ function draw(now){
   const dt=Math.min(.1,(now-(camT||now))/1000);camT=now;
   camZ+=(viewF*FH-camZ)*Math.min(1,dt*7);if(Math.abs(viewF*FH-camZ)<.5)camZ=viewF*FH;
   cx.setTransform(DPR,0,0,DPR,0,0);
-  drawGround();drawHomestead(now);drawField();drawTrucks(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
+  drawGround();drawHomestead(now);drawField();drawSucGround();drawTrucks(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
   const dockers=[...(noMe()?[]:[me]),...staff].filter(w=>w.y<0).sort((a,b)=>(a.x+a.y)-(b.x+b.y));dockers.forEach(w=>drawPerson(w,SHIRT[w.role],now));
   drawWeather(dt);
   const built=builtH(),dep=H=>H.ox+H.oy+8;
   built.filter(H=>H.L<viewF).sort((a,b)=>a.L-b.L||dep(a)-dep(b)).forEach(drawGhostFloor);
   if(viewF===0&&S.phase==='plan'&&S.floors<4)drawNextPlot(HOUSES[S.floors]);
-  const items=[...built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)})),...treeItems()];
+  const items=[...built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)})),...treeItems(),...sucItems(now)];
   if(viewF===0){
     for(const w of [...(noMe()?[]:[me]),...staff])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
     if(S.phase!=='home')for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
@@ -1997,8 +2100,8 @@ function renderHome(){
   else if(st.b==='orchard'){const go=HJ.some(j=>j.kind==='shake'&&j.lot===L.id),rp=ripe(L.id);body=`<div class="hmt"><b>Fruit trees</b><span>${go?'Your grower is shaking them':rp?'Ripe!':`Ripe again in ${ripeLeft(L.id)}`}</span>${rp&&!go?'<button class="btn sun sm" type="button" id="shkB">Shake the trees</button>':''}</div><p class="hmh">Shake them every 6 hours for a star or two.</p>`;}
   else if(st.b){const B=BUILDS[st.b];body=`<div class="hmt"><b>${B.n}</b></div><p class="hmh">${B.does}.</p>`;}
   else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const dis=(B.uniq&&hasBuild(k))||stars<bcost(k);return`<button type="button" class="bopt" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
-  P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${body}</div>`;
-  $('hmGo').onclick=leaveHome;
+  P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmAlm" style="margin-left:auto">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${body}</div>`;
+  $('hmGo').onclick=()=>S.year>1&&S.almSeen!==S.year?almanacModal(leaveHome):leaveHome();const hab=$('hmAlm');if(hab)hab.onclick=()=>almanacModal();
   const q=(id,f)=>{const b=$(id);if(b)b.onclick=f;};
   q('chGrow',growCatHouse);q('mlB',tapMail);q('shkB',()=>shakeLot(L.id));q('gfSend',giftSend);q('gfScan',giftScan);q('ofGrow',growOffice);q('clrB',()=>clearLot(L.id));
   P0.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>adoptCat(b.dataset.adopt));
@@ -2306,6 +2409,12 @@ const TIPS=[
    {el:'.uprow',t:'Buy the certificate to sign a spring vegetable contract each year: you promise a customer benches for early and late spring, and plant their orders before your flowers.',ok:1}]},
  {id:'vegord',tag:'VEGETABLE ORDERS',when:()=>inPlan()&&tab==='orders'&&S.offers.some(o=>o.veg),steps:[
    {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'Your vegetable orders come first. They\u2019re ready the period you plant them. Plant or bin each one; every line you bin cuts the contract bonus by a third.',ok:1}]},
+ {id:'sucb',tag:'SUCCULENT HOUSE',when:()=>inPlan()&&stage()>=SUC_LV&&!sucOn(),steps:[
+   {el:'[data-tab="build"]',t:'You can build a succulent house. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="houses"]',t:'Open Houses.',guide:1,done:()=>upSub==='houses'},
+   {el:'.sucb',t:'Succulents keep growing from year to year and sell to customers who walk in. Read the almanac before each year to see what\u2019s in.',ok:1}]},
+ {id:'shopc',tag:'A CUSTOMER',when:()=>running()&&hasT(t=>t.type==='shop'),steps:[
+   {el:()=>sel$('#railL [data-rk="suc"]')||iconOf(t=>t.type==='shop')(),t:'Someone walked into the succulent house. Tap them to serve: your grower rings up the best plant you have for what they asked. Wait too long and they leave.',ok:1,done:()=>!hasT(t=>t.type==='shop'&&!S.queue.includes(t))}]},
  {id:'glv',tag:'GROWER LEVEL',when:()=>inPlan()&&glv()>=2,steps:[
    {el:'[data-tab="crew"]',t:'Your grower levelled up. Open the Crew tab to see how.',guide:1,done:()=>tab==='crew'},
    {el:'.gcard',t:'Every job you do yourself earns experience. Each level makes you a little faster and gives tree and showcase jobs longer before they\u2019re missed.',ok:1}]},
@@ -2356,7 +2465,8 @@ $('tsk').onclick=()=>{if(tipStepNow()&&tipStepNow().guide){endTip(true);return;}
 // ---------------- attention rail (phones, one house at a time) ----------------
 const railOn=()=>!!S&&focusMode()&&S.phase==='run';
 const RAIL_W=()=>S&&focusMode()?68:0;
-const hShort=h=>h===SH?'★':h===FIELD_H?'Trees':'H'+(h+1);
+const hShort=h=>h===SH?'★':h===FIELD_H?'Trees':h===SUC_H?'Shop':'H'+(h+1);
+const SUC_GLYPH='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z"/><path d="M7 15h10l-1.2 6H8.2z"/></svg>';
 const TREE_GLYPH='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z"/><rect x="11" y="16" width="2" height="5"/></svg>';
 function railItems(){
   const out=[],left=t=>t.due!=null?clamp((t.due-S.t)/Math.max(.01,t.due-t.born),0,1):1,vis=h=>focusH<0||h===focusH,qd=t=>S.queue.includes(t)||engaged(t);
@@ -2365,6 +2475,7 @@ function railItems(){
   if(focusH>=0){const ls=S.tasks.filter(t=>t.type==='load'&&!engaged(t)&&truckById(t.truck)?.state==='dock').sort((a,b)=>left(a)-left(b));if(ls.length)out.push({k:'load',key:'ld',lab:'Dock',n:ls.length,left:left(ls[0]),t:ls[0],pr:2,q:ls.every(t=>S.queue.includes(t))});}
   for(const H of builtH()){if(vis(H.h))continue;const ts=S.tasks.filter(t=>!['load','phone','star'].includes(t.type)&&taskF(t)===H.h&&!engaged(t)).sort((a,b)=>left(a)-left(b));if(!ts.length)continue;
     out.push({k:ts[0].care||ts[0].type,key:'h'+H.h,lab:hShort(H.h),n:ts.length,left:left(ts[0]),h:H.h,pr:2,q:ts.every(t=>S.queue.includes(t))});}
+  if(sucOn()&&!vis(SUC_H)){const ts=S.tasks.filter(t=>(t.type==='shop'||t.type==='succ')&&!engaged(t)).sort((a,b)=>left(a)-left(b));if(ts.length)out.push({k:ts[0].type,key:'suc',lab:'Shop',n:ts.length,left:left(ts[0]),h:SUC_H,pr:2,q:ts.every(t=>S.queue.includes(t))});}
   if(fieldOpen()&&!vis(FIELD_H)){const ts=S.tasks.filter(t=>t.type==='tree'&&!engaged(t)).sort((a,b)=>left(a)-left(b));if(ts.length)out.push({k:'tree',key:'fld',lab:'Trees',n:ts.length,left:left(ts[0]),h:FIELD_H,pr:2,q:ts.every(t=>S.queue.includes(t))});}
   return out.sort((a,b)=>a.pr-b.pr||(a.pr>=2?a.left-b.left:0));
 }
@@ -2416,18 +2527,18 @@ let hpOpen=false;
 function renderStrip(){
   const el=$('hstrip'),on=focusMode()&&!sheetOpen()&&S.phase!=='home';el.hidden=!on;if(!on){stripSig='';hpOpen=false;$('hpick').hidden=true;return;}
   el.style.top=($('hud').offsetHeight+8)+'px';
-  const hs=builtH(),items=[{h:-1,lab:'All',n:0,hot:false},...hs.map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)})),...(fieldOpen()?[{h:FIELD_H,lab:TREE_GLYPH,...houseLoad(FIELD_H)}]:[])];
+  const hs=builtH(),items=[{h:-1,lab:'All',n:0,hot:false},...hs.map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)})),...(fieldOpen()?[{h:FIELD_H,lab:TREE_GLYPH,...houseLoad(FIELD_H)}]:[]),...(sucOn()?[{h:SUC_H,lab:SUC_GLYPH,...houseLoad(SUC_H)}]:[])];
   const sig=focusH+'|'+hpOpen+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
   const badge=i=>i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:'';
   if(items.length<=6){
     el.className='hstrip';
-    el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':i.h===FIELD_H?'Tree field':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${badge(i)}</button>`).join('');
+    el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':i.h===FIELD_H?'Tree field':i.h===SUC_H?'Succulent house':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${badge(i)}</button>`).join('');
     $('hpick').hidden=true;
   }else{
     // compact picker: arrows plus one button that opens a map of every house
     const cur=items.find(i=>i.h===focusH)||items[0],others=items.filter(i=>i.h!==focusH&&i.h>=0),on=others.reduce((a,i)=>a+i.n,0),hot=others.some(i=>i.hot);
     el.className='hstrip pick';
-    el.innerHTML=`<button type="button" class="ar" id="hpPrev" aria-label="Previous house">‹</button><button type="button" class="cur on" id="hpCur" aria-expanded="${hpOpen}">${focusH<0?'All houses':focusH===SH?'★ Showcase':focusH===FIELD_H?'Tree field':'House '+(focusH+1)}${cur.sub?`<small>${cur.sub==='F2'?'Floor 2':cur.sub==='F3'?'Floor 3':cur.sub}</small>`:focusH>=0&&focusH!==SH?'<small>Ground</small>':''}<i class="chev">▾</i>${on?`<span class="n${hot?' hot':''}">${on}</span>`:''}</button><button type="button" class="ar" id="hpNext" aria-label="Next house">›</button>`;
+    el.innerHTML=`<button type="button" class="ar" id="hpPrev" aria-label="Previous house">‹</button><button type="button" class="cur on" id="hpCur" aria-expanded="${hpOpen}">${focusH<0?'All houses':focusH===SH?'★ Showcase':focusH===FIELD_H?'Tree field':focusH===SUC_H?'Succulent house':'House '+(focusH+1)}${cur.sub?`<small>${cur.sub==='F2'?'Floor 2':cur.sub==='F3'?'Floor 3':cur.sub}</small>`:focusH>=0&&focusH!==SH?'<small>Ground</small>':''}<i class="chev">▾</i>${on?`<span class="n${hot?' hot':''}">${on}</span>`:''}</button><button type="button" class="ar" id="hpNext" aria-label="Next house">›</button>`;
     const order=items.map(i=>i.h),step=d=>{const k=order.indexOf(focusH);focusHouse(order[(k+d+order.length)%order.length]);};
     $('hpPrev').onclick=()=>step(-1);$('hpNext').onclick=()=>step(1);
     $('hpCur').onclick=()=>{hpOpen=!hpOpen;stripSig='';renderStrip();};
@@ -2435,7 +2546,7 @@ function renderStrip(){
     if(hpOpen){
       P0.style.top=(el.offsetTop+el.offsetHeight+6)+'px';
       const cell=h=>{const it=items.find(i=>i.h===h);return it?`<button type="button" data-fh="${h}" class="${focusH===h?'on':''}${h===SH?' shb':''}">${it.lab}${badge(it)}</button>`:'<i></i>';};
-      P0.innerHTML=`<button type="button" data-fh="-1" class="all${focusH<0?' on':''}">All houses</button>${fieldOpen()?`<button type="button" data-fh="${FIELD_H}" class="all${focusH===FIELD_H?' on':''}">Tree field${badge(items.find(i=>i.h===FIELD_H))}</button>`:''}<div class="hpg">${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?cell(h):'<i></i>';}).join('')}</div></div>`).join('')}${hasShow()?`<div class="hml"><small>Show</small><div class="hmg one">${cell(SH)}</div></div>`:''}</div>`;
+      P0.innerHTML=`<button type="button" data-fh="-1" class="all${focusH<0?' on':''}">All houses</button>${fieldOpen()?`<button type="button" data-fh="${FIELD_H}" class="all${focusH===FIELD_H?' on':''}">Tree field${badge(items.find(i=>i.h===FIELD_H))}</button>`:''}${sucOn()?`<button type="button" data-fh="${SUC_H}" class="all${focusH===SUC_H?' on':''}">Succulent house${badge(items.find(i=>i.h===SUC_H))}</button>`:''}<div class="hpg">${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?cell(h):'<i></i>';}).join('')}</div></div>`).join('')}${hasShow()?`<div class="hml"><small>Show</small><div class="hmg one">${cell(SH)}</div></div>`:''}</div>`;
       P0.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>{hpOpen=false;focusHouse(+b.dataset.fh);});
     }
   }
@@ -2443,7 +2554,7 @@ function renderStrip(){
 }
 addEventListener('pointerdown',e=>{if(hpOpen&&!e.target.closest('#hpick,#hpCur')){hpOpen=false;stripSig='';renderStrip();}});
 function focusHouse(h){
-  if(!S||(h>=S.floors&&!(h===SH&&hasShow())&&!(h===FIELD_H&&fieldOpen())))return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
+  if(!S||(h>=S.floors&&!(h===SH&&hasShow())&&!(h===FIELD_H&&fieldOpen())&&!(h===SUC_H&&sucOn())))return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
   stripSig='';layout();renderFloors();
 }
 function jumpTo(h){if(focusMode()&&focusH!==h&&h>=0)focusHouse(h);else if(lvOf(h)!==viewF)setFloor(lvOf(h));}
@@ -2668,7 +2779,7 @@ function setForm(i){
   renderSheet();
 }
 const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' · need a loan':''}</button>`;
-const TICO={trees:'<path d="M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z"></path><path d="M12 16v5"></path>',orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5M8 7h7M8 11h7"></path>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>'};
+const TICO={suc:'<path d="M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z"></path><path d="M7 15h10l-1.2 6H8.2z"></path>',trees:'<path d="M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z"></path><path d="M12 16v5"></path>',orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5M8 7h7M8 11h7"></path>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>'};
 const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
 function handHTML(of,noShapes){
   const T=tierOf(of.cust),head=of.showcase?`<div class="r1">${ribbonSVG('gold',36)}<span class="nm"><b>${esc(of.show)}</b><small>SHOWCASE ENTRY · ONLY YOU CAN TEND IT</small></span></div>`:`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}${of.veg?'<span class="tchip" style="background:#3f8a3a">Veg contract</span>':''}</div>`;
@@ -2754,7 +2865,7 @@ function renderSheet(){
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
   const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
   const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
-  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0],...(fieldOpen()?[['trees','Trees',Object.values(treesOf()).filter(treeReady).length]]:[]),['book','Ledger',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}<span class="tl">${l}</span>${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs${fieldOpen()&&sucOn()?' many':''}">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0],...(fieldOpen()?[['trees','Trees',Object.values(treesOf()).filter(treeReady).length]]:[]),...(sucOn()?[['suc','Shop',0]]:[]),['book','Ledger',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}<span class="tl">${l}</span>${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
@@ -2783,6 +2894,8 @@ function renderSheet(){
       <div class="panel"><b>Last period</b>${log.length?log.map(e=>{const d=Math.round(e.d);return`<div class="lg"><b class="${d>0?'p':d<0?'n':''}">${d>0?'+':''}${d}</b><span>${esc(short1(e.n))}: ${esc(e.why)}</span></div>`;}).join(''):'<span style="font-size:14px;color:var(--mute)">No changes yet. Ship some trucks!</span>'}<span style="background:#f6f3ea;border-radius:12px;padding:10px 12px;font-size:13px;color:#33463a">Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</span></div></div></div>`;
   }else if(tab==='trees'){
     body=treesHTML(plan);
+  }else if(tab==='suc'){
+    body=sucHTML(plan);
   }else if(tab==='book'){
     body=ledgerHTML();
   }else if(tab==='crew'){
@@ -2805,6 +2918,9 @@ function renderSheet(){
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
+      <h3 style="margin:18px 2px 0;font-size:18px">Succulent house</h3>
+      <div class="showb sucb"><img src="${spriteURL('suc_echeveria_3','12 -4 40 40')}" alt="" style="width:54px;height:54px;flex:none"><div><p>A shop beside the greenhouses. Plant pups on its tables; they need little care, keep growing from year to year, and get more valuable as they grow. Customers walk in to buy them, and only you can serve them.</p>
+      ${sucOn()?'<b class="ok">Built</b>':stage()<SUC_LV?lockChip(SUC_LV):`<p>${fmt(SUC_COST)}, then ${fmt(SUC_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="sucB"${plan?'':' disabled'}>Build for ${fmt(SUC_COST)}</button>`}</div></div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Cats are adopted at the homestead between years, with stars. Each one helps in her own way.</p>
       <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>`:`${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}`}`;
   }
@@ -2837,6 +2953,9 @@ function renderSheet(){
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
   const shb=$('showB');if(shb)shb.onclick=buildShow;
+  const sub_=$('sucB');if(sub_)sub_.onclick=sucBuild;const sxb=$('sucX');if(sxb)sxb.onclick=sucExpand;
+  el.querySelectorAll('[data-splant]').forEach(b=>b.onclick=()=>sucPlantModal(+b.dataset.splant));
+  el.querySelectorAll('[data-alm]').forEach(b=>b.onclick=()=>almanacModal());
   const pzb=$('prizeB');if(pzb)pzb.onclick=hirePrize;
   const clb=$('classB');if(clb)clb.onclick=takeClass;
   const gfb=$('giftB');if(gfb)gfb.onclick=giftMenu;
@@ -3125,8 +3244,67 @@ function spriteURL(id,vb){const k='s_'+id+vb;if(fURL[k])return fURL[k];const d=a
   return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?d[4].replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):d[4]);}
 let upSub='equip';
 function upSubs(){
-  const gens=Object.keys(CROPS).filter(k=>!notFlower(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0);
+  const gens=Object.keys(CROPS).filter(k=>!notFlower(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0)+(stage()>=SUC_LV&&!sucOn()?1:0);
   return[['equip','Equipment',0],['gen','Varieties',gens],['houses','Houses',house],['veg','Veg',stage()>=VEG_LV&&!vegOn()?1:0],['bank','Bank',0]];
+}
+const PNS=ps=>ps.map(p=>PN[p].toLowerCase()).join(', ').replace(/, ([^,]*)$/,' and $1');
+// ---- the almanac: good-to-know data for the year ahead ----
+function almGen(){
+  const ks=Object.keys(SUCS),prev=S.alm,hot=prev&&prev.year===S.year-1&&prev.next?prev.next:pick(ks);
+  const wx=S.ys.wx?{dry:!!S.ys.dry,frost:!!S.ys.frost,storm:!!S.ys.storm}:{dry:rnd()<.4,frost:rnd()<.3,storm:rnd()<.15};
+  S.alm={year:S.year,hot,cold:pick(ks.filter(k=>k!==hot)),next:null,wx};S.alm.next=pick(ks.filter(k=>k!==hot&&k!==S.alm.cold));
+  S.ys.wx=1;S.ys.dry=wx.dry;S.ys.frost=wx.frost;S.ys.storm=wx.storm;
+}
+function almanacHTML(){
+  if(!S.alm||S.alm.year!==S.year)almGen();
+  const A=S.alm,last=S.hist[S.hist.length-1],st=stage(),sec=(t,b)=>`<div class="alsec"><h4>${t}</h4>${b}</div>`,row=(a,b)=>`<div class="alr"><span>${a}</span><b>${b}</b></div>`;
+  const out=[];
+  out.push(sec(`Year ${S.year} at a glance`,row('Your level',`${stg(st).n} (${st} of ${STAGES.length})`)+row('This year’s goal',esc(goalText(stg(st).goal)))));
+  if(last)out.push(sec(`Year ${last.year} in review`,row('Sales',fmt(last.rev))+row('Operating profit',fmt(last.op))+row('Trucks',`${last.full} full, ${last.short} short, ${last.failed} missed`)+row('Best Homes and Gardens',`${last.stars} ★`)+(last.plan?row('Planning',`${last.plan.pct}%${last.plan.tier?' · '+last.plan.tier:''}`):'')));
+  const wx=[A.wx.dry?'<li><b>A dry early summer.</b> Young trees will need watering through it.</li>':'<li><b>Normal rain</b> through the summer.</li>',
+    A.wx.frost?'<li><b>A late frost</b> in early spring. Magnolias will need covering.</li>':'<li><b>No late frost</b> expected.</li>',
+    A.wx.storm?'<li><b>A summer storm</b> in late summer may knock trees over; be ready to re-stake.</li>':'<li><b>A calm late summer.</b></li>'];
+  out.push(sec('Weather outlook',`<ul>${wx.join('')}</ul>`));
+  const mine=Object.keys(CROPS).filter(k=>!notFlower(k)&&owns(k));
+  out.push(sec('When your flowers sell best',`<div class="alcal"><span></span>${PSH.map(p=>`<small>${p}</small>`).join('')}${mine.map(k=>`<span>${CROPS[k].name}</span>${PSH.map((_,p)=>`<i class="${(PEAK[k]||[]).includes(p)?'pk':CROPS[k].sell.includes(p)?'ok':''}" style="--c:${CROPS[k].color}"></i>`).join('')}`).join('')}</div><p class="alnote">Dark: peak prices. Light: in season.</p>`));
+  if(hasShow())out.push(sec('Show calendar',SHOWS.map(sh=>row(PN[sh.p],`${esc(sh.n)}: ${sh.c.map(k=>CROPS[k].name.toLowerCase()).join(', ')}`)).join('')));
+  if(vegOn())out.push(sec('Vegetables','<p>You’ll be offered a spring vegetable contract when the year starts. Keep benches free in early and late spring for it.</p>'));
+  if(fieldOpen()){const rd=Object.values(treesOf()).filter(t=>treeTot(t)-t.age<=8);out.push(sec('Tree field',rd.length?`<p>Ready to sell this year: ${rd.map(t=>TREES[t.sp].n.toLowerCase()).join(', ')}.</p>`:`<p>No trees come ready this year.${Object.keys(treesOf()).length<fieldCap()?' You have empty spots to plant in spring or fall.':''}</p>`));}
+  if(sucOn()||st>=SUC_LV-2){
+    const cnt=[0,1,2,3].map(z=>sucPlants().filter(p=>p&&sizeOf(p)===z).length),ly=last&&S.hist.length?S.lastSuc:null;
+    out.push(sec('Succulent consumer report',`${row('In this year',`${SUCS[A.hot].n} (+40%)`)+row('Out this year',`${SUCS[A.cold].n} (−20%)`)+row('Early word for next year',`${SUCS[A.next].n} is catching on`)}
+      <p class="alnote">Pups take ${SIZE_AT[2]} periods to reach medium and ${SIZE_AT[3]} to reach specimen, so plant now for what’s coming. Walk-ins only stop by when you have something to sell; they ask for whatever size you have most of, and about a third of them want what’s in.</p>
+      <div class="regs">${REGS.map(r=>`<div><img src="${personURL(r.look+'_front_0')}" alt=""><span><b>${r.n}</b><small>${r.sp?`${SIZES[r.z]} ${SUCS[r.sp].n.toLowerCase()}`:`${SIZES[r.z]}, whatever’s in (${SUCS[A.hot].n.toLowerCase()} this year)`} · ${PNS(r.ps)}</small></span></div>`).join('')}</div>
+      ${sucOn()?`<p class="alnote">On your tables: ${cnt.map((n,z)=>`${n} ${SIZES[z].toLowerCase()}${n===1||z===3?'':'s'}`).join(', ')}.${ly?` Last year: ${fmt(ly.rev)} from ${ly.sold} sales, ${ly.lost} customers left without buying.`:''}</p>`:`<p class="alnote">The succulent house opens at ${stg(SUC_LV).n} (level ${SUC_LV}).</p>`}`));
+  }
+  return`<div class="mag alm"><div class="mast"><small>THE BIG COUNTRY GROWER’S</small><b>Almanac</b><small>YEAR ${S.year} · ${esc(nurseryName()).toUpperCase()}</small></div>${out.join('')}</div>`;
+}
+function almanacModal(then){
+  modal(almanacHTML()+`<button class="btn go" id="almGo" type="button">${then?`Start year ${S.year}`:'Close'}</button>`);$('mbox').scrollTop=0;
+  $('almGo').onclick=()=>{S.almSeen=S.year;save();closeModal();if(then)then();};
+}
+function sucHTML(plan){
+  const cap=sucCap(),y=S.ys,A=S.alm&&S.alm.year===S.year?S.alm:null,sold=(y.sucN||0)-(y.sucLost||0);
+  const card=i=>{const p=sucPlants()[i];
+    if(!p)return`<div class="tcard empty"><div class="tpic"><img src="${spriteURL('suc_echeveria_1','12 -4 40 40')}" alt="" style="opacity:.3"></div><div class="tinf"><b>Empty table spot</b><small>Plant a pup any time</small></div><button class="btn sun sm" type="button" data-splant="${i}">Plant</button></div>`;
+    const z=sizeOf(p),nx=z<3?SIZE_AT[z+1]-p.age:0,pct=z<3?(p.age-SIZE_AT[z])/(SIZE_AT[z+1]-SIZE_AT[z]):1;
+    return`<div class="tcard"><div class="tpic"><img src="${spriteURL(`suc_${p.sp}_${z}`,'12 -4 40 40')}" alt=""></div><div class="tinf"><b>${SIZES[z]} ${SUCS[p.sp].n.toLowerCase()}</b>
+      <span class="tbar"><i style="width:${Math.round(pct*100)}%;background:${SUCS[p.sp].c}"></i></span>
+      <small>${z<3?`${SIZES[z+1]} in ${nx} period${nx>1?'s':''}`:'Fully grown'} · ${z?`sells for ${fmt(sucPrice(p.sp,z))}`:'too small to sell'}</small></div></div>`;};
+  return`<div class="bhead tbh"><h2>Succulent house<small>Customers walk in through the day; tap them to serve. They ask for a size, sometimes a favorite kind: match both and they tip, match the size and they pay full price, otherwise they take the closest thing you have for less. Pups grow into smalls in ${SIZE_AT[1]} periods, mediums in ${SIZE_AT[2]} and specimens in ${SIZE_AT[3]}.</small></h2><button class="btn sm" type="button" data-alm="1">Almanac</button></div>
+    ${A?`<p class="trend">${tico('sun',15,'#c98a00')} This year <b>${SUCS[A.hot].n.toLowerCase()}</b> is in (+40%) and <b>${SUCS[A.cold].n.toLowerCase()}</b> is out (−20%). Next year: <b>${SUCS[A.next].n.toLowerCase()}</b>.</p>`:''}
+    <p class="trend">This year: ${fmt(y.sucRev||0)} from ${sold} sale${sold===1?'':'s'}${y.sucPerfect?`, ${y.sucPerfect} perfect`:''}${y.sucLost?`, ${y.sucLost} left without buying`:''}.</p>
+    <div class="tgrid">${Array.from({length:cap},(_,i)=>card(i)).join('')}</div>
+    ${cap<17?`<div class="uprow" style="margin-top:10px">${svgIcon('bench',44)}<div class="rn"><b>More display tables</b><span>5 more spots for plants and one more customer each period.</span></div><button class="btn sun" type="button" id="sucX"${plan?'':' disabled'}>${fmt(SUC_EXP)}</button></div>`:''}
+    <h3 style="margin:16px 2px 6px;font-size:18px">Regulars</h3>
+    <div class="regs">${REGS.map(r=>`<div><img src="${personURL(r.look+'_front_0')}" alt=""><span><b>${r.n}</b><small>${r.sp?`${SIZES[r.z]} ${SUCS[r.sp].n.toLowerCase()}`:`${SIZES[r.z]}, whatever’s in`} · ${PNS(r.ps)}</small></span></div>`).join('')}</div>`;
+}
+function sucPlantModal(i){
+  if(!sucOn()||sucPlants()[i])return;
+  modal(`<h2>Plant a pup</h2><p>It’s ready to sell as a small in ${SIZE_AT[1]} periods. Bigger plants sell for more; the right kind earns a tip.</p>
+    <div class="opts">${Object.entries(SUCS).map(([k,C])=>`<button class="opt topt" type="button" data-ssp="${k}"><img src="${spriteURL(`suc_${k}_2`,'12 -4 40 40')}" alt=""><span><b>${C.n}: ${fmt(C.pup)}</b><span>Medium sells for ${fmt(sucPrice(k,2))}${trendM(k)>1?' · in this year':trendM(k)<1?' · out this year':''}</span><small>${REGS.filter(r=>r.sp===k).map(r=>r.n+' loves these').join(', ')||'No regular favors it'}</small></span></button>`).join('')}
+    <button class="opt" type="button" id="spX"><b>Not now</b><span>Leave the spot empty</span></button></div>`);
+  $('spX').onclick=closeModal;$('mbox').querySelectorAll('[data-ssp]').forEach(b=>b.onclick=()=>sucPlant(i,b.dataset.ssp));
 }
 function treesHTML(plan){
   const cap=fieldCap(),win=treeWindow(),stars=S.stars||0,nxt=FIELD_CAP.find(([lv])=>lv>stage());
@@ -3333,7 +3511,7 @@ function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
-  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
@@ -3553,6 +3731,7 @@ cv.addEventListener('pointerup',e=>{ptrEnd(e);
   let best=null,bd=1e9;for(const h of iconHits){const d=Math.hypot(e.clientX-h.x,e.clientY-h.y);if(d<=h.r&&d<bd){bd=d;best=h;}}
   if(best){best.tasks.forEach(enqueue);return;}
   {const ct=liveCats().filter(c=>c.f===viewF).map(c=>({c,d:Math.hypot(e.clientX-P(c.x,c.y,ZB()+14)[0],e.clientY-P(c.x,c.y,ZB()+14)[1])})).filter(o=>o.d<TW*.42*sc).sort((a,b)=>a.d-b.d)[0];if(ct){petCat(ct.c);return;}}
+  if(sucOn()&&viewF===0&&S.phase==='plan'){const i=SUC_SLOTS.slice(0,sucCap()).findIndex(([a,b])=>{const m=P(SUCO.ox+a+.5,SUCO.oy+b+.5,30);return Math.abs(e.clientX-m[0])<TW*.55*sc&&Math.abs(e.clientY-m[1])<TH*.9*sc;});if(i>=0){openSheet('suc');return;}}
   if(fieldOpen()&&viewF===0){const sp=Array.from({length:fieldCap()},(_,i)=>i).find(i=>{const q=spotXY(i),m=P(q.x+.5,q.y+.5,40);return Math.abs(e.clientX-m[0])<TW*.9*sc&&Math.abs(e.clientY-m[1])<TH*2.4*sc;});
     if(sp!=null){treeInfo(sp);return;}}
   if(S.phase==='run'){
@@ -3629,6 +3808,7 @@ addEventListener('resize',()=>{layout();renderFloors();if(sheetOpen())renderShee
 function boot(){
   S=load();
   if(!S){fresh();genOffers();}
+  if(!S.alm||S.alm.year!==S.year)almGen();
   else if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
   prepArt();syncStaff();layout();hud();
   if(S.phase==='over'||S.lost)gameOver();

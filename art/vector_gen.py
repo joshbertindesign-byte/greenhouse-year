@@ -360,6 +360,67 @@ for crop in TYPE:
     for st in range(4):
         add(f'{crop}_{st}', flat(crop, st))
 
+# ------------------------------------------------------------------ succulents (one pot per bench tile)
+rad('gEche', [(0, '#e4f3ef', None), (.55, '#9cc7bd', None), (1, '#5f8f86', None)])
+rad('gJade', [(0, '#b6e69a', None), (.55, '#5fae4a', None), (1, '#2f6e2f', None)])
+rad('gAloe', [(0, '#c9ecb0', None), (.55, '#7fb86a', None), (1, '#3f7a3f', None)])
+rad('gHaw', [(0, '#7fb08a', None), (.55, '#3f7a56', None), (1, '#1f4a36', None)])
+rad('gCact', [(0, '#b9e08a', None), (.5, '#6fae4a', None), (1, '#3a7030', None)])
+rad('gGlaze', [(0, '#a8d4ea', None), (.6, '#3f8fbf', None), (1, '#24607d', None)], .3, .3, .9)
+def succ(sp, sz):
+    I = Iso(); b = ''; x, y = I.P(.5, .5, 24)
+    k = [.62, .82, 1.02, 1.22][sz]
+    pw, ph = 7 * k + 2, 6 * k + 2
+    if sz == 3:
+        b += poly([(x - pw, y - ph), (x + pw, y - ph), (x + pw * .75, y + 2.4), (x - pw * .75, y + 2.4)], 'url(#gGlaze)', '#1f4f68', .7)
+        b += ell(x, y - ph, pw + .6, 2.4, '#bfe4f4', 'stroke="#1f4f68" stroke-width=".7"')
+    else:
+        b += poly([(x - pw, y - ph), (x + pw, y - ph), (x + pw * .75, y + 2.4), (x - pw * .75, y + 2.4)], 'url(#gPot)', '#a9512c', .7)
+        b += ell(x, y - ph, pw + .6, 2.4, '#f6a576', 'stroke="#a9512c" stroke-width=".7"')
+    b += ell(x, y - ph, pw - .4, 1.7, '#cdb48a')  # gravel top dressing
+    cy = y - ph - 1; R = 11 * k
+    if sp == 'echeveria':
+        for ring, n, rr_, col in ((0, 8, 1, 'url(#gEche)'), (1, 6, .66, 'url(#gEche)'), (2, 5, .36, '#dff0ea')):
+            for a in range(n):
+                ang = a * math.tau / n + ring * .4
+                lx_, ly_ = x + math.cos(ang) * R * .55 * rr_, cy + math.sin(ang) * R * .3 * rr_ - ring * 1.2
+                b += ell(lx_, ly_, R * .3 * (1 - ring * .2), R * .17, col, f'stroke="#4f7f76" stroke-width=".5" transform="rotate({f2(math.degrees(ang))} {f2(lx_)} {f2(ly_)})"')
+                if ring == 0: b += circ(x + math.cos(ang) * R * .8, cy + math.sin(ang) * R * .44, .7, '#e07a9a')
+    elif sp == 'haworthia':
+        for a in range(9):
+            ang = -math.pi / 2 + (a - 4) * .32
+            tx, ty = x + math.cos(ang) * R * .75, cy - R * .2 + math.sin(ang) * R * .9
+            b += f'<path d="M{f2(x-1.4)},{f2(cy+1)} L{f2(tx)},{f2(ty)} L{f2(x+1.4)},{f2(cy+1)} Z" fill="url(#gHaw)" stroke="#173a2a" stroke-width=".5"/>'
+            for t in (.35, .6, .82): b += circ(x + (tx - x) * t, cy + 1 + (ty - cy - 1) * t, .45, '#e8f2ea')
+    elif sp == 'aloe':
+        for a in range(7):
+            ang = -math.pi / 2 + (a - 3) * .42
+            tx, ty = x + math.cos(ang) * R * .95, cy - R * .1 + math.sin(ang) * R * 1.05
+            b += f'<path d="M{f2(x-2)},{f2(cy+1)} Q{f2((x+tx)/2-1.5)},{f2((cy+ty)/2)} {f2(tx)},{f2(ty)} Q{f2((x+tx)/2+1.5)},{f2((cy+ty)/2+1)} {f2(x+2)},{f2(cy+1)} Z" fill="url(#gAloe)" stroke="#2f5e2f" stroke-width=".55"/>'
+            b += circ((x + tx) / 2, (cy + ty) / 2, .45, '#f2f8e8') + circ(x + (tx - x) * .7, cy + (ty - cy) * .7, .35, '#f2f8e8')
+        if sz == 3: b += f'<path d="M{f2(x+1)},{f2(cy-R*.6)} L{f2(x+2)},{f2(cy-R*1.6)}" stroke="#7a8a3a" stroke-width=".8"/>' + ''.join(ell(x + 2.2, cy - R * 1.6 + i * 1.6, .7, 1.3, '#f2803a') for i in range(3))
+    elif sp == 'jade':
+        stem = '#8a6a3a'
+        b += f'<path d="M{f2(x)},{f2(cy+1)} L{f2(x)},{f2(cy-R*.5)} M{f2(x)},{f2(cy-R*.25)} L{f2(x-R*.45)},{f2(cy-R*.75)} M{f2(x)},{f2(cy-R*.35)} L{f2(x+R*.5)},{f2(cy-R*.8)}" stroke="{stem}" stroke-width="{f2(1.1+sz*.35)}" stroke-linecap="round"/>'
+        for px_, py_ in ((x, cy - R * .55), (x - R * .45, cy - R * .78), (x + R * .5, cy - R * .82), (x - R * .2, cy - R * .2), (x + R * .25, cy - R * .3)):
+            for a in range(4 if sz else 3):
+                ang = a * math.tau / 4 + .4; lx_, ly_ = px_ + math.cos(ang) * R * .2, py_ + math.sin(ang) * R * .12
+                b += ell(lx_, ly_, R * .17, R * .11, 'url(#gJade)', f'stroke="#2a5a2a" stroke-width=".45" transform="rotate({f2(math.degrees(ang))} {f2(lx_)} {f2(ly_)})"')
+    elif sp == 'cactus':
+        h_ = R * (.75 + .1 * sz)
+        b += ell(x, cy - h_ * .45, R * .55, h_ * .62, 'url(#gCact)', 'stroke="#2f5a2a" stroke-width=".7"')
+        for dx in (-.32, 0, .32):
+            b += f'<path d="M{f2(x+dx*R)},{f2(cy+.5)} Q{f2(x+dx*R*1.35)},{f2(cy-h_*.5)} {f2(x+dx*R)},{f2(cy-h_*1.02)}" fill="none" stroke="#3f7a35" stroke-width=".6"/>'
+        for i in range(10):
+            sx, sy = x + ((i % 5) - 2) * R * .2, cy - h_ * (.25 + .17 * (i // 5) + .1 * (i % 2))
+            b += f'<path d="M{f2(sx)},{f2(sy)} l-1,-.6 M{f2(sx)},{f2(sy)} l1,-.6" stroke="#f3e6b0" stroke-width=".35"/>'
+        if sz == 3:
+            for a in range(5): b += ell(x + math.cos(a * 1.25) * 2, cy - h_ * 1.02 + math.sin(a * 1.25) * .8, 1.6, .9, '#ffd84a', 'stroke="#c99a1f" stroke-width=".35"')
+            b += circ(x, cy - h_ * 1.05, 1, '#f08a3a')
+    return b
+for _sp in ('echeveria', 'jade', 'aloe', 'haworthia', 'cactus'):
+    for _sz in range(4): add(f'suc_{_sp}_{_sz}', succ(_sp, _sz))
+
 # ------------------------------------------------------------------ people
 SKIN, HAND, SKO = '#ffd8b8', '#ffd3b0', '#c98a63'
 def hat_svg(hat, view):
@@ -413,7 +474,7 @@ def person(view='front', frame=0, st=None, work=None):
     if coverall:
         b += f'<rect x="25" y="34" width="14" height="8" rx="3" fill="{shirt}"/><path d="M32,28 v14" stroke="{shirtD}" stroke-width=".8"/>'
         if view == 'front': b += '<rect x="34" y="30" width="4" height="3" rx=".8" fill="#4a555e"/><rect x="24.5" y="37" width="15" height="2.6" fill="#3a4248"/>' + circ(32, 38.3, 1.2, '#c9ced6')
-    elif 'apron' not in extra:
+    elif 'apron' not in extra and 'casual' not in extra:
         if view == 'front':
             b += f'<path d="M26,33 h12 v8 a3,3 0 0 1 -3,3 h-6 a3,3 0 0 1 -3,-3 Z" fill="{jean}" stroke="{jeanD}" stroke-width=".7"/>'
             b += f'<path d="M27,33 L26.5,28 M37,33 L37.5,28" stroke="{jean}" stroke-width="1.8" stroke-linecap="round"/>'
@@ -528,6 +589,9 @@ def person(view='front', frame=0, st=None, work=None):
                 b += ell(32, y, 2.6 - i * .25, 2, hair, f'stroke="{hairD}" stroke-width=".6"')
             b += circ(32, 40.6, 1.3, '#5fb2e8')
         if 'mask' in extra: b += '<path d="M23.8,23.6 q8.2,3 16.4,0" fill="none" stroke="#8a96a3" stroke-width=".8"/>'
+    if hat == 'none' and not long_:
+        if view == 'front': b += f'<path d="M23.4,18 q-.4,-10.5 8.6,-10.5 q9,0 8.6,10.5 q-1.6,-5 -8.6,-5.2 q-7,.2 -8.6,5.2 Z" fill="{hair}" stroke="{hairD}" stroke-width=".7"/>'
+        else: b += ell(32, 16, 8.7, 8.6, hair, f'stroke="{hairD}" stroke-width=".7"')
     b += hat_svg(hat, view)
     if 'goggles' in extra and view == 'front':
         b += '<rect x="26" y="9.5" width="12" height="3.6" rx="1.8" fill="#9fd0ff" stroke="#2b3a33" stroke-width=".8"/>'
@@ -546,8 +610,12 @@ PEOPLE = {
     'crew_fix':   dict(shirt='#9aa7b2', shirtD='#56606b', hat='capd', extra=('coverall', 'wrench')),
     'crew_load':  dict(shirt='#5ccf74', shirtD='#2c8a47', hat='hard', extra=('vest',)),
     'crew_prize': dict(shirt='#fff6e0', shirtD='#c9b88a', hat='sun', extra=('gvest',)),
+    'shop_a': dict(hat='none', shirt='#7a6ad8', shirtD='#4f3fa8', hair='#3a2a1a', hairD='#24180e', extra=('casual',)),
+    'shop_b': dict(hat='none', long=True, shirt='#f2a531', shirtD='#c2701f', hair='#c98a3a', hairD='#8a5a1f', extra=('casual',)),
+    'shop_c': dict(hat='sun', shirt='#3fb0a8', shirtD='#24807a', extra=('casual',)),
+    'shop_d': dict(hat='none', long=True, shirt='#e05a7a', shirtD='#a83a56', hair='#2a1a10', hairD='#180e08', extra=('casual',)),
 }
-WORKT = {'grower': 'can', 'growerf': 'can', 'crew_pot': 'pot', 'crew_water': 'can', 'crew_pest': 'spray', 'crew_fix': 'wrench', 'crew_load': 'box', 'crew_prize': 'snips'}
+WORKT = {'shop_a': 'box', 'shop_b': 'box', 'shop_c': 'box', 'shop_d': 'box', 'grower': 'can', 'growerf': 'can', 'crew_pot': 'pot', 'crew_water': 'can', 'crew_pest': 'spray', 'crew_fix': 'wrench', 'crew_load': 'box', 'crew_prize': 'snips'}
 for who, st_ in PEOPLE.items():
     for v in ('front', 'back'):
         for fr in (0, 1): add(f'{who}_{v}_{fr}', person(v, fr, st_))
