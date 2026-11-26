@@ -2564,7 +2564,7 @@ function boot(){
   requestAnimationFrame(frame);
   setTimeout(layout,300);
   try{const ios=/iPhone|iPad|iPod/.test(navigator.userAgent),standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
-    if(ios&&!standalone&&!localStorage.getItem('gy8tip')){localStorage.setItem('gy8tip','1');setTimeout(()=>toast('good','Tip: tap Share, then Add to Home Screen, to play full screen without the address bar'),4000);}}catch(e){}
+    if(ios&&!standalone&&!localStorage.getItem('gy8tip')){localStorage.setItem('gy8tip','1');setTimeout(()=>toast('good','Tip: to play full screen, tap ⋯ next to the address bar, then Share, then Add to Home Screen'),4000);}}catch(e){}
 }
 boot();
 </script>
