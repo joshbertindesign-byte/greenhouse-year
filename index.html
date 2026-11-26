@@ -2229,7 +2229,7 @@ function confirmPv(){
     dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d,'you swapped out their order'));
     if(ev.gone.length)toast(ev.rep.length?'bad':'good',`Swapped out ${ev.gone.length} order${ev.gone.length>1?'s':''}${ev.rep.length?': '+ev.rep.map(x=>`${x.d} with ${short1(x.cust)}`).join(', '):''}`);
     if(!place(placing.cur,top0)){toast('bad','No room there');renderSheet();return;}
-    pv=null;advancePlacing();if(popDone())return;renderSheet();hud();
+    pv=null;advancePlacing();if(popDone())return;renderSheet();hud();readyCheck();
   });
 }
 // mid-period, once the last pop-up is placed or binned, get back to work
@@ -2239,7 +2239,7 @@ function binHand(){
     if(P0.of.contract){dropOrders(P0.placed);S.contracts=S.contracts.filter(c=>c.id!==P0.cid);}
     S.offers=S.offers.filter(x=>x!==P0.of);}
   else{const q=queue();if(q[0])S.offers=S.offers.filter(x=>x!==q[0]);}
-  if(popDone())return;renderSheet();hud();
+  if(popDone())return;renderSheet();hud();readyCheck();
 }
 function canNudge(pl,d,avoid){
   const s=pl.s+d,e=pl.e+d;if(s<minStart()||e>7||e<0)return false;
@@ -2494,10 +2494,31 @@ function loanModal(why,need,what,after){
   if(why==='pay'){const bk=document.createElement('button');bk.className='btn';bk.type='button';bk.textContent='Back to planning';bk.style.marginTop='10px';bk.onclick=()=>{loanCb=null;closeModal();};$('mbox').appendChild(bk);}
 }
 const left0=()=>loanLeft()?`<p class="credit">Already owed: ${fmt(loanLeft())}. Limit ${fmt(loanCap())}.</p>`:`<p class="credit">Loan limit ${fmt(loanCap())}, more with more houses.</p>`;
-function tryStart(){
+function tryStart(sure){
   if(S.phase!=='plan')return;
+  const left=queue().length;
+  if(left&&!sure&&!window.__quiet){
+    modal(`<h2>${left} order${left>1?'s':''} still waiting</h2><p>You haven\u2019t placed or binned ${left>1?'all your offers':'your last offer'}. Offers you leave are lost when the period starts.</p>
+      <div class="ab2"><button class="btn" type="button" id="stBack">Back to orders</button><button class="btn go" type="button" id="stGo">Start anyway</button></div>`);
+    $('stBack').onclick=()=>{closeModal();openSheet('orders');};$('stGo').onclick=()=>{closeModal();tryStart(true);};return;
+  }
   if(S.crew.length&&S.cash<payroll()){loanModal('pay',payroll()-S.cash,'',startPeriod);return;}
   startPeriod();
+}
+// every offer is placed or binned: one last look at crew and upgrades before the period starts
+const upBuyable=()=>Object.entries(UPS).filter(([k,U])=>{const l=upLv(k);return l<U.cost.length&&upOpen(k,l)&&S.cash>=U.cost[l];}).length;
+function readyCheck(){
+  if(S.phase!=='plan'||placing||queue().length||window.__quiet||!$('modal').hidden)return;
+  const room=crewRoom(),ups=upBuyable(),pn=PN[S.period].toLowerCase();
+  modal(`<h2>Every order is handled</h2><p>Anything to sort out before ${pn} starts? You can only hire and upgrade while you plan.</p>
+    <div class="opts"><button class="opt" type="button" id="rdGo"><b>Start ${pn}</b><span>Hire and buy nothing this time</span></button>
+    <button class="opt" type="button" id="rdCrew"><b>Crew</b><span>${S.crew.length} on the payroll${room?` · room for ${room} more`:' · no room for more yet'}</span></button>
+    <button class="opt" type="button" id="rdUp"><b>Upgrades</b><span>${ups?`${ups} you can afford`:'Nothing you can afford right now'}</span></button>
+    <button class="opt" type="button" id="rdNo"><b>Keep planning</b><span>Stay on the board</span></button></div>`);
+  $('rdGo').onclick=()=>{closeModal();tryStart(true);};
+  $('rdCrew').onclick=()=>{closeModal();openSheet('crew');};
+  $('rdUp').onclick=()=>{closeModal();openSheet('build');};
+  $('rdNo').onclick=closeModal;
 }
 function payday(){
   if(!S.crew.length)return;
