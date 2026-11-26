@@ -196,6 +196,52 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stat .cred{display:block;font-size:11px;color:#ffd59a;opacity:1}
 .stat .cred:empty{display:none}
 .oc{display:block;font-size:11px;font-weight:600;opacity:.8}
+.stat .shr{display:none}
+.stat.goal{min-width:64px}.stat.goal .gm{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:3px;overflow:hidden}.stat.goal .gm i{display:block;height:100%;width:0;background:#f2c230;border-radius:2px}
+.stat.goal.met .gm i{background:#7fd08f}.stat.goal.met b{color:#bff0c8}
+@media (max-width:600px){.stat .lng{display:none}.stat .shr{display:inline}.stat{padding:4px 8px}.stat.goal{min-width:50px}.hud .hb{padding:8px 10px}.seg button{padding:6px 9px!important;font-size:14px!important}}
+@media (min-width:861px) and (max-width:1380px){.ttop .st.st2{display:none}.ttabs button{padding-left:10px!important;padding-right:10px!important}}
+.stars{color:#e2a91f;letter-spacing:1px;white-space:nowrap;line-height:1}.stars i{font-style:normal;color:#d9d2bf}
+.lockc{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#fff;background:var(--sc,#6b7a70);border-radius:999px;padding:6px 10px;white-space:nowrap;opacity:.9}
+.sbadge{display:inline-grid;place-items:center;flex:none;border-radius:50%;background:var(--sc);color:#fff;font-weight:800;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2),0 0 0 3px #fff,0 0 0 5px var(--sc)}
+.gcard{border:3px solid var(--sc);border-radius:18px;background:#fff;padding:14px;margin:6px 0 10px}
+.gtop{display:flex;align-items:center;gap:14px}.gtop small{display:block;font-size:12px;font-weight:700;color:var(--sc);letter-spacing:.04em}.gtop b{font-size:18px;line-height:1.25}
+.gbar{height:12px;border-radius:6px;background:#eee8d8;margin:12px 0 4px;overflow:hidden}.gbar i{display:block;height:100%;background:var(--sc);border-radius:6px}
+.gnum{font-size:14px;color:var(--mute);font-weight:600}
+.gun small,.cap{display:block;font-size:12px;font-weight:700;color:var(--mute);letter-spacing:.06em;margin:12px 0 6px}
+.rws{display:flex;flex-wrap:wrap;gap:8px}.rw{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;width:96px;background:#f7f4ea;border-radius:14px;padding:10px 6px}
+.rw b{font-size:13px;line-height:1.15}.rw small{font-size:11px;color:var(--mute)}.rwp{width:46px;height:46px}
+.rws.big .rw{background:#f2faf3;border:2px solid #bfe3c8;animation:pop .45s both}.rws.big .rw:nth-child(2){animation-delay:.08s}.rws.big .rw:nth-child(3){animation-delay:.16s}.rws.big .rw:nth-child(4){animation-delay:.24s}.rws.big .rw:nth-child(5){animation-delay:.32s}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.gres{text-align:center}.gres .burst{display:grid;place-items:center;margin:4px auto 8px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#fff6c8 0 45%,transparent 46%),repeating-conic-gradient(#f2c230 0 10deg,#fff3b0 10deg 20deg)}
+.gres.no .burst{background:radial-gradient(circle,#f1ede2 0 45%,transparent 46%),repeating-conic-gradient(#ddd6c4 0 10deg,#eee8da 10deg 20deg);filter:grayscale(.4)}
+.gres .rws{justify-content:center}
+.warnb{display:flex;gap:10px;align-items:flex-start;background:#fdecea;border:2px solid #f0b6ad;color:#7a1f14;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.35}
+.mag{background:#fffdf6;border:1px solid #e8e0c8;border-radius:12px;padding:16px;font-family:Georgia,'Times New Roman',serif;color:#1d2a22}
+.mast{text-align:center;border-bottom:3px double #1d2a22;padding-bottom:8px}.mast small{font-family:inherit;font-size:11px;letter-spacing:.18em;color:#8a7a52}.mast b{display:block;font-size:30px;line-height:1.05;letter-spacing:-.01em;color:#2d5a3a}.mast b span{font-style:italic;font-weight:400;font-size:22px;color:#a2463a}
+.mcov{display:flex;justify-content:center;gap:0;margin:10px 0 2px;background:linear-gradient(#eaf4e6,#fffdf6);border-radius:10px;padding:6px 0}.mcov img{width:56px;height:56px;margin:0 -4px}
+.mag h3{text-align:center;font-size:20px;margin:6px 0 10px;font-style:italic}
+.mme{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f4efe0;border-radius:12px;padding:10px 14px}.mme small{display:block;font-family:system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8a7a52}.mme span{display:block;font-family:system-ui,sans-serif;font-size:14px;margin-top:4px}
+.msc{text-align:center}.msc b{display:block;font-size:34px;line-height:1;color:#2d5a3a}.msc small{font-family:system-ui,sans-serif;font-size:11px;color:#8a7a52}
+.judges{font-family:system-ui,sans-serif;margin:12px 0}.judges small{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;color:#8a7a52;margin-bottom:6px}
+.jb{display:grid;grid-template-columns:150px 1fr 48px;align-items:center;gap:8px;font-size:13px;margin:4px 0}.jb i{height:9px;border-radius:5px;background:#ece5d2;overflow:hidden}.jb i b{display:block;height:100%;background:#2d5a3a;border-radius:5px}.jb em{font-style:normal;color:#6b7a70;font-size:12px;text-align:right}
+.mlist{list-style:none;margin:8px 0;padding:0;font-family:system-ui,sans-serif}.mlist li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid #efe8d6;font-size:14px}.mlist li .rk{width:20px;font-weight:700;color:#8a7a52}.mlist li .nm{flex:1}
+.mlist li.me{background:#e6f3e9;border-radius:8px;font-weight:700;border-bottom-color:transparent}
+.mstats{font-family:system-ui,sans-serif}
+@media (max-width:520px){.jb{grid-template-columns:112px 1fr 40px;font-size:12px}.mast b{font-size:25px}.mcov img{width:42px;height:42px}}
+.over{text-align:center}.over p{color:var(--mute)}
+.lh3{margin:18px 2px 8px;font-size:18px}
+.road{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin}
+.rs{flex:none;width:132px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:4px;align-items:flex-start;opacity:.75}
+.rs b{font-size:14px;margin-top:4px}.rs small{font-size:12px;color:var(--mute);line-height:1.25;min-height:30px}
+.rs.done{opacity:1;background:#f2faf3;border-color:#bfe3c8}.rs.cur{opacity:1;border-color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.08)}
+.rs .ri{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}.rs .ri img{width:22px;height:22px}.rs .ri svg{display:block}
+.ltab{background:#fff;border:2px solid var(--line);border-radius:14px;overflow:hidden;font-size:14px}
+.ltab .lh,.ltab .lr{display:grid;grid-template-columns:44px 1.5fr 1fr 1fr 1fr 44px 40px;gap:6px;align-items:center;padding:8px 10px}
+.ltab .lh{background:#f4efe0;font-size:12px;font-weight:700;color:var(--mute)}.ltab .lr{border-top:1px solid #efe8d6}
+.ltab .lr small{color:var(--mute);font-size:11px;margin-left:4px}.ltab .neg{color:var(--bad)}.ltab .gok{color:var(--go);font-weight:800}.ltab .gno{color:var(--bad);font-weight:800}
+@media (max-width:520px){.ltab{font-size:12px}.ltab .lh,.ltab .lr{grid-template-columns:30px 1.7fr 1fr 1fr 34px 26px;padding:7px 6px;gap:4px}.ltab .lh span:nth-child(5),.ltab .lr span:nth-child(5){display:none}}
+.pch{display:block;background:#fff;border:2px solid var(--line);border-radius:14px;margin-bottom:8px;padding:6px 4px 0}
 .blk .fl{position:absolute;left:3px;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
 .blk .fl.bg{left:50%;transform:translate(-50%,-50%);opacity:.9}
 .blk.fb .bx{background:rgba(20,30,24,.42);border-radius:7px;padding:1px 4px}.blk.ghost.fb .bx{background:rgba(255,255,255,.72);text-shadow:none}
@@ -370,7 +416,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .ttop .tx{width:40px;height:40px;border:0;border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:20px;display:grid;place-items:center;cursor:pointer}
 .scr{flex:1;min-height:0;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
 .scr .bfoot{margin-top:14px}
-@media (max-width:860px){.ttop{padding:10px 10px 10px 14px;gap:8px}.ttop .tw{flex:1;min-width:0}.ttop .tw b{font-size:18px}.ttop .st.st2{display:none}.ttop .sp{display:none}.ttop .st.cash{text-align:right;flex:none}.ttop .st.cash b{font-size:17px}.ttabs{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.ttabs button{flex-direction:column;gap:2px;padding:6px 0;font-size:12px}.ttabs button .nb{display:none}.scr{padding:10px 8px}.ttop .go{padding:10px 14px;font-size:15px}}
+@media (max-width:860px){.ttop{padding:10px 10px 10px 14px;gap:8px}.ttop .tw{flex:1;min-width:0}.ttop .tw b{font-size:18px}.ttop .st.st2{display:none}.ttop .sp{display:none}.ttop .st.cash{text-align:right;flex:none}.ttop .st.cash b{font-size:17px}.ttabs{order:5;flex:1 1 100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.ttabs button{flex-direction:column;gap:2px;padding:6px 0;font-size:12px}.ttabs button .nb{display:none}.ttabs{grid-template-columns:repeat(5,minmax(0,1fr))!important}.ttabs button{font-size:11px}.scr{padding:10px 8px}.ttop .go{padding:10px 14px;font-size:15px}}
 .olay{display:flex;gap:16px;align-items:flex-start}.ocol{width:360px;flex:none;display:flex;flex-direction:column;gap:12px}
 @media (max-width:860px){.olay{flex-direction:column;gap:10px}.ocol{width:auto;align-self:stretch;gap:10px}}
 .hc{background:#fff;border:3px solid var(--c,#e4e0d3);border-radius:22px;padding:13px 15px 14px;display:flex;flex-direction:column;gap:9px;box-shadow:0 6px 0 var(--cs,#efe8d6);position:relative}
@@ -439,7 +485,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 <header class="hud" id="hud">
   <div class="when"><b id="hWhen">Year 1</b><div class="yr" id="hYr"></div></div>
   <div class="stat"><small>Cash</small><b id="hCash">$0</b><small class="cred" id="hCred"></small></div>
-  <div class="stat tap" id="hRepB"><small>Reputation</small><b id="hRep">50</b></div>
+  <div class="stat tap" id="hRepB"><small><span class="lng">Reputation</span><span class="shr">Rep</span></small><b id="hRep">50</b></div>
+  <div class="stat tap goal" id="hGoalB"><small>Goal</small><b id="hGoal">0/10</b><i class="gm"><i id="hGoalP"></i></i></div>
   <div class="sp"></div>
   <button class="hb" id="bBoard" type="button">Board <span class="n" id="bN"></span></button>
   <button class="hb go" id="bGo" type="button">Start</button>
@@ -597,7 +644,7 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna','miley','max'],stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
+    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna','miley','max'],stage:1,hist:[],redYears:0,lost:null,yres:null,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(12).fill(false),dmgT:Array(12).fill(0),nid:1,
     ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
@@ -660,11 +707,11 @@ function place(of,top){
 // ---------------- offers ----------------
 function candidates(c,minS,maxP,pref){
   const out=[];
-  for(const k in CROPS){const C=CROPS[k];for(const p of C.sell){const s=p-C.g+1;if(s>=minS&&p<=maxP&&p<=7&&p>=c)out.push({k,p,w:pref&&pref.includes(k)?4:1});}}
+  for(const k in CROPS){if(!cropOpen(k))continue;const C=CROPS[k];for(const p of C.sell){const s=p-C.g+1;if(s>=minS&&p<=maxP&&p<=7&&p>=c)out.push({k,p,w:pref&&pref.includes(k)?4:1});}}
   return out;
 }
 function mkOffer(cd,mult,fixed){const C=CROPS[cd.k],cust=pickCust(false),base=C.price*(mult||1)*tierOf(cust).pm*(.92+rnd()*.22),of={id:S.nid++,crop:cd.k,p:cd.p,qty:ri(C.q[0],C.q[1]),price:Math.round(base*(fixed?1:seasF(cd.k,cd.p))),cust};if(!fixed)of.base=base;return of;}
-function candFlex(c){const out=[];for(const k in CROPS){const C=CROPS[k];for(let p=c+C.g-1;p<=Math.min(7,c+4);p++){const f=seasF(k,p);out.push({k,p,w:f>1.1?3:f>=1?2:1});}}return out;}
+function candFlex(c){const out=[];for(const k in CROPS){if(!cropOpen(k))continue;const C=CROPS[k];for(let p=c+C.g-1;p<=Math.min(7,c+4);p++){const f=seasF(k,p);out.push({k,p,w:f>1.1?3:f>=1?2:1});}}return out;}
 function wpick(list){const t=list.reduce((a,x)=>a+x.w,0);let r=rnd()*t;for(const x of list){r-=x.w;if(r<=0)return x;}return list[list.length-1];}
 function genOffers(){
   const c=S.period;S.offers=[];genContracts();
@@ -803,7 +850,7 @@ function ship(pl,truckId){
 function finishShip(pl,bought,truckId){
   const o=orderOf(pl),C=crop(pl.crop),alive=have(pl)+bought,sent=Math.min(alive,o.qty),extra=alive-sent;
   const pm=1+.1*upLv('pots'),buyCost=bought*Math.round(C.price*1.2),rev=Math.round(sent*o.price*pm),clear=extra*Math.round(o.price*.35*pm);
-  S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;S.ys.buy+=buyCost;o.status='shipped';o.sent=sent;if(o.contract)contractShipped(o.contract);
+  S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;S.ys.buy+=buyCost;if(sent>0){S.ys.cr=S.ys.cr||[];if(!S.ys.cr.includes(pl.crop))S.ys.cr.push(pl.crop);}o.status='shipped';o.sent=sent;if(o.contract)contractShipped(o.contract);
   const k=truckById(truckId),waited=k&&k.arrived!=null?(S.t-k.arrived)-((k.deadline-k.arrived)-TRUCK_WAIT):0,slow=waited>TRUCK_WAIT*.5;
   if(sent>=o.qty){if(!bought&&!pl.hurt&&!slow)custRep(o.cust,2,'full truck, on time');if(slow)custRep(o.cust,-1,'kept their truck waiting');S.ys.full++;toast('cash',`${sent} ${C.name.toLowerCase()} shipped${slow?' (kept them waiting)':''}, +${fmt(rev+clear-buyCost)}`);}
   else{custRep(o.cust,-shortRep(sent,o.qty),`shipped ${sent} of ${o.qty}`);S.ys.short++;toast('bad',`Short: ${sent} of ${o.qty} ${C.name.toLowerCase()}, +${fmt(rev+clear)}`);}
@@ -999,11 +1046,12 @@ function endPeriod(){
   S.tasks=[];S.queue=[];me.task=null;me.path=[];staff.forEach(w=>{w.task=null;w.path=[];});
   S.crew.forEach(r=>{if(r.n<VET)r.n++;});
   settleBooks();
+  if(checkRepLoss()&&!window.__quiet){gameOver();return;}
   S.period++;
   if(S.period>7){yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){S.phase='plan';S.t=0;genOffers();S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();}
+function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the nursery closes`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();askRaises();}
 function askRaises(){
   const reqs=S.crew.filter(r=>r.n>0&&r.n<VET&&rnd()<.25).map(r=>({r,to:Math.round(r.wage*(1.08+rnd()*.07)/5)*5}));
   if(!reqs.length)return;
@@ -1017,15 +1065,6 @@ function askRaises(){
     if(--left<=0)setTimeout(()=>{closeModal();traySig='';renderSheet();renderTray();},500);};
   $('mbox').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>done(+b.dataset.ok,true));
   $('mbox').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>done(+b.dataset.no,false));
-}
-function yearEnd(){
-  S.phase='done';S.period=7;S.t=PSEC;save();hud();if(window.__quiet)return;
-  const y=S.ys,cost=y.plugs+y.overhead+y.crew+y.buy+(y.build||0)+(y.interest||0),prof=y.rev-cost;
-  modal(`<h2>Year ${S.year} is in the books</h2>
-  <div class="kv"><span>Sales</span><b>${fmt(y.rev)}</b><span>Plugs and pots</span><b>${fmt(-y.plugs)}</b>${y.buy?`<span>Bought in</span><b>${fmt(-y.buy)}</b>`:''}${y.interest?`<span>Loan and overdraft interest</span><b>${fmt(-y.interest)}</b>`:''}<span>Upkeep</span><b>${fmt(-y.overhead)}</b>${y.build?`<span>Building and upgrades</span><b>${fmt(-y.build)}</b>`:''}${y.crew?`<span>Crew</span><b>${fmt(-y.crew)}</b>`:''}<span style="font-weight:700">Profit</span><b style="color:${prof<0?'var(--bad)':'var(--go)'}">${fmt(prof)}</b>
-  <span>Orders shipped full</span><b>${y.full}</b><span>Shipped short</span><b>${y.short}</b><span>Missed</span><b>${y.failed}</b><span>Reputation</span><b>${Math.round(S.rep)}</b></div>
-  <button class="btn go" id="nyBtn" type="button">Start year ${S.year+1}</button>`);
-  $('nyBtn').onclick=()=>{nextYear();closeModal();beginPlan();};
 }
 function nextYear(){if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};}
 
@@ -1440,7 +1479,8 @@ function hud(){
   $('hCash').textContent=fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
-  $('bGo').hidden=S.phase!=='plan';$('bGo').textContent=`Start ${PN[c].toLowerCase()}`;
+  {const gp=goalProg();$('hGoal').textContent=gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=goalText(stg(stage()).goal)+' · '+gp.txt;$('hGoalB').classList.toggle('met',gp.pct>=1);}
+  $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').textContent=`Start ${PN[c].toLowerCase()}`;
   $('bBoard').hidden=S.phase==='plan'&&!sheetOpen();
   const n=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;$('bN').textContent=n||'';
   renderFloors();
@@ -1688,7 +1728,7 @@ function setForm(i){
   renderSheet();
 }
 const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${CROPS[k].name.toLowerCase()} ${fmt(GEN[k])}${S.cash<GEN[k]?' · need a loan':''}</button>`;
-const TICO={orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>'};
+const TICO={orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5M8 7h7M8 11h7"></path>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>'};
 const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
 function handHTML(of,noShapes){
   const T=tierOf(of.cust),head=`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}</div>`;
@@ -1774,7 +1814,7 @@ function renderSheet(){
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
   const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
   const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
-  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()],['build','Upgrades',0],['book','Ledger',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}${l}${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
@@ -1801,6 +1841,8 @@ function renderSheet(){
       <div class="cl"><div class="cg">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,46)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span><span>${PERK[ti]}</span></div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
       <div class="cs"><div class="panel"><b>Tiers</b>${TIERS.slice().reverse().map((t,k)=>`<div class="tierrow"><span class="tchip" style="background:${t.c}">${t.n}</span>${PERK[4-k]} · from ${t.min}</div>`).join('')}</div>
       <div class="panel"><b>Last period</b>${log.length?log.map(e=>{const d=Math.round(e.d);return`<div class="lg"><b class="${d>0?'p':d<0?'n':''}">${d>0?'+':''}${d}</b><span>${esc(short1(e.n))}: ${esc(e.why)}</span></div>`;}).join(''):'<span style="font-size:14px;color:var(--mute)">No changes yet. Ship some trucks!</span>'}<span style="background:#f6f3ea;border-radius:12px;padding:10px 12px;font-size:13px;color:#33463a">Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</span></div></div></div>`;
+  }else if(tab==='book'){
+    body=ledgerHTML();
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them.</small></h2></div>
       <div class="roles">${S.crew.length?S.crew.map(r=>`<div class="role">${svgIcon(r.role,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${Array.from({length:S.floors},(_,f)=>`<button type="button" data-home="${r.id}" data-f="${f}" class="${r.home===f?'on':''}">House ${f+1}</button>`).join('')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):'<p class="norail">No crew yet. It\u2019s just you.</p>'}</div>
@@ -1811,13 +1853,13 @@ function renderSheet(){
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work in every greenhouse, last for good and show up in the houses. You can buy them any time.</small></h2></div>
       ${bankHTML(plan)}
-      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:'<b>Maxed</b>'}</div>`;}).join('')}
+      ${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}
       
       <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
+      <div class="gens">${Object.entries(CROPS).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
-      ${next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
+      ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Pick who lives here. Residents share the food and water bowls in house 1 and keep the mice down. Just for fun: no cost, no effect on the books.</p>
       <div class="cats">${CATS.map(c=>{const on=S.cats.includes(c.id);return`<button type="button" class="catc${on?' on':''}" data-cat="${c.id}" aria-pressed="${on}"><img src="${catURL(c.id)}" alt=""><b>${c.name}</b><small>${CAT_INFO[c.id]}</small><span class="cs">${on?'Lives here':'Invite in'}</span></button>`;}).join('')}</div>
       <p style="margin:18px 2px 0"><button class="btn" type="button" id="newG">Start a new game</button></p>`;
@@ -1939,21 +1981,168 @@ function checkRed(){
   if(loanRoom()<500)return;
   loanModal('neg',-S.cash);
 }
+// ---------------- goals, gates and the magazine ----------------
+const STAGES=[
+  {n:'Backyard grower',c:'#8a6a3a',goal:{k:'full',n:8}},
+  {n:'Market grower',c:'#6f8f3a',goal:{k:'profit',n:2500}},
+  {n:'Local supplier',c:'#2e8a5a',goal:{k:'full',n:20}},
+  {n:'Regional grower',c:'#2a78d0',goal:{k:'stars',n:3}},
+  {n:'Wholesale nursery',c:'#5b5bd6',goal:{k:'rev',n:25000}},
+  {n:'Commercial nursery',c:'#8a4fc8',goal:{k:'rep',n:65}},
+  {n:'Major supplier',c:'#c8402f',goal:{k:'profit',n:12000}},
+  {n:'Industry leader',c:'#c98a00',goal:{k:'stars',n:4}},
+  {n:'Legend',c:'#b8860b',goal:{k:'stars',n:5}},
+  {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1}}];
+const GATE_UP={pots:[1,4,8],soil:[1,3,7],hose:[1,2,7],bugs:[1,5],heat:[2,6],vents:[2,5],boom:[3,6],potter:[3,6],fork:[4,7],lights:[4,8],roll:[5,8]};
+const GATE_GEN={vinca:1,begonia:2,geranium:2,fern:3,kale:3,hydrangea:4,poinsettia:6};
+const HOUSE_CAP=[1,1,2,3,4,6,8,10,12,12,12];
+const RIVALS=['Prairie Rose Nursery','Bluebonnet Growers','Cedar Hollow Greenhouses','Mesquite Flats Farm','Twin Oaks Nursery','High Plains Greenhouse','Copper Canyon Growers','Red River Plant Co.','Sandhill Perennials'];
+const stage=()=>Math.min(S.stage||1,STAGES.length);
+const stg=i=>STAGES[Math.min(i,STAGES.length)-1];
+const cropOpen=k=>owns(k)||(GATE_GEN[k]||1)<=stage();
+const upOpen=(k,l)=>(GATE_UP[k]?GATE_UP[k][l]:1)<=stage();
+const houseCap=()=>HOUSE_CAP[Math.min(stage(),HOUSE_CAP.length-1)];
+const starStr=(n,sz)=>`<span class="stars" style="font-size:${sz||18}px">${'★'.repeat(n)}<i>${'★'.repeat(5-n)}</i></span>`;
+const lockChip=g=>`<span class="lockc" style="--sc:${stg(g).c}">${tico('lock',14)}Opens at ${stg(g).n}</span>`;
+function rewardsOf(g){ // what opens when you reach stage g
+  const out=[];
+  for(const k in GATE_UP)GATE_UP[k].forEach((gg,l)=>{if(gg===g)out.push({t:'up',k,l});});
+  for(const k in GATE_GEN)if(GATE_GEN[k]===g)out.push({t:'gen',k});
+  if(HOUSE_CAP[g]>HOUSE_CAP[g-1])out.push({t:'house',n:HOUSE_CAP[g]});
+  if(g===10)out.push({t:'trophy'});
+  if(g>10)out.push({t:'cash',n:5000});
+  return out;
+}
+function rewardTile(r){
+  if(r.t==='up'){const U=UPS[r.k];return`<div class="rw">${svgIcon(U.icon,42)}<b>${U.lv[r.l]}</b><small>${U.name}</small></div>`;}
+  if(r.t==='gen')return`<div class="rw"><img src="${flowerURL(r.k,3)}" alt="" class="rwp"><b>${CROPS[r.k].name}</b><small>Genetics</small></div>`;
+  if(r.t==='house')return`<div class="rw">${svgIcon('floor',42)}<b>Up to ${r.n} houses</b><small>Building</small></div>`;
+  if(r.t==='trophy')return`<div class="rw">${trophySVG(42)}<b>Golden Trowel</b><small>Trophy</small></div>`;
+  return`<div class="rw">${svgIcon('cash',42)}<b>${fmt(r.n)} bonus</b><small>Prize money</small></div>`;
+}
+const trophySVG=sz=>`<svg width="${sz}" height="${sz}" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6h20v8a10 10 0 0 1-20 0z" fill="#f2c230" stroke="#9a6d00" stroke-width="2"/><path d="M14 9H8a6 6 0 0 0 7 8M34 9h6a6 6 0 0 1-7 8" fill="none" stroke="#9a6d00" stroke-width="2.4"/><path d="M21 24h6v8h-6z" fill="#e0a800"/><path d="M14 36h20l-2 6H16z" fill="#7a5524" stroke="#4d3412" stroke-width="1.5"/><path d="M18 32h12v4H18z" fill="#f2c230" stroke="#9a6d00" stroke-width="1.5"/><path d="M19 10l2 2M24 9v3" stroke="#fff6c8" stroke-width="2" stroke-linecap="round"/></svg>`;
+function yearProfit(y){y=y||S.ys;return y.rev-(y.plugs+y.overhead+y.crew+y.buy+(y.build||0)+(y.interest||0));}
+function opProfit(y){y=y||S.ys;return y.rev-(y.plugs+y.overhead+y.crew+y.buy+(y.interest||0));}
+function magScore(y,rep){
+  const tot=y.full+y.short+y.failed,fill=tot?y.full/tot:0,prof=opProfit(y),nv=(y.cr||[]).length;
+  const parts={fill:Math.pow(fill,1.5)*35,rep:clamp((rep-30)/55,0,1)*25,profit:clamp(Math.log10(Math.max(0,prof)/500+1)/Math.log10(61),0,1)*25,variety:Math.min(1,nv/7)*15};
+  const score=Math.round(parts.fill+parts.rep+parts.profit+parts.variety);
+  return{score,parts,fill,prof,nv,stars:score>=86?5:score>=72?4:score>=57?3:score>=42?2:1};
+}
+function rivalTable(year,me){
+  const h=i=>{const n=Math.sin((year*7.13+i*3.71)*12.9898)*43758.5453;return n-Math.floor(n);};
+  const L=RIVALS.map((name,i)=>{const base=38+i*5.6,sc=Math.round(clamp(base+Math.min(year,14)*1.1+(h(i)-.5)*14,20,96));return{name,score:sc,stars:sc>=86?5:sc>=72?4:sc>=57?3:sc>=42?2:1};});
+  L.push({name:'Your nursery',score:me.score,stars:me.stars,me:true});
+  L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
+  return L;
+}
+function goalText(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} stars from Best Homes and Gardens`,rep:`End the year with ${n}+ average reputation`,rank:`Be ranked #1 by Best Homes and Gardens`}[g.k];}
+function goalProg(){
+  const g=stg(stage()).goal,y=S.ys;
+  if(g.k==='full')return{cur:y.full,n:g.n,txt:`${y.full}/${g.n} full trucks`,short:`${y.full}/${g.n}`,pct:y.full/g.n};
+  if(g.k==='profit'){const p=opProfit();return{cur:p,n:g.n,txt:`${fmt(p)} of ${fmt(g.n)} operating profit`,short:`${fmtK(p)}/${fmtK(g.n)}`,pct:p/g.n};}
+  if(g.k==='rev')return{cur:y.rev,n:g.n,txt:`${fmt(y.rev)} of ${fmt(g.n)} sold`,short:`${fmtK(y.rev)}/${fmtK(g.n)}`,pct:y.rev/g.n};
+  if(g.k==='rep'){const r=Math.round(avgRep());return{cur:r,n:g.n,txt:`Reputation ${r} of ${g.n}`,short:`${r}/${g.n}`,pct:r/g.n};}
+  const m=magScore(y,avgRep());
+  if(g.k==='stars')return{cur:m.stars,n:g.n,txt:`On pace for ${m.stars} of ${g.n} stars`,short:`${'★'.repeat(m.stars)}`,pct:m.score/[0,0,42,57,72,86][g.n],star:true};
+  const t=rivalTable(S.year,m),rk=t.findIndex(x=>x.me)+1;return{cur:rk,n:1,txt:`On pace for #${rk}`,short:`#${rk}`,pct:rk===1?1:.5};
+}
+const fmtK=n=>Math.abs(n)>=1000?(n<0?'-':'')+'$'+(Math.abs(n)/1000).toFixed(Math.abs(n)>=10000?0:1)+'k':fmt(n);
+function goalMet(g,y,m,rk,rep){return g.k==='full'?y.full>=g.n:g.k==='profit'?m.prof>=g.n:g.k==='rev'?y.rev>=g.n:g.k==='stars'?m.stars>=g.n:g.k==='rep'?rep>=g.n:rk<=g.n;}
+function closeYear(){
+  if(S.yres&&S.yres.year===S.year)return S.yres;
+  const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,met=goalMet(g,y,m,rk,rep);
+  const rec={year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
+  S.hist.push(rec);
+  let unlocked=[];
+  if(met){S.stage=st+1;unlocked=rewardsOf(st+1);const cashR=unlocked.find(r=>r.t==='cash');if(cashR){S.cash+=cashR.n;rec.cash=Math.round(S.cash);}}
+  S.redYears=S.cash<0?(S.redYears||0)+1:0;
+  if(S.redYears>=2)S.lost='bank';
+  S.yres={year:S.year,rec,table:tab2,unlocked,met,from:st};
+  return S.yres;
+}
+const lostCount=()=>CUST.filter(n=>custR(n)<TIERS[1].min).length;
+function checkRepLoss(){if(!S.lost&&lostCount()>=CUST.length)S.lost='rep';return !!S.lost;}
+function magazineHTML(R0){
+  const r=R0.rec,t=R0.table,P=r.parts,bar=(lab,v,mx,ico)=>`<div class="jb"><span>${lab}</span><i><b style="width:${Math.round(v/mx*100)}%"></b></i><em>${Math.round(v)}/${mx}</em></div>`;
+  const pics=(r.crops.length?r.crops:['petunia','mum','pothos']).slice(0,7).map(k=>`<img src="${flowerURL(k,3)}" alt="">`).join('');
+  return`<div class="mag"><div class="mast"><small>THE YEAR ${r.year} NURSERY ISSUE</small><b>Best Homes <span>and</span> Gardens</b></div>
+    <div class="mcov">${pics}</div>
+    <h3>The best nurseries of year ${r.year}</h3>
+    <div class="mme"><div><small>YOUR NURSERY</small>${starStr(r.stars,30)}<span>Ranked <b>#${r.rank}</b> of ${r.of}</span></div><div class="msc"><b>${r.score}</b><small>points</small></div></div>
+    <div class="judges"><small>WHAT THE JUDGES LOOKED AT</small>${bar('Trucks shipped full',P.fill,35)}${bar('Customer love',P.rep,25)}${bar('Operating profit',P.profit,25)}${bar('Variety grown',P.variety,15)}</div>
+    <ol class="mlist">${t.map((x,i)=>`<li class="${x.me?'me':''}"><span class="rk">${i+1}</span><span class="nm">${esc(x.name)}</span>${starStr(x.stars,14)}</li>`).join('')}</ol>
+    <div class="kv mstats"><span>Sales</span><b>${fmt(r.rev)}</b><span>Operating profit</span><b style="color:${r.op<0?'var(--bad)':'var(--go)'}">${fmt(r.op)}</b><span>After building and upgrades</span><b style="color:${r.profit<0?'var(--bad)':'var(--go)'}">${fmt(r.profit)}</b><span>Full / short / missed</span><b>${r.full} / ${r.short} / ${r.failed}</b><span>Reputation</span><b>${r.rep}</b></div></div>`;
+}
+function goalCardHTML(st,big,noProg){
+  const S0=stg(st),g=S0.goal,pr=st===stage()&&!noProg?goalProg():null,rw=rewardsOf(st+1);
+  return`<div class="gcard" style="--sc:${S0.c}"><div class="gtop">${stageBadge(st,big?54:44)}<div><small>LEVEL ${st} · ${S0.n.toUpperCase()}</small><b>${goalText(g)}</b></div></div>
+    ${pr?`<div class="gbar"><i style="width:${Math.round(clamp(pr.pct,0,1)*100)}%"></i></div><div class="gnum">${pr.txt}${g.k==='stars'||g.k==='rank'?' · judged at year end':''}</div>`:''}
+    <div class="gun"><small>${rw.length?'UNLOCKS':''}</small><div class="rws">${rw.map(rewardTile).join('')}</div></div></div>`;
+}
+const stageBadge=(st,sz)=>`<span class="sbadge" style="--sc:${stg(st).c};width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px">${st>=9?trophySVG(Math.round(sz*.7)):st}</span>`;
+function yearEnd(){
+  S.phase='done';S.period=7;S.t=PSEC;const R0=closeYear();save();hud();if(window.__quiet)return;
+  modal(magazineHTML(R0)+`<button class="btn go" id="nyNext" type="button">Continue</button>`);
+  $('mbox').scrollTop=0;
+  $('nyNext').onclick=()=>yearGoalModal(R0);
+}
+function yearGoalModal(R0){
+  if(S.lost){gameOver();return;}
+  const r=R0.rec,st=stage(),red=S.redYears>0;
+  modal(`<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
+    :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.</p>`}</div>
+    ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
+    ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
+    <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
+    <button class="btn go" id="nyBtn" type="button">Start year ${S.year+1}</button>`);
+  $('mbox').scrollTop=0;
+  $('nyBtn').onclick=()=>{nextYear();closeModal();beginPlan();};
+}
+function gameOver(){
+  S.phase='over';save();hud();if(window.__quiet)return;
+  const why=S.lost==='bank'?['The bank closed the nursery','Two years in a row ended below zero.']:['Nobody will buy from you','Every customer has written you off.'];
+  const best=S.hist.reduce((a,r)=>Math.max(a,r.stars),0);
+  modal(`<div class="over"><svg width="120" height="80" viewBox="0 0 120 80" aria-hidden="true"><rect x="8" y="22" width="104" height="46" rx="6" fill="#c8402f" stroke="#7a1f14" stroke-width="3"/><path d="M40 22l20-16 20 16" fill="none" stroke="#5d4a36" stroke-width="3"/><circle cx="60" cy="6" r="3" fill="#5d4a36"/><text x="60" y="54" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="24" fill="#fff">CLOSED</text></svg>
+    <h2>${why[0]}</h2><p>${why[1]} You ran the nursery for ${S.hist.length} year${S.hist.length===1?'':'s'} and reached ${stg(stage()).n.toLowerCase()} (level ${stage()}).${best?` Best ranking: ${best} star${best>1?'s':''}.`:''}</p></div>
+    ${ledgerTable()}
+    <button class="btn go" id="ovNew" type="button">Start a new nursery</button>`);
+  $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();openSheet();hud();toast('good','Fresh start: year 1');};
+}
+function ledgerTable(){
+  if(!S.hist.length)return'<p class="norail">Your first Best Homes and Gardens ranking comes out at the end of year 1.</p>';
+  return`<div class="ltab"><div class="lh"><span>Year</span><span>Ranking</span><span>Sales</span><span>Profit</span><span>Trucks</span><span>Rep</span><span>Goal</span></div>${S.hist.slice().reverse().map(r=>`<div class="lr"><span><b>${r.year}</b></span><span>${starStr(r.stars,14)}<small>#${r.rank}</small></span><span>${fmtK(r.rev)}</span><span class="${r.profit<0?'neg':''}">${fmtK(r.profit)}</span><span>${r.full}<small>/${r.short}/${r.failed}</small></span><span>${r.rep}</span><span class="${r.met?'gok':'gno'}" title="${esc(r.goal)}">${r.met?'✓':'✗'}</span></div>`).join('')}</div>`;
+}
+function profitChart(){
+  if(S.hist.length<2)return'';
+  const H=S.hist.slice(-12),mx=Math.max(1,...H.map(r=>Math.abs(r.profit))),W=H.length*34;
+  return`<svg class="pch" viewBox="0 0 ${W} 110" width="100%" height="110" preserveAspectRatio="none" aria-label="Profit by year">${H.map((r,i)=>{const h=Math.abs(r.profit)/mx*42,y=r.profit>=0?55-h:55;return`<rect x="${i*34+6}" y="${y}" width="22" height="${Math.max(1,h)}" rx="3" fill="${r.profit>=0?'#2e7d4a':'#c8402f'}"/><text x="${i*34+17}" y="108" text-anchor="middle" font-size="10" fill="#6b7a70">Y${r.year}</text>`;}).join('')}<line x1="0" x2="${W}" y1="55" y2="55" stroke="#cfc8b4"/></svg>`;
+}
+function ledgerHTML(){
+  const st=stage(),warn=[];
+  if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
+  if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
+  return`<div class="bhead"><h2>Ledger<small>Hit each year's goal to reach the next level and unlock more upgrades, varieties and houses. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+    ${warn.join('')}${goalCardHTML(st,true)}
+    <h3 class="lh3">The road ahead</h3>
+    <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
+    <h3 class="lh3">Best Homes and Gardens rankings</h3>${profitChart()}${ledgerTable()}`;
+}
 function buyGen(k){
-  if(owns(k))return;const cost=GEN[k];
+  if(owns(k))return;if(!cropOpen(k)){toast('bad',`${crop(k).name} opens at ${stg(GATE_GEN[k]).n}`);return;}const cost=GEN[k];
   if(!spend(cost,`${crop(k).name} genetics`))return;
   S.ys.build=(S.ys.build||0)+cost;S.owned.push(k);
   toast('good',`You can grow ${crop(k).name.toLowerCase()} now`);renderSheet();hud();
 }
 function buyUp(k){
-  const l=upLv(k),U=UPS[k];if(l>=U.lv.length)return;
+  const l=upLv(k),U=UPS[k];if(l>=U.lv.length)return;if(!upOpen(k,l)){toast('bad',`${U.lv[l]} opens at ${stg(GATE_UP[k][l]).n}`);return;}
   const cost=U.cost[l];if(!spend(cost,U.lv[l]))return;
   S.ys.build=(S.ys.build||0)+cost;S.up[k]=l+1;
   toast('good',`${U.lv[l]} in place`);renderSheet();hud();
 }
 const staffCount=()=>S.crew.length;
 function buildFloor(){
-  if(S.phase!=='plan'||S.floors>=MAXF)return;
+  if(S.phase!=='plan'||S.floors>=MAXF)return;if(S.floors>=houseCap()){toast('bad',`More houses open at ${stg(HOUSE_CAP.findIndex(c=>c>S.floors)).n}`);return;}
   const cost=FLOOR_COST[S.floors];
   if(!spend(cost,floorName(S.floors)))return;
   S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;focusH=S.floors-1;
@@ -2108,6 +2297,7 @@ function benchInfo(b){
 }
 $('bBoard').onclick=()=>sheetOpen()?closeSheet():openSheet();
 $('hRepB').onclick=()=>openSheet('cust');
+$('hGoalB').onclick=()=>openSheet('book');
 $('bGo').onclick=()=>tryStart();
 let speed=1;
 $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -2116,14 +2306,15 @@ $('speed').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.cats=Array.isArray(d.cats)?d.cats:['anna','miley','max'];if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
+function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna','miley','max'];if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:12},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:12},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
   modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
   <div class="steps">
   <div>${svgIcon('pop',40)}<span><b>Plan:</b> between periods, offers come up one at a time. Place each on the board or bin it. Bigger orders take more benches, slower crops take more periods.</span></div>
   <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
-  <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build up to three floors.</span></div></div>
+  <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
+  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties and houses. At year end Best Homes and Gardens ranks the best nurseries out of five stars.</span></div></div>
   <button class="btn go" id="wGo" type="button">Plan early winter</button>`);
   $('wGo').onclick=()=>{S.welcomed=true;closeModal();openSheet();};
 }
@@ -2149,7 +2340,8 @@ function boot(){
   if(!S){fresh();genOffers();}
   else if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
   prepArt();syncStaff();layout();hud();
-  if(S.phase==='done')yearEnd();
+  if(S.phase==='over'||S.lost)gameOver();
+  else if(S.phase==='done')yearEnd();
   else if(!S.welcomed)welcome();
   else openSheet();
   requestAnimationFrame(frame);
