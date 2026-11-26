@@ -31,13 +31,16 @@ rad('gPet', [(0, '#ffd6ef', None), (.5, '#f26bb5', None), (1, '#c23c8b', None)])
 rad('gGer', [(0, '#ffb7a0', None), (.55, '#ff5a4a', None), (1, '#c92f33', None)])
 FL = {'petunia': ('#ffd6ef', '#f26bb5', '#c23c8b'), 'vinca': ('#ece3ff', '#9b7ff0', '#5b3fc0'), 'geranium': ('#ffb7a0', '#ff5a4a', '#c92f33'),
       'begonia': ('#ffd9b8', '#ff9a4a', '#d8642a'), 'mum': ('#fff6b8', '#ffc93d', '#f08a1f'), 'poinsettia': ('#ff9a9a', '#ef2f3f', '#a8121f'),
-      'hydrangea': ('#e2f1ff', '#7fb4f5', '#3d74d6'), 'kale': ('#f3e2fb', '#c48fe0', '#7f4aa8')}
+      'hydrangea': ('#e2f1ff', '#7fb4f5', '#3d74d6'), 'kale': ('#f3e2fb', '#c48fe0', '#7f4aa8'),
+      'orchid': ('#ffffff', '#f6c9ec', '#b8297f'), 'rose': ('#ff8a8a', '#d8202f', '#8a0f1c'), 'peony': ('#fff0f3', '#ffadc4', '#e0567f'), 'calla': ('#fffdf3', '#f6edcf', '#c9b77a')}
 for k, (a, b2, c) in FL.items(): rad(f'gF_{k}', [(0, a, None), (.55, b2, None), (1, c, None)])
 rad('gLeafD', [(0, '#9fd88a', None), (.55, '#3f9152', None), (1, '#1f5a34', None)])
 rad('gFern', [(0, '#b9e88f', None), (.5, '#4fa553', None), (1, '#1f6a38', None)])
 rad('gKale', [(0, '#e7c6f5', None), (.45, '#a77bc4', None), (1, '#4f8a5a', None)])
 TYPE = {'petunia': 'petal', 'vinca': 'petal', 'geranium': 'umbel', 'begonia': 'umbel', 'mum': 'pom', 'poinsettia': 'bract',
-        'hydrangea': 'mop', 'pothos': 'vine', 'fern': 'frond', 'kale': 'rosette'}
+        'hydrangea': 'mop', 'pothos': 'vine', 'fern': 'frond', 'kale': 'rosette',
+        'orchid': 'orchid', 'rose': 'rose', 'peony': 'peony', 'calla': 'calla'}
+SHOW = ('orchid', 'rose', 'peony', 'calla')
 STROKE = {'petal': None, 'umbel': None}
 lin('gGlass', [(0, '#e6fbff', .85), (1, '#bdeef3', .35)])
 lin('gCream', [(0, '#fff8ea', None), (1, '#f3e3c4', None)])
@@ -199,9 +202,13 @@ def flat(crop, stage):
     spots = sorted([(u, v) for v in (.3, .7) for u in (.2, .5, .8)], key=lambda p: p[0] + p[1])
     for n, (u, v) in enumerate(spots):
         x, y = I.P(u, v, base)
-        # terracotta pot
-        b += poly([(x - 4.6, y - 5), (x + 4.6, y - 5), (x + 3.4, y + 1.8), (x - 3.4, y + 1.8)], 'url(#gPot)', '#a9512c', .7)
-        b += ell(x, y - 5, 5.2, 1.8, '#f6a576', 'stroke="#a9512c" stroke-width=".7"')
+        if crop in SHOW:  # glazed showcase pot with a gold band
+            b += poly([(x - 4.6, y - 5), (x + 4.6, y - 5), (x + 3.4, y + 1.8), (x - 3.4, y + 1.8)], '#f7f3ea', '#9c8a5c', .7)
+            b += poly([(x - 4.3, y - 3.6), (x + 4.3, y - 3.6), (x + 4.1, y - 2.6), (x - 4.1, y - 2.6)], '#d9b44a')
+            b += ell(x, y - 5, 5.2, 1.8, '#ffffff', 'stroke="#9c8a5c" stroke-width=".7"')
+        else:  # terracotta pot
+            b += poly([(x - 4.6, y - 5), (x + 4.6, y - 5), (x + 3.4, y + 1.8), (x - 3.4, y + 1.8)], 'url(#gPot)', '#a9512c', .7)
+            b += ell(x, y - 5, 5.2, 1.8, '#f6a576', 'stroke="#a9512c" stroke-width=".7"')
         cy = y - 5 - R * .55
         T = TYPE[crop]; G = f'url(#gF_{crop})'; dk = FL.get(crop, ('', '', '#2f7a3f'))[2]
         if T == 'vine':
@@ -222,6 +229,33 @@ def flat(crop, stage):
                 for t in (.35, .6, .85):
                     px2, py2 = x + (ex - x) * t, cy + (ey - cy) * t - 1.2
                     b += ell(px2, py2, 1.6, .8, '#5fb35a', f'transform="rotate({f2(math.degrees(a)+60)} {f2(px2)} {f2(py2)})"')
+            continue
+        if T == 'orchid':
+            for a, sx in ((-.5, -1), (.4, 1)):
+                b += ell(x + sx * 2.4, cy + R * .45, R * .55, R * .22, 'url(#gLeafD)', f'stroke="#1f5a34" stroke-width=".6" transform="rotate({f2(math.degrees(a))} {f2(x + sx * 2.4)} {f2(cy + R * .45)})"')
+            if stage >= 2:
+                b += f'<path d="M{f2(x)},{f2(cy+R*.4)} C{f2(x+1)},{f2(cy-R*1.2)} {f2(x+5)},{f2(cy-R*1.5)} {f2(x+7)},{f2(cy-R*.9)}" fill="none" stroke="#5a7a3a" stroke-width=".9"/>'
+            if stage == 2:
+                for t in (.6, .8, 1): b += circ(x + 7 * t, cy - R * (1.4 - .4 * t), 1, '#f6c9ec', '#b8297f', .4)
+            if stage == 3:
+                for fx, fy in ((x + 1.6, cy - R * 1.05), (x + 4.6, cy - R * 1.3), (x + 7, cy - R * .85)):
+                    for ang in (-150, -30, 90):
+                        rad_ = math.radians(ang); b += ell(fx + math.cos(rad_) * 1.6, fy + math.sin(rad_) * 1.6, 1.5, 1, '#ffffff', f'stroke="#d79ac9" stroke-width=".35" transform="rotate({ang} {f2(fx + math.cos(rad_) * 1.6)} {f2(fy + math.sin(rad_) * 1.6)})"')
+                    b += circ(fx - 1.5, fy + .2, 1.6, '#ffffff', '#d79ac9', .35) + circ(fx + 1.5, fy + .2, 1.6, '#ffffff', '#d79ac9', .35)
+                    b += circ(fx, fy + .6, .9, '#b8297f') + circ(fx, fy + .3, .35, '#ffd84a')
+            continue
+        if T == 'calla':
+            for a in (-.35, -.1, .2, .45):
+                lx_, ly_ = x + a * 9, cy - R * .3
+                b += f'<path d="M{f2(x)},{f2(cy+R*.6)} Q{f2(x+a*4)},{f2(cy)} {f2(lx_)},{f2(ly_-R*.6)} Q{f2(lx_+1.6)},{f2(ly_)} {f2(x+.6)},{f2(cy+R*.6)} Z" fill="url(#gLeafD)" stroke="#1f5a34" stroke-width=".5"/>'
+            if stage == 3:
+                for k, ox in enumerate((-2.6, .4, 3.2)):
+                    sx, sy = x + ox, cy - R * (1.1 + .15 * (k == 1))
+                    b += f'<path d="M{f2(x+ox*.3)},{f2(cy+R*.4)} L{f2(sx)},{f2(sy+2)}" stroke="#4f8a3a" stroke-width=".9"/>'
+                    b += f'<path d="M{f2(sx-.6)},{f2(sy+2.2)} C{f2(sx-2.6)},{f2(sy)} {f2(sx-2.4)},{f2(sy-2.6)} {f2(sx+.4)},{f2(sy-3.2)} C{f2(sx+2.6)},{f2(sy-3.4)} {f2(sx+2.4)},{f2(sy-1)} {f2(sx+.6)},{f2(sy+2.2)} Z" fill="url(#gF_calla)" stroke="#a8996a" stroke-width=".45"/>'
+                    b += f'<path d="M{f2(sx)},{f2(sy+1)} L{f2(sx+.3)},{f2(sy-1.8)}" stroke="#f2c230" stroke-width="1" stroke-linecap="round"/>'
+            elif stage == 2:
+                for ox in (-2.2, 2.6): b += ell(x + ox, cy - R * .95, .9, 2, '#e8f0c8', 'stroke="#7a9a4a" stroke-width=".4"')
             continue
         if T == 'rosette':
             b += cluster(x, cy, R, 'url(#gKale)', '#4a6e52', n + stage)
@@ -253,6 +287,16 @@ def flat(crop, stage):
                     for a in range(7):
                         ang = a * math.tau / 7; b += circ(sx + ox * .2 + math.cos(ang) * 2, sy - 5 + math.sin(ang) * 1.6, 1.5, G, dk, .4)
                     b += circ(sx + ox * .2, sy - 5, 1.4, G, dk, .4)
+            if T == 'rose':
+                for fx, fy in ((x - 2.6, cy - R * .5), (x + 2.4, cy - R * .6), (x, cy - R * .05)):
+                    b += circ(fx, fy, 2.6, G, dk, .55)
+                    b += f'<path d="M{f2(fx-1.6)},{f2(fy+.2)} q1.6,-2.2 3,-.4 q-.6,1.6 -2,1 q-.2,-1 .8,-1" fill="none" stroke="{dk}" stroke-width=".5"/>'
+                    b += circ(fx - .6, fy - 1, .6, '#ffffff', extra='opacity=".4"')
+            if T == 'peony':
+                for fx, fy, rr_ in ((x - 1.8, cy - R * .5, 3.4), (x + 2.6, cy - R * .35, 2.8)):
+                    for a in range(8):
+                        ang = a * math.tau / 8; b += circ(fx + math.cos(ang) * rr_ * .55, fy + math.sin(ang) * rr_ * .4, rr_ * .55, G, dk, .4)
+                    b += circ(fx, fy - .3, rr_ * .55, '#ffd2df', dk, .35) + circ(fx, fy - .4, rr_ * .25, '#fff0f3')
             if T == 'pom':
                 for a, rr_ in ((0, .0), (.8, .55), (2.4, .55), (4.0, .55), (5.4, .5)):
                     mx, my = x + math.cos(a) * R * rr_, cy - 1 + math.sin(a) * R * rr_ * .6

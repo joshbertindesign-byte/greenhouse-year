@@ -21,6 +21,7 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 - **Your nursery:** name it when you start (or rename it from the Ledger tab). The name goes on a roadside sign, the tablet and every magazine ranking.
 - **Goals and levels:** each year has a goal (full trucks, operating profit, sales, reputation or a magazine rating). Hitting it moves you up a level, from Backyard grower to Legend, and unlocks more upgrades, varieties and houses. Miss it and you try again next year.
 - **Best Homes and Gardens:** at the end of each year a fictional magazine ranks the best nurseries out of five stars. The Ledger tab keeps every year's ranking and stats.
+- **Showcase house:** your first four-star year unlocks a gold-framed showcase house. Show entries for orchids, roses, peonies and calla lilies come up with your offers. Only the grower can work in it, and the plants need misting, staking and deadheading on time; each late or missed job lowers the entry's grade. At year end every entry is judged together for a Best Homes and Gardens ribbon, from Honorable mention to Best in Show, with prize money.
 - **Losing:** the nursery closes if every customer writes you off, or if you end two years in a row below zero. Money comes from bank loans, not credit; missed paydays can make crew quit.
 - **Extras:** the seasons change the ground and weather. Pick which greenhouse cats live with you (Miley, Anna and Max) in the Upgrades tab; they wander, nap, chase the odd mouse and visit their food and water bowls. Tap one to pet it.
 
