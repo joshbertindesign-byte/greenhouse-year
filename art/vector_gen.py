@@ -33,13 +33,21 @@ FL = {'petunia': ('#ffd6ef', '#f26bb5', '#c23c8b'), 'vinca': ('#ece3ff', '#9b7ff
       'begonia': ('#ffd9b8', '#ff9a4a', '#d8642a'), 'mum': ('#fff6b8', '#ffc93d', '#f08a1f'), 'poinsettia': ('#ff9a9a', '#ef2f3f', '#a8121f'),
       'hydrangea': ('#e2f1ff', '#7fb4f5', '#3d74d6'), 'kale': ('#f3e2fb', '#c48fe0', '#7f4aa8'),
       'orchid': ('#ffffff', '#f6c9ec', '#b8297f'), 'rose': ('#ff8a8a', '#d8202f', '#8a0f1c'), 'peony': ('#fff0f3', '#ffadc4', '#e0567f'), 'calla': ('#fffdf3', '#f6edcf', '#c9b77a')}
+FL.update({'tomato': ('#ffb0a0', '#ef3b2c', '#a8121f'), 'pepper': ('#fff1a0', '#f2a531', '#c2571f'), 'lettuce': ('#eaffc4', '#9be06a', '#4f9a3f'),
+           'cabbage': ('#e2f4ef', '#8fc7b5', '#4f8a7a'), 'cucumber': ('#fff6a8', '#f2d43a', '#b8941f'), 'basil': ('#d8ffb0', '#5fcf4a', '#257a2f')})
 for k, (a, b2, c) in FL.items(): rad(f'gF_{k}', [(0, a, None), (.55, b2, None), (1, c, None)])
+rad('gLettuce', [(0, '#f3ffd0', None), (.5, '#a8e070', None), (1, '#5aa84a', None)])
+rad('gCabbage', [(0, '#e6f6f0', None), (.5, '#94c9b9', None), (1, '#4c8576', None)])
+rad('gBasil', [(0, '#dcffb4', None), (.5, '#6fd256', None), (1, '#2f8a38', None)])
+rad('gTom', [(0, '#c8eea0', None), (.55, '#5aa94a', None), (1, '#2e6e35', None)])
 rad('gLeafD', [(0, '#9fd88a', None), (.55, '#3f9152', None), (1, '#1f5a34', None)])
 rad('gFern', [(0, '#b9e88f', None), (.5, '#4fa553', None), (1, '#1f6a38', None)])
 rad('gKale', [(0, '#e7c6f5', None), (.45, '#a77bc4', None), (1, '#4f8a5a', None)])
 TYPE = {'petunia': 'petal', 'vinca': 'petal', 'geranium': 'umbel', 'begonia': 'umbel', 'mum': 'pom', 'poinsettia': 'bract',
         'hydrangea': 'mop', 'pothos': 'vine', 'fern': 'frond', 'kale': 'rosette',
-        'orchid': 'orchid', 'rose': 'rose', 'peony': 'peony', 'calla': 'calla'}
+        'orchid': 'orchid', 'rose': 'rose', 'peony': 'peony', 'calla': 'calla',
+        'tomato': 'tom', 'pepper': 'pep', 'lettuce': 'lettuce', 'cabbage': 'cab', 'cucumber': 'cuke', 'basil': 'basil'}
+VEG = ('tomato', 'pepper', 'lettuce', 'cabbage', 'cucumber', 'basil')
 SHOW = ('orchid', 'rose', 'peony', 'calla')
 STROKE = {'petal': None, 'umbel': None}
 lin('gGlass', [(0, '#e6fbff', .85), (1, '#bdeef3', .35)])
@@ -206,6 +214,10 @@ def flat(crop, stage):
             b += poly([(x - 4.6, y - 5), (x + 4.6, y - 5), (x + 3.4, y + 1.8), (x - 3.4, y + 1.8)], '#f7f3ea', '#9c8a5c', .7)
             b += poly([(x - 4.3, y - 3.6), (x + 4.3, y - 3.6), (x + 4.1, y - 2.6), (x - 4.1, y - 2.6)], '#d9b44a')
             b += ell(x, y - 5, 5.2, 1.8, '#ffffff', 'stroke="#9c8a5c" stroke-width=".7"')
+        elif crop in VEG:  # black plastic cell pack
+            b += poly([(x - 4.4, y - 4.4), (x + 4.4, y - 4.4), (x + 3.6, y + 1.8), (x - 3.6, y + 1.8)], '#2e2e2e', '#151515', .7)
+            b += poly([(x - 4.4, y - 4.4), (x + 4.4, y - 4.4), (x + 4.1, y - 3.3), (x - 4.1, y - 3.3)], '#4a4a4a')
+            b += ell(x, y - 4.4, 4.6, 1.5, '#6a4129', 'stroke="#151515" stroke-width=".6"')
         else:  # terracotta pot
             b += poly([(x - 4.6, y - 5), (x + 4.6, y - 5), (x + 3.4, y + 1.8), (x - 3.4, y + 1.8)], 'url(#gPot)', '#a9512c', .7)
             b += ell(x, y - 5, 5.2, 1.8, '#f6a576', 'stroke="#a9512c" stroke-width=".7"')
@@ -256,6 +268,48 @@ def flat(crop, stage):
                     b += f'<path d="M{f2(sx)},{f2(sy+1)} L{f2(sx+.3)},{f2(sy-1.8)}" stroke="#f2c230" stroke-width="1" stroke-linecap="round"/>'
             elif stage == 2:
                 for ox in (-2.2, 2.6): b += ell(x + ox, cy - R * .95, .9, 2, '#e8f0c8', 'stroke="#7a9a4a" stroke-width=".4"')
+            continue
+        if T in ('lettuce', 'cab'):
+            gl = 'url(#gLettuce)' if T == 'lettuce' else 'url(#gCabbage)'; sk = '#3f7a35' if T == 'lettuce' else '#3a6a5e'
+            rr_ = R * (.75 + .1 * stage)
+            for a in range(7):
+                ang = a * math.tau / 7 + .3
+                b += ell(x + math.cos(ang) * rr_ * .55, cy + 1 + math.sin(ang) * rr_ * .35, rr_ * .55, rr_ * .38, gl, f'stroke="{sk}" stroke-width=".55" transform="rotate({f2(math.degrees(ang))} {f2(x + math.cos(ang) * rr_ * .55)} {f2(cy + 1 + math.sin(ang) * rr_ * .35)})"')
+            b += circ(x, cy, rr_ * .42, gl, sk, .55)
+            if T == 'lettuce' and stage >= 2:
+                for a in range(5):
+                    ang = a * math.tau / 5; b += f'<path d="M{f2(x+math.cos(ang)*rr_*.3)},{f2(cy+math.sin(ang)*rr_*.2)} q{f2(math.cos(ang)*2)},-1.2 {f2(math.cos(ang)*3.4)},.2" fill="none" stroke="#e6ffc0" stroke-width=".6"/>'
+            if T == 'cab' and stage >= 2:
+                b += circ(x, cy - .6, rr_ * .3, '#cfe9df', sk, .5) + f'<path d="M{f2(x-1.6)},{f2(cy-.4)} q1.6,-1.6 3.2,0" fill="none" stroke="{sk}" stroke-width=".4"/>'
+            continue
+        if T in ('tom', 'pep', 'basil', 'cuke'):
+            gl = {'tom': 'url(#gTom)', 'pep': 'url(#gLeafD)', 'basil': 'url(#gBasil)', 'cuke': 'url(#gLeaf)'}[T]
+            sk = {'tom': '#2a5e2f', 'pep': '#1f5a34', 'basil': '#257a2f', 'cuke': '#2f7a3f'}[T]
+            if T == 'cuke':
+                for a, s_ in ((-2.2, 1), (-.9, 1), (.3, .9)):
+                    lx_, ly_ = x + math.cos(a) * R * .55, cy + math.sin(a) * R * .45
+                    b += circ(lx_, ly_, R * .48 * s_, gl, sk, .6) + f'<path d="M{f2(lx_)},{f2(ly_+R*.3)} l0,-{f2(R*.5)}" stroke="{sk}" stroke-width=".4"/>'
+                if stage >= 2: b += f'<path d="M{f2(x+R*.6)},{f2(cy)} q2,-2 1,-4 q-1,-1.5 .8,-2.6" fill="none" stroke="#5fae4a" stroke-width=".7"/>'
+                if stage == 3:
+                    for fx, fy in ((x - 2.2, cy - R * .7), (x + 2.6, cy - R * .4)):
+                        b += ''.join(circ(fx + math.cos(a) * 1.2, fy + math.sin(a) * 1.2, 1.2, 'url(#gF_cucumber)', '#b8941f', .4) for a in [i * math.tau / 5 - 1.57 for i in range(5)])
+                continue
+            if T == 'basil':
+                for k_ in range(3 if stage == 1 else 4):
+                    ly_ = cy + R * .5 - k_ * R * .38; sp_ = R * (.7 - k_ * .12)
+                    for sx in (-1, 1):
+                        b += ell(x + sx * sp_ * .55, ly_, sp_ * .52, sp_ * .3, gl, f'stroke="{sk}" stroke-width=".55" transform="rotate({sx * -25} {f2(x + sx * sp_ * .55)} {f2(ly_)})"')
+                b += ell(x - 1, cy - R * .45, 1.2, .6, '#ffffff', 'opacity=".5"')
+                continue
+            b += cluster(x, cy, R * (.85 if T == 'pep' else .95), gl, sk, n + stage * 7)
+            if stage == 3 and T == 'tom':
+                for fx, fy in ((x - 2.4, cy - R * .4), (x + 2.6, cy - R * .2)):
+                    b += ''.join(circ(fx + math.cos(a) * 1, fy + math.sin(a) * 1, .9, '#ffe14a', '#c9a21f', .3) for a in [i * math.tau / 5 for i in range(5)])
+                b += circ(x + .4, cy + R * .2, 1.6, 'url(#gF_tomato)', '#a8121f', .5) + circ(x - .1, cy + R * .2 - .6, .45, '#ffffff', extra='opacity=".6"')
+            if stage == 3 and T == 'pep':
+                for fx, fy in ((x - 2, cy + R * .1), (x + 2.4, cy - R * .25)):
+                    b += f'<path d="M{f2(fx-1)},{f2(fy-1.6)} q-.6,2.6 .8,3.6 q1.4,-.6 1.2,-3.4 Z" fill="url(#gF_pepper)" stroke="#c2571f" stroke-width=".45"/>'
+                    b += f'<path d="M{f2(fx)},{f2(fy-1.8)} l.3,-1" stroke="#2f7a3f" stroke-width=".7"/>'
             continue
         if T == 'rosette':
             b += cluster(x, cy, R, 'url(#gKale)', '#4a6e52', n + stage)
