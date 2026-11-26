@@ -485,9 +485,24 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tierrow{display:flex;align-items:center;gap:10px;font-size:13px;color:#33463a}.tierrow .tchip{width:70px;text-align:center;font-size:13px;padding:3px 0}
 .lg{display:flex;align-items:center;gap:10px;font-size:14px}.lg b{width:34px}.lg .p{color:var(--go)}.lg .n{color:var(--bad)}
 
-.hstrip{position:fixed;left:0;right:0;z-index:5;display:flex;gap:6px;pointer-events:none;overflow-x:auto;scrollbar-width:none;padding:8px 10px 6px;margin-top:-8px}
-.hstrip::-webkit-scrollbar{display:none}.hstrip.ovf{pointer-events:auto}
-.hstrip>button{flex:none}.hstrip>button:first-child{margin-left:auto}.hstrip>button:last-child{margin-right:auto}
+.hstrip{position:fixed;left:8px;right:8px;z-index:5;display:flex;gap:6px;justify-content:center;pointer-events:none}
+.hstrip>button{flex:none}
+.hstrip.pick .ar{min-width:48px;font-size:26px;line-height:1;padding:0}
+.hstrip.pick .cur{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:150px;padding:0 34px 0 16px;text-align:left;font-size:17px}
+.hstrip.pick .cur small{margin-top:1px}.hstrip.pick .cur .chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:14px;opacity:.7}
+.hpick{position:fixed;left:50%;transform:translateX(-50%);z-index:6;background:#faf7ef;border-radius:18px;padding:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);border:3px solid #173426;display:flex;flex-direction:column;gap:10px;align-items:center}
+.hpick .all{width:100%;height:42px;border:2px solid var(--line);background:#fff;border-radius:12px;font:700 16px Outfit,sans-serif;color:var(--ink)}
+.hpick .all.on{background:#173426;border-color:#173426;color:#fff}
+.hpg{display:flex;gap:12px;align-items:flex-end}
+.hpick{max-width:calc(100vw - 12px);box-sizing:border-box}
+@media (max-width:400px){.hpick{padding:10px}.hpg{gap:8px}.hpick .hmg{grid-template-columns:repeat(2,40px);gap:5px}.hpick .hmg.one{grid-template-columns:40px}.hpick .hmg button,.hpick .hmg i{height:40px}}
+.hpick .hml small{font-size:11px}
+.hpick .hmg{display:grid;grid-template-columns:repeat(2,46px);gap:6px}.hpick .hmg.one{grid-template-columns:46px}
+.hpick .hmg button{position:relative;height:44px;border:2px solid var(--line);background:#fff;border-radius:11px;font:700 17px Outfit,sans-serif;color:var(--ink);padding:0}
+.hpick .hmg button.on{background:#173426;border-color:#173426;color:#fff}
+.hpick .hmg button.shb{background:#fff6d8;border-color:#e2c46a;color:#8a6a12}.hpick .hmg button.shb.on{background:#8a6a12;color:#fff}
+.hpick .hmg i{height:44px;border:2px dashed #e4e0d3;border-radius:11px}
+.hpick .n{position:absolute;top:-8px;right:-7px;min-width:20px;height:20px;border-radius:10px;background:#5d6b62;color:#fff;font-size:12px;display:grid;place-items:center;padding:0 5px}.hpick .n.hot{background:#e2552f}
 .hstrip button{pointer-events:auto;position:relative;min-width:46px;height:44px;border:0;border-radius:14px;background:rgba(23,52,38,.88);color:#fff;font:700 16px Outfit,sans-serif;padding:0 10px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
 .hstrip button.on{background:#faf7ef;color:#16231b;box-shadow:0 0 0 3px #173426}
 .hstrip button small{display:block;font-size:10px;font-weight:600;opacity:.75;line-height:1;margin-top:-2px}
@@ -528,6 +543,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 </header>
 <div class="toasts" id="toasts"></div>
 <div class="hstrip" id="hstrip" hidden></div>
+<div class="hpick" id="hpick" hidden></div>
 <div class="floors" id="floors" hidden><button type="button" id="fUp" aria-label="Floor up">▲<span class="n"></span></button><b id="fLab">Floor<big>1</big></b><button type="button" id="fDn" aria-label="Floor down">▼<span class="n"></span></button></div>
 <footer class="tray" id="tray">
   <div class="lane"><span class="who">YOU</span><div class="cards" id="qMe"></div><div class="crewc" id="laneC" hidden><span class="who">CREW</span><div class="cards" id="qC"></div></div></div>
@@ -1597,16 +1613,36 @@ function houseMap(cur,mk,lab,withShow){
   if(S.floors<=4)return`<div class="hmap row">${lab?`<span class="hl0">${lab}</span>`:''}<div class="hmg">${Array.from({length:S.floors},(_,h)=>`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`).join('')}${star}</div></div>`;
   return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}${star?`<div class="hml"><small>Show</small><div class="hmg one">${star}</div></div>`:''}</div>`;
 }
+let hpOpen=false;
 function renderStrip(){
-  const el=$('hstrip'),on=focusMode()&&!sheetOpen();el.hidden=!on;if(!on){stripSig='';return;}
+  const el=$('hstrip'),on=focusMode()&&!sheetOpen();el.hidden=!on;if(!on){stripSig='';hpOpen=false;$('hpick').hidden=true;return;}
   el.style.top=($('hud').offsetHeight+8)+'px';
-  const items=[{h:-1,lab:'All',n:0,hot:false},...builtH().map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)}))];
-  const sig=focusH+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
-  el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:''}</button>`).join('');
+  const hs=builtH(),items=[{h:-1,lab:'All',n:0,hot:false},...hs.map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)}))];
+  const sig=focusH+'|'+hpOpen+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
+  const badge=i=>i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:'';
+  if(items.length<=6){
+    el.className='hstrip';
+    el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${badge(i)}</button>`).join('');
+    $('hpick').hidden=true;
+  }else{
+    // compact picker: arrows plus one button that opens a map of every house
+    const cur=items.find(i=>i.h===focusH)||items[0],others=items.filter(i=>i.h!==focusH&&i.h>=0),on=others.reduce((a,i)=>a+i.n,0),hot=others.some(i=>i.hot);
+    el.className='hstrip pick';
+    el.innerHTML=`<button type="button" class="ar" id="hpPrev" aria-label="Previous house">‹</button><button type="button" class="cur on" id="hpCur" aria-expanded="${hpOpen}">${focusH<0?'All houses':focusH===SH?'★ Showcase':'House '+(focusH+1)}${cur.sub?`<small>${cur.sub==='F2'?'Floor 2':cur.sub==='F3'?'Floor 3':cur.sub}</small>`:focusH>=0&&focusH!==SH?'<small>Ground</small>':''}<i class="chev">▾</i>${on?`<span class="n${hot?' hot':''}">${on}</span>`:''}</button><button type="button" class="ar" id="hpNext" aria-label="Next house">›</button>`;
+    const order=items.map(i=>i.h),step=d=>{const k=order.indexOf(focusH);focusHouse(order[(k+d+order.length)%order.length]);};
+    $('hpPrev').onclick=()=>step(-1);$('hpNext').onclick=()=>step(1);
+    $('hpCur').onclick=()=>{hpOpen=!hpOpen;stripSig='';renderStrip();};
+    const P0=$('hpick');P0.hidden=!hpOpen;
+    if(hpOpen){
+      P0.style.top=(el.offsetTop+el.offsetHeight+6)+'px';
+      const cell=h=>{const it=items.find(i=>i.h===h);return it?`<button type="button" data-fh="${h}" class="${focusH===h?'on':''}${h===SH?' shb':''}">${it.lab}${badge(it)}</button>`:'<i></i>';};
+      P0.innerHTML=`<button type="button" data-fh="-1" class="all${focusH<0?' on':''}">All houses</button><div class="hpg">${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?cell(h):'<i></i>';}).join('')}</div></div>`).join('')}${hasShow()?`<div class="hml"><small>Show</small><div class="hmg one">${cell(SH)}</div></div>`:''}</div>`;
+      P0.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>{hpOpen=false;focusHouse(+b.dataset.fh);});
+    }
+  }
   el.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>focusHouse(+b.dataset.fh));
-  el.classList.toggle('ovf',el.scrollWidth>el.clientWidth+2);
-  const onB=el.querySelector('.on');if(onB&&el.classList.contains('ovf')){const l=onB.offsetLeft-el.clientWidth/2+onB.offsetWidth/2;el.scrollTo({left:Math.max(0,l),behavior:'smooth'});}
 }
+addEventListener('pointerdown',e=>{if(hpOpen&&!e.target.closest('#hpick,#hpCur')){hpOpen=false;stripSig='';renderStrip();}});
 function focusHouse(h){
   if(!S||(h>=S.floors&&!(h===SH&&hasShow())))return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
   stripSig='';layout();renderFloors();
@@ -2327,7 +2363,7 @@ function buildFloor(){
   S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;focusH=S.floors-1;
   for(let i=0;i<2;i++){const cand=candidates(S.period,S.period,S.period+2);if(cand.length)S.offers.push(mkOffer(wpick(cand)));}
   toast('floor',`${floorName(S.floors-1)} is open (${levelName(lvOf(S.floors-1))})`);
-  if([2,4,7].includes(S.floors))setTimeout(()=>toast('load',`A new loading bay opens at the road: ${bayCount()} trucks can load at once`),600);
+  if([2,4,7].includes(S.floors)){const nb=bayCount();setTimeout(()=>toast('load',`A new loading bay opens at the road: ${nb} trucks can load at once`),600);}
   layout();tab='orders';renderSheet();hud();
 }
 function boardMetrics(){
