@@ -627,6 +627,9 @@ const BENCH=Array.from({length:104},(_,i)=>{const H=HOUSES[Math.floor(i/8)],b=LB
 const unitOf=h=>{const H=HOUSES[h];return{x:8+H.ox,y:3+H.oy,ax:7+H.ox,ay:3+H.oy};};
 const liftOf=h=>{const H=HOUSES[h];return{x:H.ox,y:6+H.oy};};
 const DOCK={x:4,y:-1,f:0,h:-1};
+const BAYS=[{x:4,tx:3.3},{x:9,tx:8.8},{x:15,tx:14.3},{x:20,tx:19.8}];
+const bayCount=()=>S.floors>=7?4:S.floors>=4?3:S.floors>=2?2:1;
+const bayUse=()=>Math.min(bayCount(),1+S.crew.filter(r=>r.role==='load').length);
 const levels=()=>Math.ceil(S.floors/4);
 const benchName=i=>(Math.floor(i/8)===SH?'★':S&&S.floors>1?(Math.floor(i/8)+1):'')+LETTERS[i];
 const WORK={pot:1.8,water:1,pest:2,fix:3.2,care:1.3};
@@ -856,7 +859,7 @@ function taskLabel(t){
   return nm+' '+benchName(t.bench);
 }
 function target(t){
-  if(t.type==='load')return DOCK;
+  if(t.type==='load')return{x:BAYS[t.bay||0].x,y:-1,f:0,h:-1};
   if(t.type==='fix'){const u=unitOf(t.f);return{x:u.ax,y:u.ay,f:lvOf(t.f),h:t.f};}
   const b=BENCH[t.bench];return{x:b.ax,y:b.ay,f:b.lv,h:b.f};
 }
@@ -879,12 +882,14 @@ function complete(t){
 let ask=null;
 const truckById=id=>S.trucks.find(k=>k.id===id);
 function dockNext(){
-  if(S.trucks.some(k=>k.state==='dock'))return;
-  const k=S.trucks.filter(k=>k.state==='line').sort((a,b)=>a.arrived-b.arrived)[0];if(!k)return;
-  k.state='dock';
-  const pl=S.plots.find(p=>p.id===k.plot);
-  if(!pl||pl.done){k.state='gone';dockNext();return;}
-  addTask({type:'load',plot:pl.id,truck:k.id,born:k.arrived,due:k.deadline});
+  for(;;){
+    const used=S.trucks.filter(k=>k.state==='dock').map(k=>k.bay||0),free=[...Array(bayUse()).keys()].find(b=>!used.includes(b));if(free==null)return;
+    const k=S.trucks.filter(k=>k.state==='line').sort((a,b)=>a.arrived-b.arrived)[0];if(!k)return;
+    k.state='dock';k.bay=free;
+    const pl=S.plots.find(p=>p.id===k.plot);
+    if(!pl||pl.done){k.state='gone';continue;}
+    addTask({type:'load',plot:pl.id,truck:k.id,bay:free,born:k.arrived,due:k.deadline});
+  }
 }
 function truckLeaves(k,missed){
   k.state='gone';k.leftAt=performance.now();
@@ -957,7 +962,7 @@ function staffPick(w){
   const home=w.rec?w.rec.home:0;
   if(w.role==='prize'){const d=ATT[clamp(w.rec.att||1,1,5)];const t=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===SH&&S.t-t.born>=d&&!S.queue.includes(t)&&!engaged(t)).sort((a,b)=>(a.type==='care'?0:1)-(b.type==='care'?0:1)||(a.due??999)-(b.due??999))[0];if(t)assign(w,t);return;}
   const t=S.tasks.filter(t=>t.type===w.role&&(t.type==='load'||taskF(t)===home)&&!S.queue.includes(t)&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
-    .sort((a,b)=>(a.due??999)-(b.due??999))[0];
+    .sort((a,b)=>w.role==='load'?Math.abs(BAYS[a.bay||0].x-w.x)/3+(a.due-S.t)*.15-(Math.abs(BAYS[b.bay||0].x-w.x)/3+(b.due-S.t)*.15):(a.due??999)-(b.due??999))[0];
   if(t)assign(w,t);
 }
 
@@ -996,7 +1001,7 @@ function goPlan(w,tg){
   const lf=liftOf(lh);w.leg='lift';w.liftTo=to;w.ride=0;w.path=route(fx,fy,lf.x,lf.y,L);
 }
 function plan(w){goPlan(w,target(w.task));}
-const homeSpot=w=>{const hh=w.rec&&w.role!=='load'?w.rec.home:0,H=HOUSES[hh];return{x:H.ox+(w.role==='load'?4:2),y:H.oy+(w.role==='load'?0:3),f:H.L,h:hh};};
+const homeSpot=w=>{const hh=w.rec&&w.role!=='load'?w.rec.home:0,H=HOUSES[hh];if(w.role==='load'){const i=Math.max(0,staff.filter(x=>x.role==='load').indexOf(w))%bayCount();return{x:BAYS[i].x,y:-1,f:0,h:-1};}return{x:H.ox+2,y:H.oy+3,f:H.L,h:hh};};
 function moveAlong(w,dt,slow){const n=w.path[0],dx=n.x-w.x,dy=n.y-w.y,d=Math.hypot(dx,dy),sp=4/slow*dt;if(d>.01)w.face=dx+dy>=0?'front':'back';if(d<=sp){w.x=n.x;w.y=n.y;w.path.shift();}else{w.x+=dx/d*sp;w.y+=dy/d*sp;}}
 function assign(w,t){w.task=t;w.work=0;w.ride=0;plan(w);}
 function stepWorker(w,dt,slow){
@@ -1036,7 +1041,7 @@ function startPeriod(){
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
   payday();const up=upkeep();S.cash-=up;S.ys.overhead+=up;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>addTask({type:'pot',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),born:0,due:PSEC*POT_BY}));
-  S.plots.filter(pl=>pl.e===c&&!pl.done).forEach(pl=>{const at=PSEC*(.14+rnd()*.36);S.trucks.push({id:S.nid++,plot:pl.id,at,state:'coming'});S.events.push({at,k:'truck',plot:pl.id});});
+  const tw=Math.min(.6,.36+.022*(S.floors-1));S.plots.filter(pl=>pl.e===c&&!pl.done).forEach(pl=>{const at=PSEC*(.14+rnd()*tw);S.trucks.push({id:S.nid++,plot:pl.id,at,state:'coming'});S.events.push({at,k:'truck',plot:pl.id});});
   const thirst=[.5,.55,.75,.85,1,1,.75,.55][c];
   S.plots.filter(pl=>!pl.done&&pl.s<=c&&pl.e>=c).forEach(pl=>{if(rnd()<thirst)S.events.push({at:PSEC*(.12+rnd()*.7),k:'thirst',plot:pl.id});});
   const pest=[.3,.35,.5,.6,.7,.7,.5,.35][c];
@@ -1218,7 +1223,7 @@ function drawGround(){
   for(let v=-7;v<26;v++)for(let u=-10;u<34;u++){
     if(viewF===0&&houseAtXY(u,v,0)>=0)continue;
     if(!onScreen(u+.5,v+.5))continue;
-    const n=v===-3?'road':v===-2?(((u%2)+2)%2?'road_line':'road'):(v===-1&&u>=3&&u<=5)?'dock':`grass_${ss}_${'abc'[Math.floor(tileHash(u,v)*3)]}`;
+    const n=v===-3?'road':v===-2?(((u%2)+2)%2?'road_line':'road'):(v===-1&&BAYS.slice(0,bayCount()).some(B=>u>=B.x-1&&u<=B.x+1))?'dock':`grass_${ss}_${'abc'[Math.floor(tileHash(u,v)*3)]}`;
     spr(n,u,v,0);
   }
 }
@@ -1277,8 +1282,7 @@ function drawTruck(x,col){
 }
 function truckTargets(){
   const line=S.trucks.filter(k=>k.state==='line').sort((a,b)=>a.arrived-b.arrived);
-  const dock=S.trucks.find(k=>k.state==='dock');
-  const out=[];if(dock)out.push([dock,3.3]);line.forEach((k,i)=>out.push([k,3.3-3.7*(i+(dock?1:0))]));
+  const out=[];S.trucks.filter(k=>k.state==='dock').forEach(k=>out.push([k,BAYS[k.bay||0].tx]));line.forEach((k,i)=>out.push([k,3.3-3.7*(i+1)]));
   return out;
 }
 let lastNow=0;
@@ -1469,7 +1473,7 @@ function drawCounts(){
 function drawIcons(){
   iconHits=[];if(S.phase!=='run')return;
   const r=iconR,items=[],load=S.tasks.find(t=>t.type==='load');
-  if(load){const p=P(4.5,-1,70);items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:'load',t:load,tasks:[load],n:S.trucks.filter(k=>k.state==='line'||k.state==='dock').length});}
+  for(const lt of S.tasks.filter(t=>t.type==='load')){const p=P(BAYS[lt.bay||0].x+.5,-1,70);items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:'load',t:lt,tasks:[lt],n:lt===load?S.trucks.filter(k=>k.state==='line').length:0});}
   const group=sc<.6&&S.floors>1,groups={},left=t=>t.due!=null?(t.due-S.t)/(t.due-t.born):9;
   const fOnly=focusMode()&&focusH>=0;
   for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF&&(!fOnly||taskF(t)===focusH)).sort((a,b)=>a.id-b.id)){
@@ -1956,7 +1960,7 @@ function renderSheet(){
       
       <h3 style="margin:18px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
       <div class="gens">${Object.entries(CROPS).filter(([k])=>!isShowCrop(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>
-      <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift.</p>
+      <h3 style="margin:18px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
@@ -2323,6 +2327,7 @@ function buildFloor(){
   S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;focusH=S.floors-1;
   for(let i=0;i<2;i++){const cand=candidates(S.period,S.period,S.period+2);if(cand.length)S.offers.push(mkOffer(wpick(cand)));}
   toast('floor',`${floorName(S.floors-1)} is open (${levelName(lvOf(S.floors-1))})`);
+  if([2,4,7].includes(S.floors))setTimeout(()=>toast('load',`A new loading bay opens at the road: ${bayCount()} trucks can load at once`),600);
   layout();tab='orders';renderSheet();hud();
 }
 function boardMetrics(){
@@ -2459,7 +2464,7 @@ cv.addEventListener('pointerup',e=>{
     if(uh){const t=S.tasks.find(t=>t.type==='fix'&&t.f===uh.h);if(t)enqueue(t);else toast('good',`${unitName(S.period)} is running fine`);return;}
     // any truck on the road, or the dock pad
     const tr=S.trucks.filter(k=>(k.state==='line'||k.state==='dock')&&k.x!=null);
-    if(tr.some(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc))||near(P(4.5,-.75,4),TW*.9*sc,TH*.6*sc)){const t=S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');return;}
+    const hitT=tr.find(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc)),hitB=BAYS.slice(0,bayCount()).findIndex(B=>near(P(B.x+.5,-.75,4),TW*.9*sc,TH*.6*sc));if(hitT||hitB>=0){const t=S.tasks.find(t=>t.type==='load'&&hitT&&t.truck===hitT.id)||S.tasks.find(t=>t.type==='load'&&(t.bay||0)===hitB)||S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');return;}
   }
   for(const b of benchIds().map(i=>BENCH[i]).filter(b=>b.lv===viewF)){const a=P(b.x,b.y,22+ZB()),c=P(b.x+3,b.y+1,22+ZB()),m=[(a[0]+c[0])/2,(a[1]+c[1])/2];if(Math.abs(e.clientX-m[0])<1.6*TW/2*sc&&Math.abs(e.clientY-m[1])<TH*.6*sc){const ts=S.phase==='run'?S.tasks.filter(t=>t.type!=='load'&&t.type!=='fix'&&(t.bench===b.i||(t.rows&&t.rows.includes(b.i)))):[];if(ts.length)ts.forEach(enqueue);else benchInfo(b);return;}}
 });
