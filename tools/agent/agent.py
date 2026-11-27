@@ -45,8 +45,11 @@ def hm(m):
 
 def run_single(args):
     name, idx, years, outl = args
-    nm, out = run_one((name, 1, years))
-    r = out[0]; r['run'] = idx
+    try:
+        nm, out = run_one((name, 1, years))
+        r = out[0]; r['run'] = idx
+    except Exception as e:
+        r = {'profile': name, 'run': idx, 'crashed': str(e)[:200], 'years': [], 'ms': {}, 'used': {}, 'errors': {}, 'over': {'why': 'crash', 'year': 0, 'min': 0}}
     with open(outl, 'a') as f: f.write(json.dumps(r) + '\n')
     return name, idx, (r['over'] or {}).get('why'), len(r['years'])
 

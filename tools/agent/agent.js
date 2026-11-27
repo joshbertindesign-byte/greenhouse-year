@@ -51,7 +51,7 @@ window.AG = (() => {
   function buyYear() {   // the big shop at the start of the year
     let acts = 0;
     // a new house when the nursery allows it
-    tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 1 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
+    if (!(S.fail && S.fail.year >= S.year - 1)) tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 1 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
     // specialty houses: a vegetable house once there are 3 houses, a propagation house once there are 5; each gets its specialist
     tryDo('spec', () => {
       const conv = (k, minH) => { if (!specOpen(k) || specHouses(k).length || S.floors < minH) return; const h = [...regHouses()].reverse().find(h => h > 0 && !S.plots.some(pl => !pl.done && plotF(pl) === h)); if (h == null) return; const c = k === 'veg' && S.veg && S.veg.cert && !S.veg.conv ? 0 : SPEC_COST[k]; if (!afford(c)) return; convertHouse(h, k); if (specOf(h) === k) { use('spec'); acts++; } };
@@ -260,7 +260,11 @@ window.AG = (() => {
     while (S.phase !== 'done' && S.phase !== 'over' && guard++ < 3000000) {
       if (S.phase === 'plan') { planPeriod(); checkMS(); continue; }
       if (S.phase === 'run') { const p = S.period; runStep(P.dt); if (S.phase !== 'run' || S.period !== p) checkMS(); continue; }
-      if (S.phase === 'home') { if (S.fail && S.fail.year === S.year && S.fail.n >= 2 && S.floors > 1) tryDo('sell', () => { if (sellHouse()) use('soldHouse'); }); tryDo('leave', () => leaveHome()); continue; }
+      if (S.phase === 'home') {
+        // after failed tries a player cuts back: let crew go down to about two per house, then sell the newest house
+        if (S.fail && S.fail.year === S.year) tryDo('cut', () => { const keep = Math.max(1, S.floors * 2); while (S.crew.filter(r => r.role !== 'prize').length > keep) { const r = S.crew.filter(x => x.role !== 'prize').sort((a, b) => (b.rush ? 1 : 0) - (a.rush ? 1 : 0) || b.wage - a.wage)[0]; fireCrew(r.id); use('letGo'); } });
+        if (S.fail && S.fail.year === S.year && S.fail.n >= 2 && S.floors > 1) tryDo('sell', () => { if (sellHouse()) use('soldHouse'); });
+        tryDo('leave', () => leaveHome()); continue; }
       break;
     }
     if (S.failLog && S.failLog.length > 80) { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: "loop" }; return false; }
@@ -269,7 +273,7 @@ window.AG = (() => {
     const ys = S.ys || {};
     R.restarts = (S.failLog || []).length; R.failLog = (S.failLog || []).slice();
     const used = S.plots.filter(pl => plotF(pl) !== SH && !specOf(plotF(pl))).reduce((a, pl) => a + pl.rows.length * (Math.min(7, pl.e) - Math.max(0, pl.s) + 1), 0), capT = (S.ys.cap || []).reduce((a, c) => a + (c || 0), 0);
-    R.years.push({ util: capT ? +(used / capT).toFixed(2) : null, tries: h.tries || 1, assisted: h.assisted || 0, spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
+    R.years.push({ short: h.short || 0, failed: h.failed || 0, stageStart: h.stage, planPct: h.plan ? h.plan.pct : null, util: capT ? +(used / capT).toFixed(2) : null, tries: h.tries || 1, assisted: h.assisted || 0, spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
     think(P.yearEnd); skills(); checkMS();
     tryDo('nextYear', () => { nextYear(); enterHome(); }); home(); checkMS(); tryDo('leaveHome', () => leaveHome()); closeModal(); checkMS();
     return true;

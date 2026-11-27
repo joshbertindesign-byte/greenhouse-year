@@ -221,6 +221,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stat .cred:empty{display:none}
 .oc{display:block;font-size:11px;font-weight:600;opacity:.8}
 .stat .shr{display:none}
+@media (max-width:380px){.stat{padding:3px 6px!important}.stat b{font-size:15px!important}.stat small{font-size:10px!important}.stat.goal{min-width:44px!important}}
+.stat.rev b{display:flex;gap:3px;align-items:center}.stat.rev.ok b{color:#bff0c8}.stat.rev.no b{color:#ffc2b8}.stat.rev .rd{display:inline-block;width:9px;height:9px;border-radius:5px;background:rgba(255,255,255,.25);flex:none}.stat.rev .rd.on{background:#7fd08f}
 .stat.goal{min-width:64px}.stat.goal .gm{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.18);margin-top:3px;overflow:hidden}.stat.goal .gm i{display:block;height:100%;width:0;background:#f2c230;border-radius:2px}
 .stat.goal.met .gm i{background:#7fd08f}.stat.goal.met b{color:#bff0c8}
 @media (max-width:600px){.stat .lng{display:none}.stat .shr{display:inline}.stat{padding:4px 8px}.stat b{font-size:16px}.stat small{font-size:11px}.stat.goal{min-width:50px}.hud .hb{padding:8px 9px}.hud .hb .lng{display:none}.hud{column-gap:6px!important}.when b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.when .yr{flex:none;margin-left:8px}.yr i{width:12px!important}.seg button{padding:6px 9px!important;font-size:14px!important}.seg button:not(.on){display:none}.seg button.on{background:none}}
@@ -247,6 +249,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .propc{display:flex;flex-direction:column;gap:6px;background:#e9f5f2;border:2px solid #9fd3c8;border-radius:14px;padding:12px;margin:10px 0;font-size:14px;color:#24433d}.propc.prob{background:#fff3e0;border-color:#ecc58e;color:#5a3a00}.propc b{font-size:16px}.propc small{font-weight:800;letter-spacing:.06em;font-size:11px;margin-top:4px}
 .roys{display:flex;flex-wrap:wrap;gap:6px}.roy{display:inline-flex;align-items:center;gap:5px;background:#fff;border-radius:10px;padding:3px 8px;font-size:12.5px}.roy.done{opacity:.7}
 .board .bprop{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:repeating-linear-gradient(135deg,rgba(47,155,143,.14) 0 10px,rgba(47,155,143,.06) 10px 20px);border:2px dashed #7fc3b7;border-radius:10px;color:#24433d;text-align:center;padding:10px;z-index:3}.board .bprop b{font-size:17px}
+.revc{display:flex;flex-direction:column;gap:6px;background:#f4f1e8;border:2px solid #ddd6c4;border-radius:14px;padding:12px;margin:10px 0;font-size:14px;text-align:left}.revc.ok{border-color:#b9dfc0}.revc.no{border-color:#ecc58e}.revc>b{font-size:16px}.revc>span{color:var(--mute)}
+.rvr{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:6px 10px}.rvr>i{font-style:normal;font-weight:800;width:18px;text-align:center;color:var(--mute)}.rvr.on>i{color:var(--go)}.rvr.off>i{color:var(--bad)}.rvr>span{flex:1;display:flex;flex-direction:column}.rvr small{color:var(--mute);font-size:12px}.rvr>em{font-style:normal;font-weight:700;white-space:nowrap}
 .warnb{display:flex;gap:10px;align-items:flex-start;background:#fdecea;border:2px solid #f0b6ad;color:#7a1f14;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.35}
 .mag{background:#fffdf6;border:1px solid #e8e0c8;border-radius:12px;padding:16px;font-family:Georgia,'Times New Roman',serif;color:#1d2a22}
 .mast{text-align:center;border-bottom:3px double #1d2a22;padding-bottom:8px}.mast small{font-family:inherit;font-size:11px;letter-spacing:.18em;color:#8a7a52}.mast b{display:block;font-size:30px;line-height:1.05;letter-spacing:-.01em;color:#2d5a3a}.mast b span{font-style:italic;font-weight:400;font-size:22px;color:#a2463a}
@@ -689,6 +693,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <div class="stat"><small>Cash</small><b id="hCash">$0</b><small class="cred" id="hCred"></small></div>
   <div class="stat tap" id="hRepB"><small><span class="lng">Reputation</span><span class="shr">Rep</span></small><b id="hRep">50</b></div>
   <div class="stat tap goal" id="hGoalB"><small>Goal</small><b id="hGoal">0/10</b><i class="gm"><i id="hGoalP"></i></i></div>
+  <div class="stat tap rev" id="hRevB"><small>Review</small><b id="hRev">4/4</b></div>
   <div class="sp"></div>
   <button class="hb ring" id="bRing" type="button" hidden aria-label="Answer the phone"></button>
   <button class="hb pz" id="bBoard" type="button" aria-label="Pause and open the board"><svg class="ip" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.5" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.5" fill="currentColor"/></svg><svg class="ir" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg><span class="n" id="bN"></span></button>
@@ -2284,10 +2289,10 @@ function endPeriod(){
   settleBooks();
   if(lostCount()>=CUST.length){failYear('rep');return;}
   S.period++;
-  if(S.period>7){if(S.cash-taxDue()-unpaid()<0){failYear('red');return;}yearEnd();return;}
+  if(S.period>7){if(S.cash-taxDue()-unpaid()<0){failYear('red');return;}{const rv=reviewNow();if(!rv.pass){failYear('review',rv);return;}}yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the year starts over`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();festAsk();skAsk();}
+function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(S.period===0){let ok=false;try{ok=yearCk&&JSON.parse(yearCk).year===S.year;}catch(e){}if(!ok){const c=JSON.parse(JSON.stringify(S));c.phase='home';yearCk=JSON.stringify(c);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}}}if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the year starts over`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();festAsk();skAsk();}
 // Seasoned hands sometimes retire without warning; idle crew get rusty.
 function crewNews(){
   if(S.rustNote&&S.rustNote.length){const n=S.rustNote;S.rustNote=null;setTimeout(()=>toast('crew',`${n.length>2?`${n.length} of your crew`:n.join(' and ')} got rusty: not enough to do last period. They’re a little slower until they’re busy again`),700);}
@@ -2318,7 +2323,7 @@ function askRaises(){
   $('mbox').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>done(+b.dataset.ok,true));
   $('mbox').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>done(+b.dataset.no,false));
 }
-function nextYear(){S.entered=[];S.crew.forEach(r=>{r.wage=Math.round(r.wage*(1+WAGE_INFL)/5)*5;});if(S.mgr)S.mgr.wage=Math.round(S.mgr.wage*(1+WAGE_INFL)/5)*5;if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];if(sucOn())S.lastSuc={rev:S.ys.sucRev||0,sold:(S.ys.sucN||0)-(S.ys.sucLost||0),lost:S.ys.sucLost||0};S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};almGen();festGen();}
+function nextYear(){S.entered=[];S.crew.forEach(r=>{r.wage=Math.round(r.wage*(1+WAGE_INFL)/5)*5;});if(S.mgr)S.mgr.wage=Math.round(S.mgr.wage*(1+WAGE_INFL)/5)*5;if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.repStart=avgRep();S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];if(sucOn())S.lastSuc={rev:S.ys.sucRev||0,sold:(S.ys.sucN||0)-(S.ys.sucLost||0),lost:S.ys.sucLost||0};S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};almGen();festGen();}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -2877,7 +2882,7 @@ function sellHouse(){
   toast('cash',`Sold ${floorName(h)} for ${fmt(v)}${gone.length?`. ${gone.length} crew went with it`:''}${owed?`, and their ${fmt(owed)} back pay was settled`:''}`);
   return true;
 }
-function failYear(why){
+function failYear(why,rv){
   const ck=yearCk||(()=>{try{return localStorage.getItem('gy8ck');}catch(e){return null;}})();
   let d=null;try{d=ck&&JSON.parse(ck);}catch(e){}
   if(!d||d.year!==S.year){S.lost=why==='rep'?'rep':'bank';gameOver();return;}
@@ -2892,7 +2897,7 @@ function failYear(why){
   viewF=0;staff=[];syncStaff();syncRobo();me.task=null;me.path=[];
   if(window.__quiet){S.phase='home';return;}
   enterHome();
-  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red${unpaid()?', counting wages you still owe':''}.`} ${cause} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
+  modal(`<h2>Year ${y} starts over</h2><p>${why==='review'?`The year review came up short: you hit ${rv.hit} of 4 targets (${rv.items.filter(i=>!i.ok).map(i=>`${i.n.toLowerCase()} ${i.now} against ${i.goal}`).join('; ')}).`:why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red${unpaid()?', counting wages you still owe':''}.`} ${cause} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
     ${S.floors>1?`<div class="taxb last">${svgIcon('floor',40)}<span><b>Too big to keep up?</b> You can sell ${floorName(S.floors-1)} for ${fmt(sellValue())}. Its crew${specOf(S.floors-1)?' and its specialty':''} go with it; decorations come back to storage. A smaller nursery is cheaper to run.</span></div>`:''}
     <p class="dim">Try ${n+1} at year ${y}.</p>
     <div class="ab2">${S.floors>1?`<button class="btn" type="button" id="fySell">Sell ${floorName(S.floors-1)}</button>`:''}<button class="btn go" type="button" id="fyOk">Back to the homestead</button></div>`);
@@ -3377,6 +3382,7 @@ function hud(){
   $('hCash').textContent=innerWidth<=600&&Math.abs(S.cash)>=100000?fmtK(S.cash):fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
+  {const rv=reviewNow(),hb=$('hRevB');if(hb){hb.hidden=S.phase==='home';$('hRev').textContent=`${rv.hit}/4`;hb.classList.toggle('ok',rv.pass);hb.classList.toggle('no',!rv.pass);hb.title='Year review: '+rv.items.map(i=>`${i.n} ${i.now} (target ${i.goal})`).join(' · ');}}
   {const gp=goalProg(),hold=!!(S.assist&&S.assist.year===S.year);$('hGoal').textContent=hold?'On hold':gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=goalText(stg(stage()).goal)+' · '+gp.txt;$('hGoalB').classList.toggle('met',gp.pct>=1);}
   $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').innerHTML=`Start<span class="lng"> ${PN[c].toLowerCase()}</span>`;
   $('bBoard').hidden=(S.phase==='plan'&&!sheetOpen())||S.phase==='home';$('bBoard').classList.toggle('open',sheetOpen());$('bRing').hidden=!(S.phase==='run'&&S.tasks.some(t=>t.type==='phone'))||railOn();$('bRing').style.top=($('hud').offsetHeight+(focusMode()?66:10))+'px';
@@ -4302,6 +4308,30 @@ function rivalTable(year,me){
   L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
   return L;
 }
+// ---------------- the year review ----------------
+// Each year is judged on that year's play, not your savings: profit as a share of sales, trucks shipped full, the planning
+// score and how reputation moved. Hit at least REVIEW_NEED of the four targets for your level or the year starts over.
+// Targets come from the test agents: roughly what an average player beats about 85% of the time at that level.
+const REVIEW_NEED=3;
+const REVIEW=[[1,2,{m:.35,full:.80,plan:73,rep:-6}],[3,4,{m:.23,full:.79,plan:82,rep:-3}],[5,6,{m:.03,full:.77,plan:81,rep:-2}],[7,8,{m:.05,full:.84,plan:83,rep:0}],
+  [9,10,{m:.10,full:.86,plan:90,rep:3}],[11,12,{m:.30,full:.86,plan:90,rep:0}],[13,14,{m:.40,full:.92,plan:90,rep:4}],[15,16,{m:.45,full:.95,plan:90,rep:6}],
+  [17,18,{m:.40,full:.96,plan:90,rep:7}],[19,20,{m:.35,full:.96,plan:90,rep:7}]];
+const reviewT=(st=stage())=>(REVIEW.find(([a,b])=>st>=a&&st<=b)||REVIEW[REVIEW.length-1])[2];
+const pctS=v=>Math.round(v*100)+'%',sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(Math.round(v));
+function reviewNow(y,st){
+  y=y||S.ys;const T=reviewT(st),rev=y.rev||0,m=rev>0?opProfit(y)/rev:0,tr=(y.full||0)+(y.short||0)+(y.failed||0),full=tr?(y.full||0)/tr:1;
+  const bd=planBound(y),pl=bd>=1500&&y.ologFrom===0?Math.round(Math.min(1,planActual()/bd)*100):null,dr=avgRep()-(S.repStart??50);
+  const items=[
+    {k:'m',n:'Profit',d:'Operating profit as a share of sales',now:rev>0?pctS(m):'—',goal:pctS(T.m)+'+',ok:m>=T.m},
+    {k:'full',n:'Full trucks',d:'Share of trucks that left full',now:tr?pctS(full):'—',goal:pctS(T.full)+'+',ok:full>=T.full},
+    {k:'plan',n:'Planning',d:'How much of the best possible plan you booked',now:pl==null?'—':pl+'%',goal:T.plan+'%+',ok:pl==null||pl>=T.plan},
+    {k:'rep',n:'Reputation',d:'Change in average reputation since the year began',now:sgn(dr),goal:(T.rep>=0?'+':'−')+Math.abs(T.rep)+' or better',ok:dr>=T.rep-.5}];
+  const hit=items.filter(i=>i.ok).length;return{items,hit,pass:hit>=REVIEW_NEED,T};
+}
+function reviewHTML(title,rv,live){
+  return`<div class="revc${rv.pass?' ok':' no'}"><b>${title}</b><span>${live?`Hit ${REVIEW_NEED} of these 4 by year end or the year starts over. You’re on track for ${rv.hit}.`:`Hit ${REVIEW_NEED} of 4 at year end or the year starts over.`}</span>
+    ${rv.items.map(i=>`<div class="rvr${live?(i.ok?' on':' off'):''}"><i>${live?(i.ok?'✓':'✗'):'•'}</i><span><b>${i.n}</b><small>${i.d}</small></span><em>${live?`${i.now} <small>of ${i.goal}</small>`:i.goal}</em></div>`).join('')}</div>`;
+}
 function goalText(g){return goalText0(g)+(g.yrs>1?`, ${['','','two','three','four'][g.yrs]} years in a row`:'');}
 function goalText0(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 in your magazine':`Make the top ${n} in your magazine`}[g.k];}
 const kk=n=>{const a=Math.abs(n);return a>=1000?(a/1000).toFixed(a>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(a));};
@@ -4432,6 +4462,7 @@ function yearGoalModal(R0){
     ${r.tax?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: −${fmt(r.tax)}</b> On ${fmt(r.op)} operating profit. Next year crew wages rise ${Math.round(WAGE_INFL*100)}% with the cost of living.</span></div>`:''}
     ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all. From now on you also pay income tax on each year's operating profit, and crew wages rise ${Math.round(WAGE_INFL*100)}% a year.</span></div>`:''}
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
+    ${reviewHTML(`Year ${S.year+1} review targets`,reviewNow(null,st),false)}
     <button class="btn go" id="nyBtn" type="button">Go to the homestead</button>`);
   $('mbox').scrollTop=0;
   $('nyBtn').onclick=()=>{const go=()=>{nextYear();closeModal();enterHome();},amt=bonusAsk(R0);if(amt)bonusModal(R0,amt,go);else go();};
@@ -4467,6 +4498,7 @@ function ledgerHTML(){
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
   if(taxOn())warn.unshift(taxBoxHTML());
   else warn.unshift(`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: about ${fmt(taxDue())} so far this year</b> Paid at year end on operating profit: nothing on the first ${fmt(ITAX[0][0])}, then ${ITAX.slice(1).map(([hi,r],i)=>`${Math.round(r*100)}%${hi<Infinity?` up to ${fmt(hi)}`:' above that'}`).join(', ')}. Crew wages rise ${Math.round(WAGE_INFL*100)}% each new year.</span></div>`);
+  if(S.phase!=='home')warn.unshift(reviewHTML(`Year ${S.year} review`,reviewNow(),true));
   return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. If every customer writes you off, or you end a year below zero, that year starts over (you keep your grower's experience). Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
@@ -4779,7 +4811,7 @@ function benchInfo(b){
 $('bBoard').onclick=()=>sheetOpen()?closeSheet():openSheet();
 $('bRing').innerHTML=glyph('phone',28);$('bRing').onclick=()=>{const t=S.tasks.find(t=>t.type==='phone');if(t){enqueue(t);jumpTo(0);}};
 $('hRepB').onclick=()=>openSheet('cust');
-$('hGoalB').onclick=()=>openSheet('book');
+$('hGoalB').onclick=()=>openSheet('book');$('hRevB').onclick=()=>openSheet('book');
 $('bGo').onclick=()=>tryStart();
 let speed=1;const BASE_PACE=1.48;// 20% slower clock than the old 1.85
 $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b)return;if(matchMedia('(max-width:600px)').matches&&b.classList.contains('on'))b=$('speed').querySelector(`[data-s="${speed===1?2:1}"]`);speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
@@ -4791,6 +4823,7 @@ function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON
 function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
   // closed mid-year: go back to the homestead checkpoint taken when this year started
   try{if(d&&d.phase==='run'){const pk=JSON.parse(localStorage.getItem('gy8pk')||'null');if(pk&&pk.year===d.year&&pk.period===d.period&&pk.phase==='plan'){d=pk;window.__rewoundP=PN[d.period];}else{const ck=JSON.parse(localStorage.getItem('gy8ck')||'null');if(ck&&ck.year===d.year&&ck.phase==='home'){d=ck;window.__rewound=d.year;}}}}catch(e){}
+  if(d&&d.repStart==null&&d.cust){const v=Object.values(d.cust);d.repStart=v.length?v.reduce((x,c)=>x+c.r,0)/v.length:50;}
   if(d)decoFix(d);if(d&&d.up&&d.up.bays==null){const f=d.floors||1;d.up.bays=f>=7?3:f>=4?2:f>=2?1:0;}if(d&&d.glv>=30&&d.robo==null){d.robo=1;d.roboNew=1;}if(d&&!d.fwin){d.fwin={};for(const f in FESTS){const n=(d.deco||{})[FESTS[f].deco]||0;if(n)d.fwin[f]=n;}}if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
   if(d.glv==null){let xp=(d.hist||[]).length*60,l=1;while(l<30&&xp>=10+3*l){xp-=10+3*l;l++;}d.glv=l;d.gxp=l>=30?0:xp;}
   if(!d.lvV){d.lvV=2;d.stage=Math.max(1,(d.stage||1)*2-1);(d.hist||[]).forEach(h=>{if(h.stage)h.stage=h.stage*2-1;});}
@@ -4806,6 +4839,7 @@ function welcome(){
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
   <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full upkeep and income tax on your profit, so use the head start to grow.</span></div>
+  <div>${svgIcon('bench',40)}<span><b>Year review:</b> each year is judged on how you ran it: profit as a share of sales, full trucks, planning and reputation. Hit ${REVIEW_NEED} of the 4 targets for your level (see Review in the top bar) or the year starts over. Savings don't protect you; playing well does.</span></div>
   <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
   <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
