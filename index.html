@@ -1861,7 +1861,8 @@ function assign(w,t){w.task=t;w.work=0;w.ride=0;plan(w);}
 // ---- grower experience: every job you do yourself counts toward the next level ----
 const GLV_MAX=30,GXP={tree:3,care:2,fix:2};
 const glv=()=>clamp(S&&S.glv||1,1,GLV_MAX),gNeed=l=>10+3*l,gf=()=>(glv()-1)/(GLV_MAX-1);
-const gWalk=()=>.88*(1+.05*sk('quick'))*(windOn()?1.3:1),gWork=()=>.85*(1+.05*sk('steady'))*(windOn()?1.3:1);
+// the grower moves 5% slower than before, to sit with the slower clock (BASE_PACE)
+const G_PACE=.95,gWalk=()=>G_PACE*.88*(1+.05*sk('quick'))*(windOn()?1.3:1),gWork=()=>G_PACE*.85*(1+.05*sk('steady'))*(windOn()?1.3:1);
 // ---- grower skill tree: one point per level after the first ----
 const SKB=[
   {k:'hustle',n:'Hustle',c:'#c9703a',d:'Your own speed',s:[
@@ -4541,7 +4542,7 @@ $('bRing').innerHTML=glyph('phone',28);$('bRing').onclick=()=>{const t=S.tasks.f
 $('hRepB').onclick=()=>openSheet('cust');
 $('hGoalB').onclick=()=>openSheet('book');
 $('bGo').onclick=()=>tryStart();
-let speed=1;const BASE_PACE=1.85;
+let speed=1;const BASE_PACE=1.48;// 20% slower clock than the old 1.85
 $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b)return;if(matchMedia('(max-width:600px)').matches&&b.classList.contains('on'))b=$('speed').querySelector(`[data-s="${speed===1?2:1}"]`);speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
 
 // ---------------- modal, save ----------------
