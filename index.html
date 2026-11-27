@@ -356,6 +356,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+.mast .edn{color:var(--ec)!important}.mast .edl{display:flex;justify-content:center;gap:6px;margin-top:6px}.mast .edl i{width:22px;height:5px;border-radius:3px;background:#e6dcc2}.mast .edl i.past{background:#c9b88a}.mast .edl i.on{background:var(--ec)}
+.edpromo{margin:10px 0 4px;padding:10px 12px;border-radius:10px;font-size:14.5px;line-height:1.4;font-family:Outfit,sans-serif}.edpromo.up{background:#fff4cf;border:2px solid #e8c25a}.edpromo.down{background:#f6ece8;border:2px solid #e2b9ad}
+.edrow{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin:0 2px 10px;font-size:13px;color:var(--mute)}.edrow span{padding:3px 9px;border-radius:99px;background:#efe9d8}.edrow span.on{background:var(--ec);color:#fff;font-weight:700}.edrow i{font-style:normal}
 .crm{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.crm .btn.sm{padding:6px 10px;font-size:13px}
 .bin2.hold{background:#3c6e8f!important;color:#fff!important;font-weight:700;font-size:15px;padding:0 14px}.bin2.hold:disabled{opacity:.45}
 .hpop{position:fixed;z-index:6;background:var(--paper);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 0 2px #e6dcc2;padding:12px 14px 12px;overflow-y:auto;animation:popin .14s ease-out}
@@ -2231,7 +2234,7 @@ function enterHome(){
   if(S.pendingGift){const c=S.pendingGift;S.pendingGift=null;setTimeout(()=>redeemGift(c),900);}
   $('toasts').innerHTML='';hgReset();S.phase='home';homeSel=null;panX=null;panY=0;viewF=0;focusH=-1;closeSheet();closeModal();save();layout();hud();renderHome();
   if(!S.homeSeen&&!window.__quiet){S.homeSeen=1;save();modal(`<h2>Your homestead</h2><p>Between years you come home. Spend the stars you earn on clearing land, building, and adopting greenhouse cats. Miley is already settled in the cat house.</p>
-    <div class="steps"><div>${svgIcon('star',40)}<span><b>Earn stars:</b> each year's Best Homes and Gardens rating pays its stars, hitting your goal pays 3 more, and now and then a star pops up in a greenhouse. Tap it before it fades.</span></div>
+    <div class="steps"><div>${svgIcon('star',40)}<span><b>Earn stars:</b> each year's magazine rating pays its stars, hitting your goal pays 3 more, and now and then a star pops up in a greenhouse. Tap it before it fades.</span></div>
     <div>${svgIcon('crew',40)}<span><b>Clear and build:</b> tap a pile of debris to clear it (you might find a star underneath), then tap the empty plot to build.</span></div>
     <div>${catURL?`<img src="${catURL('anna')}" width="40" height="40" alt="">`:''}<span><b>Cats:</b> tap the cat house to adopt more. Each cat helps in her own way.</span></div></div>
     <button class="btn go" id="hmOk" type="button">Let's go</button>`);$('hmOk').onclick=closeModal;}
@@ -3364,7 +3367,7 @@ function resetModal(){
 }
 function nameModal(first,after){
   const idea=NAME_IDEAS[Math.floor(Math.random()*NAME_IDEAS.length)];
-  modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every Best Homes and Gardens ranking.</p>
+  modal(`<h2>${first?'Name your nursery':'Rename your nursery'}</h2><p>It goes on the sign, the tablet and every magazine ranking.</p>
     <label class="nmf"><span>Nursery name</span><input id="nmIn" maxlength="28" autocomplete="off" value="${esc(S.name||'')}" placeholder="${esc(idea)}"></label>
     <div class="nmi">${NAME_IDEAS.filter(n=>n!==S.name).slice(0,4).map(n=>`<button type="button" class="chip" data-nm="${esc(n)}">${esc(n)}</button>`).join('')}</div>
     <div class="gpick"><span>YOUR GROWER</span><div>${[['m','grower','Man'],['f','growerf','Woman']].map(([g,id,t])=>`<button type="button" class="gp${(S.gender||'m')===g?' on':''}" data-g="${g}"><img data-gid="${id}" src="${personURL(id+'_front_0'+gsk())}" alt=""><b>${t}</b></button>`).join('')}</div>
@@ -3446,7 +3449,7 @@ function almanacHTML(){
   const A=S.alm,last=S.hist[S.hist.length-1],st=stage(),sec=(t,b)=>`<div class="alsec"><h4>${t}</h4>${b}</div>`,row=(a,b)=>`<div class="alr"><span>${a}</span><b>${b}</b></div>`;
   const out=[];
   out.push(sec(`Year ${S.year} at a glance`,row('Your level',`${stg(st).n} (${st} of ${STAGES.length})`)+row('This year’s goal',esc(goalText(stg(st).goal)))+(!catOn('smokey')&&smokeyHere()?'<p class="alnote">Smokey, the cream-coloured herding cat, has been spotted around the homestead this year. She doesn\u2019t turn up every year.</p>':'')));
-  if(last)out.push(sec(`Year ${last.year} in review`,row('Sales',fmt(last.rev))+row('Operating profit',fmt(last.op))+row('Trucks',`${last.full} full, ${last.short} short, ${last.failed} missed`)+row('Best Homes and Gardens',`${last.stars} ★`)+(last.plan?row('Planning',`${last.plan.pct}%${last.plan.tier?' · '+last.plan.tier:''}`):'')));
+  if(last)out.push(sec(`Year ${last.year} in review`,row('Sales',fmt(last.rev))+row('Operating profit',fmt(last.op))+row('Trucks',`${last.full} full, ${last.short} short, ${last.failed} missed`)+row(ED(last.ed||0).n,`${last.stars} ★`)+(last.plan?row('Planning',`${last.plan.pct}%${last.plan.tier?' · '+last.plan.tier:''}`):'')));
   const wx=[A.wx.dry?'<li><b>A dry early summer.</b> Young trees will need watering through it.</li>':'<li><b>Normal rain</b> through the summer.</li>',
     A.wx.frost?'<li><b>A late frost</b> in early spring. Magnolias will need covering.</li>':'<li><b>No late frost</b> expected.</li>',
     A.wx.storm?'<li><b>A summer storm</b> in late summer may knock trees over; be ready to re-stake.</li>':'<li><b>A calm late summer.</b></li>'];
@@ -3539,21 +3542,31 @@ function rewardTile(r){
 const trophySVG=sz=>`<svg width="${sz}" height="${sz}" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6h20v8a10 10 0 0 1-20 0z" fill="#f2c230" stroke="#9a6d00" stroke-width="2"/><path d="M14 9H8a6 6 0 0 0 7 8M34 9h6a6 6 0 0 1-7 8" fill="none" stroke="#9a6d00" stroke-width="2.4"/><path d="M21 24h6v8h-6z" fill="#e0a800"/><path d="M14 36h20l-2 6H16z" fill="#7a5524" stroke="#4d3412" stroke-width="1.5"/><path d="M18 32h12v4H18z" fill="#f2c230" stroke="#9a6d00" stroke-width="1.5"/><path d="M19 10l2 2M24 9v3" stroke="#fff6c8" stroke-width="2" stroke-linecap="round"/></svg>`;
 function yearProfit(y){y=y||S.ys;return y.rev-(y.plugs+y.overhead+y.crew+y.buy+(y.build||0)+(y.interest||0));}
 function opProfit(y){y=y||S.ys;return y.rev-(y.plugs+y.overhead+y.crew+y.buy+(y.interest||0));}
-const STAR_AT=[0,0,46,61,76,90],starsOf=sc=>sc>=STAR_AT[5]?5:sc>=STAR_AT[4]?4:sc>=STAR_AT[3]?3:sc>=STAR_AT[2]?2:1;
-function magScore(y,rep){
-  const tot=y.full+y.short+y.failed,fill=tot?y.full/tot:0,prof=opProfit(y),nv=(y.cr||[]).length;
-  const parts={fill:Math.pow(fill,2)*35,rep:clamp((rep-35)/55,0,1)*25,profit:clamp(Math.log10(Math.max(0,prof)/1000+1)/Math.log10(61),0,1)*25,variety:Math.min(1,nv/8)*15};
+// Year-end ratings come from a ladder of magazines. Five stars moves you up; two poor years in a row moves you down.
+const EDS=[{n:'Gardener Quarterly',short:'Quarterly',c:'#2d5a3a',at:[0,0,46,61,76,90],riv:0,pm:60},
+  {n:'Greenhouse Monthly',short:'Monthly',c:'#2f6a8a',at:[0,0,52,66,80,92],riv:3,pm:90},
+  {n:'Pro Growers Magazine',short:'Pro Growers',c:'#7a3f8a',at:[0,0,58,71,84,94],riv:6,pm:130},
+  {n:'Prize Growers',short:'Prize Growers',c:'#9a6a12',at:[0,0,64,76,88,96],riv:9,pm:180}];
+const edIx=()=>clamp((S&&S.ed)||0,0,EDS.length-1),ED=e=>EDS[e==null?edIx():e];
+const STAR_AT=EDS[0].at,starsOf=(sc,e)=>{const A=ED(e).at;return sc>=A[5]?5:sc>=A[4]?4:sc>=A[3]?3:sc>=A[2]?2:1;};
+const EDR={1:['Lakeside Greenhouses','Golden Spur Growers','Riverbend Nursery','Live Oak Propagators','Sunbelt Gardens','Pine Ridge Plant Co.','Wildflower Wholesale','Bluestem Nurseries','Calico Hill Farm'],
+  2:['Statewide Greenhouses','Lone Star Growers','Gulf Coast Nursery','Hill Country Horticulture','Brazos Valley Plants','Panhandle Propagators','Big Bend Botanicals','Trinity Growers','Pecos Perennials'],
+  3:['Royal Oak Nurseries','Evergreen National','Heritage Greenhouses','Crown Growers','Summit Horticulture','Grand Prairie Plants','Liberty Bloom Co.','American Rose Growers','Northstar Nurseries']};
+function magScore(y,rep,e){
+  const E=ED(e),tot=y.full+y.short+y.failed,fill=tot?y.full/tot:0,prof=opProfit(y),nv=(y.cr||[]).length;
+  const parts={fill:Math.pow(fill,2)*35,rep:clamp((rep-35)/55,0,1)*25,profit:clamp(Math.log10(Math.max(0,prof)/1000+1)/Math.log10(E.pm+1),0,1)*25,variety:Math.min(1,nv/8)*15};
   const score=Math.min(100,Math.round(parts.fill+parts.rep+parts.profit+parts.variety+(y.press||0)));
-  return{score,parts,fill,prof,nv,stars:starsOf(score)};
+  return{score,parts,fill,prof,nv,stars:starsOf(score,e),ed:e==null?edIx():e};
 }
 function rivalTable(year,me){
   const h=i=>{const n=Math.sin((year*7.13+i*3.71)*12.9898)*43758.5453;return n-Math.floor(n);};
-  const L=RIVALS.map((name,i)=>{const base=38+i*5.6,sc=Math.round(clamp(base+Math.min(year,14)*1.1+(h(i)-.5)*14,20,96));return{name,score:sc,stars:starsOf(sc)};});
+  const e=me.ed==null?edIx():me.ed,E=ED(e);
+  const L=(EDR[e]||RIVALS).map((name,i)=>{const base=38+i*5.6+E.riv,sc=Math.round(clamp(base+Math.min(year,14)*1.1+(h(i+e*11)-.5)*14,20,98));return{name,score:sc,stars:starsOf(sc,e)};});
   L.push({name:nurseryName(),score:me.score,stars:me.stars,me:true});
   L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
   return L;
 }
-function goalText(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} stars from Best Homes and Gardens`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 by Best Homes and Gardens':`Make the top ${n} in Best Homes and Gardens`}[g.k];}
+function goalText(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 in your magazine':`Make the top ${n} in your magazine`}[g.k];}
 const kk=n=>{const a=Math.abs(n);return a>=1000?(a/1000).toFixed(a>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(a));};
 const kk2=(a,b)=>`${a<0?'−':''}$${kk(a)}/${kk(b)}`;
 function goalProg(){
@@ -3563,11 +3576,11 @@ function goalProg(){
   if(g.k==='rev')return{cur:y.rev,n:g.n,txt:`${fmt(y.rev)} of ${fmt(g.n)} sold`,short:kk2(y.rev,g.n),pct:y.rev/g.n};
   if(g.k==='rep'){const r=Math.round(avgRep());return{cur:r,n:g.n,txt:`Reputation ${r} of ${g.n}`,short:`${r}/${g.n}`,pct:r/g.n};}
   const m=magScore(y,avgRep());
-  if(g.k==='stars')return{cur:m.stars,n:g.n,txt:`On pace for ${m.stars} of ${g.n} stars`,short:`${'★'.repeat(m.stars)}`,pct:m.score/STAR_AT[g.n],star:true};
+  if(g.k==='stars'){const e=edIx(),need=clamp(g.n-e,1,5),cur=Math.min(5,m.stars)+e;return{cur,n:g.n,txt:`On pace for ${m.stars} \u2605 in ${ED().n}${e?` (counts as ${cur})`:''}, need ${g.n}`,short:`${'★'.repeat(m.stars)}${e?'+'+e:''}`,pct:g.n-e<=1?1:m.score/ED().at[need],star:true};}
   const t=rivalTable(S.year,m),rk=t.findIndex(x=>x.me)+1;return{cur:rk,n:g.n,txt:`On pace for #${rk}${g.n>1?` (need top ${g.n})`:''}`,short:`#${rk}`,pct:rk<=g.n?1:clamp(1-(rk-g.n)/8,.05,.9)};
 }
 const fmtK=n=>Math.abs(n)>=1000?(n<0?'-':'')+'$'+(Math.abs(n)/1000).toFixed(Math.abs(n)>=10000?0:1)+'k':fmt(n);
-function goalMet(g,y,m,rk,rep){return g.k==='full'?y.full>=g.n:g.k==='profit'?m.prof>=g.n:g.k==='rev'?y.rev>=g.n:g.k==='stars'?m.stars>=g.n:g.k==='rep'?rep>=g.n:rk<=g.n;}
+function goalMet(g,y,m,rk,rep){return g.k==='full'?y.full>=g.n:g.k==='profit'?m.prof>=g.n:g.k==='rev'?y.rev>=g.n:g.k==='stars'?m.stars+(m.ed||0)>=g.n:g.k==='rep'?rep>=g.n:rk<=g.n;}
 const RIBBONS=[{k:'rosette',n:'Best in Show',prize:25000,need:'4+ entries of 3+ varieties, average 96+, no entry under 90'},{k:'gold',n:'Gold ribbon',prize:12000,need:'3+ entries, average 92+, no entry under 80'},{k:'silver',n:'Silver ribbon',prize:6000,need:'3+ entries, average 86+'},{k:'bronze',n:'Bronze ribbon',prize:3000,need:'2+ entries, average 78+'},{k:'hm',n:'Honorable mention',prize:1000,need:'Any entries, average 70+'}];
 function judgeRibbon(es){
   es=es||[];const n=es.length;if(!n)return -1;const avg=es.reduce((a,e)=>a+e.score,0)/n,lo=Math.min(...es.map(e=>e.score)),vr=new Set(es.map(e=>e.crop)).size;
@@ -3591,7 +3604,12 @@ function closeYear(){
   if(S.ys.cover)rec.cover=S.ys.cover;
   {const bd=planBound(S.ys),act=planActual();if(bd>=1500&&S.ys.ologFrom===0){const pct=Math.min(1,act/bd),T=PLAN_TIERS.find(t=>pct>=t.min);rec.plan={pct:Math.round(pct*100),act,bd};
     if(T){rec.plan.tier=T.n;rec.plan.st=T.st;rec.plan.cash=Math.round(act*T.cash/50)*50;S.cash+=rec.plan.cash;rec.cash=Math.round(S.cash);}}}
-  rec.starsEarned=m.stars+(met?3:0)+(rec.plan&&rec.plan.st||0);S.stars=(S.stars||0)+rec.starsEarned;
+  rec.ed=m.ed;rec.edBonus=m.ed;
+  {const prev=S.hist[S.hist.length-2];
+    if(m.stars>=5&&m.ed<EDS.length-1){S.ed=m.ed+1;rec.promo=S.ed;rec.edBonus+=5;}
+    else if(m.ed>0&&m.stars<=2&&prev&&prev.ed===m.ed&&prev.stars<=2){S.ed=m.ed-1;rec.demo=S.ed;}
+    if(m.stars>=5&&m.ed===EDS.length-1){S.topWins=(S.topWins||0)+1;rec.topWin=S.topWins;}}
+  rec.starsEarned=m.stars+rec.edBonus+(met?3:0)+(rec.plan&&rec.plan.st||0);S.stars=(S.stars||0)+rec.starsEarned;
   S.redYears=S.cash<0?(S.redYears||0)+1:0;
   if(S.redYears>=2)S.lost='bank';
   S.yres={year:S.year,rec,table:tab2,unlocked,met,from:st,showNew};
@@ -3602,7 +3620,8 @@ function checkRepLoss(){if(!S.lost&&lostCount()>=CUST.length)S.lost='rep';return
 function magazineHTML(R0){
   const r=R0.rec,t=R0.table,P=r.parts,bar=(lab,v,mx,ico)=>`<div class="jb"><span>${lab}</span><i><b style="width:${Math.round(v/mx*100)}%"></b></i><em>${Math.round(v)}/${mx}</em></div>`;
   const pics=(r.crops.length?r.crops:['petunia','mum','pothos']).slice(0,7).map(k=>`<img src="${flowerURL(k,3)}" alt="">`).join('');
-  return`<div class="mag"><div class="mast"><small>THE YEAR ${r.year} NURSERY ISSUE</small><b>Best Homes <span>and</span> Gardens</b></div>
+  return`<div class="mag"><div class="mast" style="--ec:${ED(r.ed||0).c}"><small>THE YEAR ${r.year} NURSERY ISSUE</small><b class="edn">${ED(r.ed||0).n}</b><span class="edl">${EDS.map((E,i)=>`<i class="${i===(r.ed||0)?'on':i<(r.ed||0)?'past':''}" title="${E.n}"></i>`).join('')}</span></div>
+    ${r.promo!=null?`<div class="edpromo up"><b>Moving up!</b> Five stars earns you a place in <b>${ED(r.promo).n}</b> next year: tougher rivals, stricter judges, and +${r.promo} \u2605 a year for staying there. +5 \u2605 promotion bonus.</div>`:r.demo!=null?`<div class="edpromo down"><b>Back down a step.</b> Two lean years in a row: next year you\u2019re rated by <b>${ED(r.demo).n}</b>.</div>`:r.topWin?`<div class="edpromo up"><b>Top of the ladder${r.topWin>1?` \u00d7${r.topWin}`:''}.</b> Five stars from ${ED(r.ed).n}.</div>`:''}
     <div class="mcov">${pics}</div>
     <h3>The best nurseries of year ${r.year}</h3>
     <div class="mme"><div><small>${esc(nurseryName()).toUpperCase()}</small>${starStr(r.stars,30)}<span>Ranked <b>#${r.rank}</b> of ${r.of}</span></div><div class="msc"><b>${r.score}</b><small>points</small></div></div>
@@ -3665,7 +3684,7 @@ function yearGoalModal(R0){
   const r=R0.rec,st=stage(),red=S.redYears>0;
   modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
     :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.</p>`}</div>
-    ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from Best Homes and Gardens${r.met?', 3 for hitting your goal':''}${r.plan&&r.plan.st?`, ${r.plan.st} for planning`:''}.</span></div>`:''}
+    ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from ${ED(r.ed||0).n}${r.edBonus?`, ${r.edBonus} for your place on the ladder${r.promo!=null?' and the promotion':''}`:''}${r.met?', 3 for hitting your goal':''}${r.plan&&r.plan.st?`, ${r.plan.st} for planning`:''}.</span></div>`:''}
     ${r.plan?`<div class="gplan${r.plan.tier?' on':''}">${svgIcon('bench',40)}<span><b>${r.plan.tier||'Planning'}: ${r.plan.pct}%</b> Your orders were worth ${fmt(r.plan.act)}. Looking back at every offer you had this year, the best plan your benches could hold was worth about ${fmt(r.plan.bd)}.${r.plan.tier?` Bonus: <b>+${r.plan.st} ★</b>${r.plan.cash?` and <b>${fmt(r.plan.cash)}</b>`:''}.`:` Reach ${Math.round(PLAN_TIERS[PLAN_TIERS.length-1].min*100)}% for a planning bonus.`}</span></div>`:''}
     ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
     ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
@@ -3685,8 +3704,8 @@ function gameOver(){
   $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');localStorage.removeItem('gy8ck');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();hud();nameModal(true,()=>{enterHome();toast('good',`${nurseryName()} is open: year 1`);});};
 }
 function ledgerTable(){
-  if(!S.hist.length)return'<p class="norail">Your first Best Homes and Gardens ranking comes out at the end of year 1.</p>';
-  return`<div class="ltab"><div class="lh"><span>Year</span><span>Ranking</span><span>Sales</span><span>Profit</span><span>Trucks</span><span>Rep</span><span>Goal</span></div>${S.hist.slice().reverse().map(r=>`<div class="lr"><span><b>${r.year}</b></span><span>${starStr(r.stars,14)}<small>#${r.rank}</small>${r.ribbon!=null&&r.ribbon>=0?`<i class="lrb" title="${RIBBONS[r.ribbon].n}">${ribbonSVG(RIBBONS[r.ribbon].k,18)}</i>`:''}</span><span>${fmtK(r.rev)}</span><span class="${r.profit<0?'neg':''}">${fmtK(r.profit)}</span><span>${r.full}<small>/${r.short}/${r.failed}</small></span><span>${r.rep}</span><span class="${r.met?'gok':'gno'}" title="${esc(r.goal)}">${r.met?'✓':'✗'}</span></div>`).join('')}</div>`;
+  if(!S.hist.length)return'<p class="norail">Your first magazine rating comes out at the end of year 1.</p>';
+  return`<div class="ltab"><div class="lh"><span>Year</span><span>Ranking</span><span>Sales</span><span>Profit</span><span>Trucks</span><span>Rep</span><span>Goal</span></div>${S.hist.slice().reverse().map(r=>`<div class="lr"><span><b>${r.year}</b></span><span>${starStr(r.stars,14)}<small>#${r.rank}${r.ed?` \u00b7 ${ED(r.ed).short}`:''}</small>${r.ribbon!=null&&r.ribbon>=0?`<i class="lrb" title="${RIBBONS[r.ribbon].n}">${ribbonSVG(RIBBONS[r.ribbon].k,18)}</i>`:''}</span><span>${fmtK(r.rev)}</span><span class="${r.profit<0?'neg':''}">${fmtK(r.profit)}</span><span>${r.full}<small>/${r.short}/${r.failed}</small></span><span>${r.rep}</span><span class="${r.met?'gok':'gno'}" title="${esc(r.goal)}">${r.met?'✓':'✗'}</span></div>`).join('')}</div>`;
 }
 function profitChart(){
   if(S.hist.length<2)return'';
@@ -3702,7 +3721,7 @@ function ledgerHTML(){
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
-    <h3 class="lh3">Best Homes and Gardens rankings</h3>${profitChart()}${ledgerTable()}`;
+    <h3 class="lh3">Magazine ratings</h3><p class="edrow">${EDS.map((E,i)=>`<span class="${i===edIx()?'on':''}" style="--ec:${E.c}">${E.n}</span>`).join('<i>\u203a</i>')}</p>${profitChart()}${ledgerTable()}`;
 }
 function buyGen(k){
   if(owns(k))return;if(!cropOpen(k)){toast('bad',`${crop(k).name} opens at ${stg(GATE_GEN[k]).n}`);return;}const cost=GEN[k];
@@ -4017,7 +4036,7 @@ function welcome(){
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
   <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
-  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end Best Homes and Gardens ranks the best nurseries out of five stars.</span></div></div>
+  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
   $('wGo').onclick=()=>{S.welcomed=true;closeModal();if(!S.name)nameModal(true,()=>enterHome());else enterHome();};
 }
