@@ -1343,6 +1343,7 @@ function ship(pl,truckId){
     for(let k=q.rows.length-1;k>=0&&sur>0&&short>0;k--){const n=Math.min(sur,short,q.alive[k]);q.alive[k]-=n;sur-=n;short-=n;borrowed+=n;}
   }
   if(borrowed){pl.alive[0]+=borrowed;float(BENCH[pl.rows[0]],`+${borrowed} from other benches`,'#2e7d4a');}
+  if(short>0&&short<=2&&catOn('otis')&&!pl.show){pl.alive[0]+=short;float(BENCH[pl.rows[0]],`Otis snuck ${short} on board`,'#6c737b');short=0;}
   pl.done=true;
   S.tasks.filter(t=>t.plot===pl.id).forEach(dropTask);
   if(short>0&&!window.__quiet&&!pl.show){askBuy(pl,short,truckId);return;}
@@ -1587,11 +1588,11 @@ function fire(e){
     toast('load',waiting>1?`Truck arrived, ${waiting} in line`:'Truck at the dock');
     dockNext();
   }
-  if(e.k==='care'){const pl=S.plots.find(p=>p.id===e.plot);if(pl&&!pl.done&&pl.potted.some(Boolean)&&prog(pl)<1.01){const kinds=SHOWC[pl.crop].care,kind=kinds[Math.floor(rnd()*kinds.length)],r=pl.rows[Math.floor(rnd()*pl.rows.length)];if(!S.tasks.some(t=>t.type==='care'&&t.plot===pl.id)){addTask({type:'care',care:kind,plot:pl.id,bench:r,born:S.t,due:S.t+16*(1+.25*sk('finesse'))});toast(kind,`${plural(pl.crop)} on ${benchName(r)} need ${kind==='mist'?'misting':kind==='stake'?'staking':'deadheading'}`,()=>jumpTo(SH));}}}
+  if(e.k==='care'){const pl=S.plots.find(p=>p.id===e.plot);if(pl&&!pl.done&&pl.potted.some(Boolean)&&prog(pl)<1.01){const kinds=SHOWC[pl.crop].care,kind=kinds[Math.floor(rnd()*kinds.length)],r=herdPick(pl.rows,r=>({x:BENCH[r].ax,y:BENCH[r].ay,f:BENCH[r].lv}));if(!S.tasks.some(t=>t.type==='care'&&t.plot===pl.id)){addTask({type:'care',care:kind,plot:pl.id,bench:r,born:S.t,due:S.t+16*(1+.25*sk('finesse'))});toast(kind,`${plural(pl.crop)} on ${benchName(r)} need ${kind==='mist'?'misting':kind==='stake'?'staking':'deadheading'}`,()=>jumpTo(SH));}}}
   if(e.k==='thirst'){const pl=S.plots.find(p=>p.id===e.plot);if(pl&&!pl.done&&pl.potted.some(Boolean)&&!pl.show&&rnd()<[0,.35,.6][upLv('boom')]){boomT[plotF(pl)]=performance.now();float(BENCH[pl.rows[0]],'Boom watered','#2a78d0');return;}if(pl&&!pl.done&&pl.potted.some(Boolean)&&!S.tasks.some(t=>t.type==='water'&&t.plot===pl.id))addTask({type:'water',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),due:S.t+18*(1+.25*upLv('hose'))});}
   if(e.k==='pest'){
     const opts=[];S.plots.filter(pl=>!pl.done&&pl.s<=c&&plotF(pl)===e.f).forEach(pl=>pl.rows.forEach((r,k)=>{if(pl.potted[k]&&!S.tasks.some(t=>t.type==='pest'&&t.bench===r))opts.push([pl,r]);}));
-    if(opts.length){const [pl,r]=pick(opts);addTask({type:'pest',bench:r,plot:pl.id,due:S.t+24*(1+.2*sk('pesteye'))});toast('pest',`Pests on bench ${benchName(r)}`,()=>jumpTo(Math.floor(r/8)));}
+    if(opts.length){const [pl,r]=herdPick(opts,([,r])=>({x:BENCH[r].ax,y:BENCH[r].ay,f:BENCH[r].lv}));addTask({type:'pest',bench:r,plot:pl.id,due:S.t+24*(1+.2*sk('pesteye'))});toast('pest',`Pests on bench ${benchName(r)}`,()=>jumpTo(Math.floor(r/8)));}
   }
   if(e.k==='break'&&sk('lucky')&&rnd()<1/3){if(!window.__quiet)toast('good',`The ${unitName(c).toLowerCase()} hiccupped but came back on its own`);return;}
   if(e.k==='break'&&!S.broken[e.f]&&S.frostSafe!==ckey()){S.broken[e.f]=true;S.dmgT[e.f]=0;addTask({type:'fix',f:e.f,due:S.t+20});toast('fix',`${unitName(c)} down${S.floors>1||hasShow()?' in '+hName(e.f).toLowerCase():''}`,()=>jumpTo(e.f));}
@@ -1599,7 +1600,7 @@ function fire(e){
   if(e.k==='call')ringPhone();
   if(e.k==='shopc'||e.k==='succ'){sucFire(e);return;}
   if(e.k==='tree'){const tr=treesOf()[e.spot];if(tr&&!S.tasks.some(t=>t.type==='tree'&&t.spot===e.spot)){addTask({type:'tree',spot:e.spot,job:e.job,born:S.t,due:Math.min(S.t+PSEC*.6*(1+.25*sk('arbor')),PSEC*.97)});toast('tree',`Tree field: ${TJOBL[e.job]} (${TREES[tr.sp].n.toLowerCase()})`,()=>jumpTo(FIELD_H));}}
-  if(e.k==='star'){const hs=houseIds().filter(h=>h!==SH);for(let k=0;k<40;k++){const h=pick(hs),H=HOUSES[h],tx=H.ox+ri(0,8),ty=H.oy+ri(1,6);if(walkableL(tx,ty,H.L)&&!S.tasks.some(t=>t.type==='star')){addTask({type:'star',h,x:tx,y:ty,born:S.t,due:S.t+16*(1+.3*sk('starspot'))});toast('star',`A star turned up in ${hName(h).toLowerCase()}! Tap it before it fades`,()=>jumpTo(h));break;}}}
+  if(e.k==='star'){const hs=houseIds().filter(h=>h!==SH);for(let k=0;k<40;k++){const h=herdPick(hs,h=>({x:HOUSES[h].ox+4,y:HOUSES[h].oy+3,f:HOUSES[h].L})),H=HOUSES[h],tx=H.ox+ri(0,8),ty=H.oy+ri(1,6);if(walkableL(tx,ty,H.L)&&!S.tasks.some(t=>t.type==='star')){addTask({type:'star',h,x:tx,y:ty,born:S.t,due:S.t+16*(1+.3*sk('starspot'))});toast('star',`A star turned up in ${hName(h).toLowerCase()}! Tap it before it fades`,()=>jumpTo(h));break;}}}
 }
 function hurt(pl,r,frac,min){const k=pl.rows.indexOf(r);if(k<0||!pl.potted[k])return 0;const n=Math.min(pl.alive[k],Math.max(min||0,Math.round(pl.alive[k]*frac)));pl.alive[k]-=n;return n;}
 function tick(dt){
@@ -1622,7 +1623,7 @@ function tick(dt){
       t.born=S.t;t.due=S.t+24*(1+.2*sk('pesteye'));
       const f=BENCH[t.bench].f;
       const nb=S.plots.filter(p=>!p.done&&plotF(p)===f).flatMap(p=>p.rows.filter((r,k)=>p.potted[k]&&Math.abs(r-t.bench)<=2&&r!==t.bench&&!S.tasks.some(x=>x.type==='pest'&&x.bench===r)).map(r=>[p,r]));
-      if(nb.length&&rnd()<[1,.6,.35][upLv('bugs')]*(1-.25*sk('pesteye'))){const [p2,r2]=pick(nb);addTask({type:'pest',bench:r2,plot:p2.id,due:S.t+24*(1+.2*sk('pesteye'))});toast('pest',`Pests spread to ${benchName(r2)}`,()=>jumpTo(Math.floor(r2/8)));}
+      if(nb.length&&rnd()<[1,.6,.35][upLv('bugs')]*(1-.25*sk('pesteye'))){const [p2,r2]=herdPick(nb,([,r])=>({x:BENCH[r].ax,y:BENCH[r].ay,f:BENCH[r].lv}));addTask({type:'pest',bench:r2,plot:p2.id,due:S.t+24*(1+.2*sk('pesteye'))});toast('pest',`Pests spread to ${benchName(r2)}`,()=>jumpTo(Math.floor(r2/8)));}
     }
   }
   for(const f of houseIds())if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
@@ -1948,9 +1949,11 @@ const CATS=[{id:'anna',name:'Miley',x:2.5,y:3.5,f:0,path:[],mode:'sit',t:2,face:
             {id:'max',name:'Max',x:4.5,y:3.5,f:0,path:[],mode:'sit',t:4,face:1,dir:[1,0],col:'#f2a04e',dk:'#c96a26',wh:'#fff3e2'},
             {id:'gremlin',name:'Gremlin',x:3.5,y:5.5,f:0,path:[],mode:'sleep',t:6,face:1,dir:[1,0],col:'#5a3a26',dk:'#2e2018',wh:'#e09a4a'},
             {id:'beatrice',name:'Beatrice',x:7.5,y:2.5,f:0,path:[],mode:'sit',t:3,face:-1,dir:[0,1],col:'#f7f5f0',dk:'#222',wh:'#fff'},
-            {id:'minaou',name:'Minaou',x:5.5,y:4.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#3a2a22',dk:'#1e1612',wh:'#b8742e'}];
+            {id:'minaou',name:'Minaou',x:5.5,y:4.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#3a2a22',dk:'#1e1612',wh:'#b8742e'},
+            {id:'otis',name:'Otis',x:6.5,y:3.5,f:0,path:[],mode:'sit',t:3,face:-1,dir:[0,1],col:'#a9afb7',dk:'#6c737b',wh:'#ffffff'},
+            {id:'smokey',name:'Smokey',x:2.5,y:5.5,f:0,path:[],mode:'sleep',t:5,face:1,dir:[1,0],col:'#f4e6c8',dk:'#c9b08a',wh:'#fbf1dc'}];
 CATS.forEach((c,i)=>c.meal=20+i*25+Math.random()*30);
-const CAT_INFO={anna:'Calico. Bossy, fast, the best mouser.',miley:'Grey tuxedo. Naps on the warmest bench.',max:'Orange tabby. Mostly here for the snacks.',gremlin:'Old tortoiseshell. Wise, motherly, keeps everyone in line.',beatrice:'Long-haired, white with black spots. A princess with a temper.',minaou:'Small dark tortie. Explores everything, loves everyone.'};
+const CAT_INFO={anna:'Calico. Bossy, fast, the best mouser.',miley:'Grey tuxedo. Naps on the warmest bench.',max:'Orange tabby. Mostly here for the snacks.',gremlin:'Old tortoiseshell. Wise, motherly, keeps everyone in line.',beatrice:'Long-haired, white with black spots. A princess with a temper.',minaou:'Small dark tortie. Explores everything, loves everyone.',otis:'Tall white tabby. The sneakiest boy on the farm.',smokey:'Cream-coloured herding cat. Rarely seen; keeps everyone close.'};
 const liveCats=()=>CATS.filter(c=>S.cats.includes(c.id));
 const BOWL={x:2,y:6};
 const bowlSpots=()=>{const H=HOUSES[0];return[{tx:H.ox+3,ty:H.oy+6,ex:H.ox+3.2,ey:H.oy+6.5,face:-1},{tx:H.ox+1,ty:H.oy+6,ex:H.ox+1.8,ey:H.oy+6.5,face:1}];};
@@ -1963,7 +1966,7 @@ function catGoEat(c){
 }
 function toggleCat(id){
   const c=CATS.find(x=>x.id===id);if(!c)return;
-  if(S.cats.includes(id)){S.cats=S.cats.filter(x=>x!==id);c.path=[];c.chase=false;c.eatSpot=null;c.goEat=null;toast('cat',`${c.name} moves in with a neighbour. You can bring ${c.id==='max'?'him':'her'} back any time`);}
+  if(S.cats.includes(id)){S.cats=S.cats.filter(x=>x!==id);c.path=[];c.chase=false;c.eatSpot=null;c.goEat=null;toast('cat',`${c.name} moves in with a neighbour. You can bring ${HE(c.id)?'him':'her'} back any time`);}
   else{S.cats.push(id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='eat';c.t=5;c.face=-1;c.eatSpot=0;c.meal=90;toast('cat',`${c.name} moves in and heads straight for the food bowl`);}
   save();
 }
@@ -2000,7 +2003,7 @@ function stepMouse(dt){
 }
 function catchMouse(c){
   floats.push({x:c.x,y:c.y,f:0,text:'Gotcha!',color:'#c96f2c',t0:performance.now()});
-  toast('cat',[`${c.name} caught a mouse!`,`${c.name} pounces. Mouse caught!`,`${c.name} is very proud of ${c.id==='max'?'himself':'herself'}`][Math.floor(Math.random()*3)]);
+  toast('cat',[`${c.name} caught a mouse!`,`${c.name} pounces. Mouse caught!`,`${c.name} is very proud of ${HE(c.id)?'himself':'herself'}`][Math.floor(Math.random()*3)]);
   mouse=null;c.chase=false;c.mode='sit';c.t=5+Math.random()*3;c.path=[];
 }
 function stepCats(dt){
@@ -2211,8 +2214,13 @@ const bcost=k=>k==='orchard'?12+6*orchardN():BUILDS[k].cost;
 const ripe=id=>{const st=lotState(id);return st.b==='orchard'&&Date.now()>=(st.shk||0);};
 function ripeLeft(id){const t=Math.max(1,Math.ceil(Math.max(0,(lotState(id).shk||0)-Date.now())/60000)),h=Math.floor(t/60),m=t%60;return h?`${h}h ${m}m`:`${m}m`;}
 function shakeLot(id){if(!ripe(id)||HJ.some(j=>j.kind==='shake'&&j.lot===id))return;addHJob({lot:id,kind:'shake',dur:1.6});}
-const CAT_COST=6,CATHOUSE=[0,2,4,6],CATHOUSE_COST=[0,0,10,18],OFFICE_COST=8;
-const CAT_BONUS={anna:'Pest outbreaks 15% less often',miley:'Heaters and fans break down 15% less',max:'+10% on reputation gains',gremlin:'New hires reach full speed faster; rusty crew recover twice as fast',beatrice:'Flats sell for 5% more',minaou:'Stars turn up 50% more often'};
+const CAT_COST=6,CATHOUSE=[0,2,4,6,8],CATHOUSE_COST=[0,0,10,18,28],OFFICE_COST=8,SMOKEY_COST=12;
+const HE=id=>['max','otis'].includes(id);
+// Smokey only turns up at the homestead in some years
+const smokeyHere=()=>catOn('smokey')||((S.year*7+myUid().charCodeAt(0))%3===0);
+const herdPick=(list,pos)=>{if(!catOn('smokey')||list.length<2)return pick(list);const d=x=>{const q=pos(x);return Math.hypot(q.x-me.x,q.y-me.y)+Math.abs((q.f||0)-me.f)*12;},a=pick(list),b=pick(list);return d(a)<=d(b)?a:b;};
+const catCost=id=>id==='smokey'?SMOKEY_COST:CAT_COST;
+const CAT_BONUS={anna:'Pest outbreaks 15% less often',miley:'Heaters and fans break down 15% less',max:'+10% on reputation gains',gremlin:'New hires reach full speed faster; rusty crew recover twice as fast',beatrice:'Flats sell for 5% more',minaou:'Stars turn up 50% more often',otis:'Sneaks spare flats onto trucks that are 1 or 2 short',smokey:'Pests, stars and showcase jobs turn up closer to you'};
 const catOn=id=>!!(S&&S.cats&&S.cats.includes(id));
 const lotOf=id=>LOTS.find(l=>l.id===id);
 const lotState=id=>(S.home&&S.home[id])||{};
@@ -2233,8 +2241,8 @@ function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);retur
 function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
   const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});save();renderHome();}
 function buildLot(id,k){const B=BUILDS[k],st=lotState(id);if(!st.clear||st.b||jobFor(id))return;if(B.uniq&&hasBuild(k))return;if(!spendStars(bcost(k)))return;S.home[id]={clear:true,b:k};addHJob({lot:id,kind:'build',prev:{clear:true},b:k});save();renderHome();}
-function adoptCat(id){if(catOn(id))return;if(S.cats.length>=catCap()){toast('bad','The cat house is full. Expand it first');return;}if(!spendStars(CAT_COST))return;S.cats.push(id);const c=CATS.find(x=>x.id===id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='sit';c.t=4;addHJob({lot:CH_LOT().id,kind:'greet',cat:id});save();renderHome();}
-function growCatHouse(){const l=S.catHouse||1;if(l>=3||HJ.some(j=>j.kind==='grow'&&j.lot===CH_LOT().id))return;if(!spendStars(CATHOUSE_COST[l+1]))return;S.catHouse=l+1;addHJob({lot:CH_LOT().id,kind:'grow',prev:l});save();renderHome();}
+function adoptCat(id){if(catOn(id))return;if(id==='smokey'&&!smokeyHere())return;if(S.cats.length>=catCap()){toast('bad','The cat house is full. Expand it first');return;}if(!spendStars(catCost(id)))return;S.cats.push(id);const c=CATS.find(x=>x.id===id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='sit';c.t=4;addHJob({lot:CH_LOT().id,kind:'greet',cat:id});save();renderHome();}
+function growCatHouse(){const l=S.catHouse||1;if(l>=4||HJ.some(j=>j.kind==='grow'&&j.lot===CH_LOT().id))return;if(!spendStars(CATHOUSE_COST[l+1]))return;S.catHouse=l+1;addHJob({lot:CH_LOT().id,kind:'grow',prev:l});save();renderHome();}
 function growOffice(){if((S.office||1)>=2)return;if(!spendStars(OFFICE_COST))return;S.office=2;addHJob({lot:OF_LOT().id,kind:'grow',prev:1});save();renderHome();}
 function renderHome(){
   const P0=$('homeP');P0.hidden=S.phase!=='home';if(P0.hidden)return;
@@ -2244,8 +2252,8 @@ function renderHome(){
   else if(!L)body=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`;
   else if(jobFor(L.id)&&!L.pre&&jobFor(L.id).kind!=='shake'){const j=jobFor(L.id);body=`<div class="hmt"><b>${j.kind==='clear'?'Clearing':'Building '+BUILDS[j.b].n.toLowerCase()}</b><span>${j.working?'Your grower is on it':'Queued for your grower'}</span></div>`;}
   else if(L.pre==='cathouse'){const cap=catCap(),l=S.catHouse||1;
-    body=`<div class="hmt"><b>Cat house</b><span>${S.cats.length}/${cap} cats</span>${l<3?`<button class="btn sun sm" type="button" id="chGrow"${stars<CATHOUSE_COST[l+1]?' disabled':''}>Room for ${CATHOUSE[l+1]} · ★ ${CATHOUSE_COST[l+1]}</button>`:''}</div>
-      <div class="adopt">${CATS.map(c=>{const on=catOn(c.id),full=S.cats.length>=cap;return`<button type="button" class="ad${on?' on':''}" data-adopt="${c.id}"${on||full||stars<CAT_COST?' disabled':''}><img src="${catURL(c.id)}" alt=""><b>${c.name}</b><small>${CAT_INFO[c.id]}</small><em>${CAT_BONUS[c.id]}</em><span class="cs">${on?'Lives here':full?'No room':`Adopt · ★ ${CAT_COST}`}</span></button>`;}).join('')}</div>`;}
+    body=`<div class="hmt"><b>Cat house</b><span>${S.cats.length}/${cap} cats</span>${l<4?`<button class="btn sun sm" type="button" id="chGrow"${stars<CATHOUSE_COST[l+1]?' disabled':''}>Room for ${CATHOUSE[l+1]} · ★ ${CATHOUSE_COST[l+1]}</button>`:''}</div>
+      <div class="adopt">${CATS.map(c=>{const on=catOn(c.id),full=S.cats.length>=cap,away=c.id==='smokey'&&!on&&!smokeyHere(),cost=catCost(c.id);return`<button type="button" class="ad${on?' on':''}${away?' away':''}" data-adopt="${c.id}"${on||full||away||stars<cost?' disabled':''}><img src="${catURL(c.id)}" alt=""${away?' style="filter:grayscale(1) opacity(.35)"':''}><b>${c.name}</b><small>${away?'Not around this year. She turns up at the homestead some years; the almanac will say.':CAT_INFO[c.id]}</small><em>${CAT_BONUS[c.id]}</em><span class="cs">${on?'Lives here':away?'Away':full?'No room':`Adopt · ★ ${cost}`}</span></button>`;}).join('')}</div>`;}
   else if(L.pre==='office'){const rib=S.hist.filter(h=>h.ribbon!=null&&h.ribbon>=0);
     body=`<div class="hmt"><b>Office</b><span>${rib.length?rib.length+' ribbon'+(rib.length>1?'s':'')+' on the wall':'The ribbon wall is waiting'}</span>${(S.office||1)<2?`<button class="btn sun sm" type="button" id="ofGrow"${stars<OFFICE_COST?' disabled':''}>Bigger office · ★ ${OFFICE_COST}</button>`:''}</div>
       <p class="hmh">${(S.office||1)<2?'A bigger office means the phone rings longer before it gives up.':'The phone rings longer here.'}</p>${rib.length?`<div class="rwall">${rib.map(h=>`<span>${ribbonSVG(RIBBONS[h.ribbon].k,34)}<small>Year ${h.year}</small></span>`).join('')}</div>`:''}`;}
@@ -2277,7 +2285,7 @@ function placeHpop(){
 // ---------------- gift cards: show one on your screen, a friend snaps it ----------------
 const GIFT_MS=12*3600e3,GIFT_MAX=3,GIFT_URL='https://joshbertindesign-byte.github.io/greenhouse-year/';
 const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
-const CAT_IDS=['anna','miley','max','gremlin','beatrice','minaou'];
+const CAT_IDS=['anna','miley','max','gremlin','beatrice','minaou','otis','smokey'];
 const giftHash=str=>{let h=2166136261;for(const c of 'gy-gift-v1|'+str){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}return h.toString(36).padStart(5,'0').slice(-5);};
 const myUid=()=>S.uid||(S.uid=Math.random().toString(36).slice(2,8));
 const hrsLeft=ms=>{const t=Math.max(1,Math.ceil(ms/60000)),h=Math.floor(t/60),m=t%60;return h?`${h}h ${m}m`:`${m}m`;};
@@ -3437,7 +3445,7 @@ function almanacHTML(){
   if(!S.alm||S.alm.year!==S.year)almGen();
   const A=S.alm,last=S.hist[S.hist.length-1],st=stage(),sec=(t,b)=>`<div class="alsec"><h4>${t}</h4>${b}</div>`,row=(a,b)=>`<div class="alr"><span>${a}</span><b>${b}</b></div>`;
   const out=[];
-  out.push(sec(`Year ${S.year} at a glance`,row('Your level',`${stg(st).n} (${st} of ${STAGES.length})`)+row('This year’s goal',esc(goalText(stg(st).goal)))));
+  out.push(sec(`Year ${S.year} at a glance`,row('Your level',`${stg(st).n} (${st} of ${STAGES.length})`)+row('This year’s goal',esc(goalText(stg(st).goal)))+(!catOn('smokey')&&smokeyHere()?'<p class="alnote">Smokey, the cream-coloured herding cat, has been spotted around the homestead this year. She doesn\u2019t turn up every year.</p>':'')));
   if(last)out.push(sec(`Year ${last.year} in review`,row('Sales',fmt(last.rev))+row('Operating profit',fmt(last.op))+row('Trucks',`${last.full} full, ${last.short} short, ${last.failed} missed`)+row('Best Homes and Gardens',`${last.stars} ★`)+(last.plan?row('Planning',`${last.plan.pct}%${last.plan.tier?' · '+last.plan.tier:''}`):'')));
   const wx=[A.wx.dry?'<li><b>A dry early summer.</b> Young trees will need watering through it.</li>':'<li><b>Normal rain</b> through the summer.</li>',
     A.wx.frost?'<li><b>A late frost</b> in early spring. Magnolias will need covering.</li>':'<li><b>No late frost</b> expected.</li>',

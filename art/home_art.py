@@ -194,6 +194,13 @@ def cathouse(l):
             x, y = I.P(1.275 + du, 2.39, 31)
             b += poly([(x - 4, y + 1), (x, y - 7), (x + 4, y + 1)], '#2a7a76', '#1f5a56', .8) + poly([(x - 2, y), (x, y - 4), (x + 2, y)], '#ff9ab5')
         x, y = I.P(1.275, 2.25, 25); b += circ(x, y, 3.6, '#ffffff', '#b9ad95', .6) + ''.join(circ(x + dx_, y + dy_, r_, '#e07a4a') for dx_, dy_, r_ in ((0, .9, 1.4), (-1.6, -.9, .7), (-.5, -1.8, .7), (.7, -1.8, .7), (1.7, -.8, .7)))
+        if l >= 4:  # a second, taller cat tree and a hammock at the front corner
+            x, y = I.P(2.55, .45, 0)
+            b += ell(x, y, 8, 3.6, '#1d3a24', 'opacity=".14"') + f'<rect x="{f2(x-2.2)}" y="{f2(y-56)}" width="4.4" height="56" fill="#d9c29a" stroke="#a8855a" stroke-width=".6"/>'
+            for k in range(0, 56, 3): b += seg((x - 2.2, y - k), (x + 2.2, y - k - 2), '#b8955f', .7)
+            for z, s_ in ((20, 8), (38, 9), (56, 10)):
+                b += ell(x, y - z, s_, s_ * .45, '#4f8fbf', 'stroke="#2f5f8a" stroke-width=".7"') + ell(x, y - z - 1.5, s_ * .8, s_ * .32, '#7fb6dd')
+            b += f'<path d="M{f2(x-9)},{f2(y-29)} q9,7 18,0" fill="none" stroke="#f2a06a" stroke-width="2.6" stroke-linecap="round"/>'
         if l >= 2:  # annex with a sun deck
             b += I.box(2.0, 1.25, 2.85, 2.25, 0, 14, '#f7c98e', '#f2b878', '#d99a5a', '#9a6a34', .8)
             b += I.box(1.96, 1.2, 2.9, 2.3, 14, 16, '#d9c29a', '#b8a07a', '#a88f6a', '#6a5232', .6)
@@ -475,7 +482,7 @@ for _id, fn in (('h_farm', farmhouse), ('h_deb_brush', deb_brush), ('h_deb_rocks
                 ('h_garden', b_garden), ('h_stand', b_stand), ('h_shed', b_shed), ('h_pergola', b_pergola), ('h_pond', b_pond), ('h_orchard', b_orchard),
                 ('h_beds', b_beds), ('h_frame', b_frame)):
     add(_id, fn(), HW, HH, (HAX, HAY))
-for _l in (1, 2, 3): add(f'h_cats_{_l}', cathouse(_l)(), HW, HH, (HAX, HAY))
+for _l in (1, 2, 3, 4): add(f'h_cats_{_l}', cathouse(_l)(), HW, HH, (HAX, HAY))
 for _l in (1, 2): add(f'h_office_{_l}', office(_l)(), HW, HH, (HAX, HAY))
 # the mailbox (flag down / flag up)
 def mailbox(up):

@@ -792,10 +792,12 @@ for _l in (1, 2): add(f'potter_{_l}', potter(_l)); add(f'forklift_{_l}', forklif
 VCOAT = {'anna':  dict(b='#fbf8f2', d='#c96f2c', w='#ffffff', o='#7a6656', eye='#3f8a3a', h='#f0a050', t='#4a4f57', ts='#9aa0a8',
                       patches=('#ee9a48', '#8e959e', '#5a3a28')),
          'miley': dict(b='#7d8592', d='#555c68', w='#ffffff', o='#3f4550', eye='#c7a12a'),
-         'max':   dict(b='#f2a04e', d='#c96a26', w='#e8913f', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a'),
+         'max':   dict(b='#f2a04e', d='#c96a26', w='#e8913f', o='#7a4622', eye='#6a9a2a', st='#c7652a', ts='#c7652a', big=True),
          'gremlin': dict(b='#3a2b24', d='#2a1e19', w='#4a3a32', o='#1e1612', eye='#d9a52a', h='#3a2b24', t='#3a2b24', patches=('#c8732e', '#7a4a2a', '#d99a4e'), mz='#a39488', fh=False),
          'beatrice': dict(b='#fbfbf8', d='#d9d6cf', w='#ffffff', o='#6a6660', eye='#3a7bd5', h='#fbfbf8', t='#fbfbf8', patches=('#232326', '#2e2e33', '#232326'), mz=None, fh=False, fluffy=True),
-         'minaou': dict(b='#2b221e', d='#1f1815', w='#3a2e28', o='#14100e', eye='#e0b23a', h='#2b221e', t='#2b221e', patches=('#c86a2a', '#5a3a28', '#d8893e'), mz=None, fh=False, small=True)}
+         'minaou': dict(b='#2b221e', d='#1f1815', w='#3a2e28', o='#14100e', eye='#e0b23a', h='#2b221e', t='#2b221e', patches=('#c86a2a', '#5a3a28', '#d8893e'), mz=None, fh=False, small=True),
+         'otis': dict(b='#fbfbf8', d='#d9d6cf', w='#ffffff', o='#5f646b', eye='#9ac23a', h='#a9afb7', t='#a9afb7', ts='#6c737b', st='#7a8189', patches=('#a9afb7', '#8f969e', '#a9afb7'), mz='#ffffff', fh=False, tall=True),
+         'smokey': dict(b='#f4e6c8', d='#dcc69e', w='#fbf1dc', o='#a0845c', eye='#5a8ac8', h='#f4e6c8', t='#f4e6c8')}
 def vcat(name, pose):
     c = VCOAT[name]; o = c['o']; sw = .9
     b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
@@ -865,6 +867,8 @@ def vcat(name, pose):
         b += head(39, 45, True)
         b += f'<text x="44" y="33" font-family="Arial" font-weight="bold" font-size="6" fill="#7fa6d6">z</text><text x="48" y="28" font-family="Arial" font-weight="bold" font-size="4.5" fill="#7fa6d6">z</text>'
     if c.get('small'): b = f'<g transform="translate(32 52) scale(.84) translate(-32 -52)">{b}</g>'
+    if c.get('big'): b = f'<g transform="translate(32 52) scale(1.14) translate(-32 -52)">{b}</g>'
+    if c.get('tall'): b = f'<g transform="translate(32 52) scale(1.03,1.13) translate(-32 -52)">{b}</g>'
     return b
 def vmouse(frame):
     b = ell(32, 50, 7, 1.8, '#1d3a24', 'opacity=".18"')
@@ -879,7 +883,7 @@ def vmouse(frame):
     b += f'<path d="M41,46.4 l2.6,-1 M41,46.8 l2.8,.4" stroke="#5d646d" stroke-width=".4"/>'
     return b
 add('mouse_0', vmouse(0)); add('mouse_1', vmouse(1))
-for _n in ('anna', 'miley', 'max', 'gremlin', 'beatrice', 'minaou'):
+for _n in ('anna', 'miley', 'max', 'gremlin', 'beatrice', 'minaou', 'otis', 'smokey'):
     for _p in ('walk0', 'walk1', 'sit', 'sleep', 'eat'): add(f'cat_{_n}_{_p}', vcat(_n, _p))
 def vbowls():
     I = Iso(); b = ''
