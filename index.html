@@ -242,6 +242,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .gres .rws{justify-content:center}
 .taxb{display:flex;gap:12px;align-items:center;background:#eef6ea;border:2px solid #b9dfc0;color:#244a30;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.4;text-align:left}.taxb b{display:block;color:#1d3326;font-size:15px}.taxb.last{background:#fff6e0;border-color:#ecd48e;color:#5a4300}.taxb.over{background:#f4f1e8;border-color:#ddd6c4;color:#4a4a40}.taxb .ic{flex:none}.taxb>span{flex:1;text-align:left}
 .taxpips{display:flex;gap:5px;margin-top:6px}.taxpips em{width:26px;height:7px;border-radius:4px;background:#2f8a4e}.taxpips em.used{background:#cfd8cc}.taxpips em.now{background:#2f8a4e;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #2f8a4e}.taxb.last .taxpips em.now{background:#e0a020;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #e0a020}
+.hmg button.sp-veg{box-shadow:inset 0 -4px 0 #5f8f2a}.hmg button.sp-prop{box-shadow:inset 0 -4px 0 #2f9b8f}
+.spb{display:flex;flex-direction:column;gap:6px;align-items:stretch}.spb .btn{white-space:nowrap}
+.propc{display:flex;flex-direction:column;gap:6px;background:#e9f5f2;border:2px solid #9fd3c8;border-radius:14px;padding:12px;margin:10px 0;font-size:14px;color:#24433d}.propc.prob{background:#fff3e0;border-color:#ecc58e;color:#5a3a00}.propc b{font-size:16px}.propc small{font-weight:800;letter-spacing:.06em;font-size:11px;margin-top:4px}
+.roys{display:flex;flex-wrap:wrap;gap:6px}.roy{display:inline-flex;align-items:center;gap:5px;background:#fff;border-radius:10px;padding:3px 8px;font-size:12.5px}.roy.done{opacity:.7}
+.board .bprop{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:repeating-linear-gradient(135deg,rgba(47,155,143,.14) 0 10px,rgba(47,155,143,.06) 10px 20px);border:2px dashed #7fc3b7;border-radius:10px;color:#24433d;text-align:center;padding:10px;z-index:3}.board .bprop b{font-size:17px}
 .warnb{display:flex;gap:10px;align-items:flex-start;background:#fdecea;border:2px solid #f0b6ad;color:#7a1f14;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.35}
 .mag{background:#fffdf6;border:1px solid #e8e0c8;border-radius:12px;padding:16px;font-family:Georgia,'Times New Roman',serif;color:#1d2a22}
 .mast{text-align:center;border-bottom:3px double #1d2a22;padding-bottom:8px}.mast small{font-family:inherit;font-size:11px;letter-spacing:.18em;color:#8a7a52}.mast b{display:block;font-size:30px;line-height:1.05;letter-spacing:-.01em;color:#2d5a3a}.mast b span{font-style:italic;font-weight:400;font-size:22px;color:#a2463a}
@@ -755,12 +760,12 @@ const CARE={mist:'Mist',stake:'Stake',prune:'Deadhead'};
 const plural=k=>CROPS[k].name==='Calla lily'?'Calla lilies':CROPS[k].name+'s';
 const isShowCrop=k=>!!(CROPS[k]&&CROPS[k].show);
 // Vegetable starters: grown only under a spring vegetable contract, ready the period they're planted.
-const VEGC={lettuce:{name:'Lettuce',price:26,sell:[2],color:'#6fb04a'},cabbage:{name:'Cabbage',price:26,sell:[2],color:'#5f9a8a'},tomato:{name:'Tomato',price:30,sell:[2,3],color:'#d8433b'},
-  basil:{name:'Basil',price:28,sell:[2,3],color:'#3f9a3a'},pepper:{name:'Pepper',price:32,sell:[3],color:'#e0802a'},cucumber:{name:'Cucumber',price:28,sell:[3],color:'#b8a21f'}};
+const VEGC={lettuce:{name:'Lettuce',price:26,sell:[0,1,2,6,7],color:'#6fb04a'},cabbage:{name:'Cabbage',price:26,sell:[2,6,7],color:'#5f9a8a'},tomato:{name:'Tomato',price:30,sell:[2,3],color:'#d8433b'},
+  basil:{name:'Basil',price:28,sell:[0,1,2,3,4,5,6,7],color:'#3f9a3a'},pepper:{name:'Pepper',price:32,sell:[3],color:'#e0802a'},cucumber:{name:'Cucumber',price:28,sell:[3],color:'#b8a21f'}};
 for(const k in VEGC){const C=VEGC[k];CROPS[k]={name:C.name,g:1,sell:C.sell,price:C.price,loss:.05,q:[8,16],color:C.color,veg:true};}
 const isVeg=k=>!!(CROPS[k]&&CROPS[k].veg),notFlower=k=>isShowCrop(k)||isVeg(k)||!!(CROPS[k]&&CROPS[k].fest);
-const VEG_LV=7,VEG_CERT=5000,VEG_GERM=[3000,5000],VEG_ORG=2500,ORG_SPRAY=200,ORG_PRICE=1.35;
-const vegOn=()=>!!(S&&S.veg&&S.veg.cert),vegPlugM=k=>isVeg(k)?[1,.4,0][(S.veg&&S.veg.germ)||0]:1;
+const VEG_LV=8,VEG_CERT=5000,VEG_GERM=[3000,5000],VEG_ORG=2500,ORG_SPRAY=200,ORG_PRICE=1.35;
+const vegOn=()=>!!(S&&specHouses('veg').length),vegPlugM=k=>isVeg(k)?[1,.4,0][(S.veg&&S.veg.germ)||0]:1;
 for(const k in CROPS)CROPS[k].cost=Math.round(CROPS[k].price*.3);
 for(const k in CROPS)if(CROPS[k].fest)CROPS[k].cost=0;
 const CUST=['Red Dirt Landscaping','Caprock Home and Garden','Sunrise Grocery','Pecan Street Market','Windmill Hardware','Hillside Garden Center','Mesa Florist','Big Country Feed'];
@@ -797,10 +802,64 @@ const SLOT=[[0,0],[11,0],[0,9],[11,9]];
 const HOUSES=Array.from({length:12},(_,h)=>({h,s:h%4,L:Math.floor(h/4),ox:SLOT[h%4][0],oy:SLOT[h%4][1]}));
 const SH=12;HOUSES.push({h:SH,s:-1,L:0,ox:-11,oy:0,show:true});
 const hasShow=()=>!!(S&&S.show);
+// ---------------- specialty houses ----------------
+// A house can be turned into a vegetable house (only vegetables, cheap to run, one olericulturist covers it)
+// or a propagation house (no orders; grows plugs for the whole nursery while its strike rate stays up).
+const PROP_LV=13,SPEC_COST={veg:5000,prop:8000},SPEC_BACK=3000,SPEC_MAX={veg:2,prop:1};
+const SPEC_UP={veg:-.5,prop:.4};// change to that house's share of upkeep
+const specOf=h=>(S&&S.spec&&S.spec[h])||'';
+const specHouses=k=>{if(!S)return[];const a=[];for(let h=0;h<S.floors;h++)if(specOf(h)===k)a.push(h);return a;};
+const regHouses=()=>{const a=[];for(let h=0;h<S.floors;h++)if(!specOf(h))a.push(h);return a;};
+const specOpen=k=>stage()>=(k==='veg'?VEG_LV:PROP_LV);
+const homeOK=(role,h)=>role==='olr'?specOf(h)==='veg':role==='prop'?specOf(h)==='prop':h===SH||specOf(h)!=='prop';
+const firstHome=role=>{const l=role==='olr'?specHouses('veg'):role==='prop'?specHouses('prop'):[...regHouses(),...specHouses('veg')];return l.length?l[0]:0;};
+const SPEC_N={veg:'Vegetable house',prop:'Propagation house'};
+// ---- propagation: each bench sticks plugs for PROP_CAP flats, ready the next period ----
+const PROP_CAP=45,PROP_CERT=85,PROP_PROB=.35,PROP_ROY=.1,PROP_SURP_V=7,PROP_MISS={mist:5,san:15,stick:3};
+const PROP_MISTS=8,PROP_MIST_T=7,PROP_STICK_BY=.5;
+const PJOB={stick:{n:'Stick',w:1.6,ic:'pot'},mist:{n:'Mist',w:.45,ic:'mist'},san:{n:'Clean',w:1.6,ic:'pest'}};
+const propS=()=>S.prop||(S.prop={cert:true,run:2,stock:0,next:0,pm:0,roy:{},lic:{},stuck:[]});
+const propOn=()=>specHouses('prop').length>0;
+const propStrike=()=>clamp(100-(propS().pm||0),0,100);
+const licCost=k=>Math.max(2500,Math.round((CROPS[k].prem||0)/2));
+function propStart(c){
+  if(!propOn())return;const P0=propS();P0.stock=P0.next||0;P0.next=0;P0.pm=0;P0.stuck=[];
+  for(const h of specHouses('prop')){
+    for(let i=0;i<8;i++)addTask({type:'prop',job:'stick',ic:'pot',bench:h*8+i,born:0,due:PSEC*PROP_STICK_BY});
+    for(let i=0;i<PROP_MISTS;i++)S.events.push({at:PSEC*(.05+i*(.85/PROP_MISTS)+rnd()*.05),k:'pmist',f:h});
+    if(rnd()<.8)S.events.push({at:PSEC*(.2+rnd()*.5),k:'psan',f:h});
+  }
+}
+function propEvent(e){
+  if(specOf(e.f)!=='prop')return;const job=e.k==='pmist'?'mist':'san';
+  const free=[0,1,2,3,4,5,6,7].map(i=>e.f*8+i).filter(b=>!S.tasks.some(t=>t.type==='prop'&&t.job===job&&t.bench===b));if(!free.length)return;
+  addTask({type:'prop',job,ic:PJOB[job].ic,bench:pick(free),due:S.t+(job==='mist'?PROP_MIST_T:22)});
+}
+function propMiss(t){const P0=propS(),d=PROP_MISS[t.job]||3;P0.pm=(P0.pm||0)+d;float(BENCH[t.bench],t.job==='mist'?`Cuttings dried out −${d}%`:t.job==='san'?`Damping-off −${d}%`:`Bench not stuck −${d}%`,'#c8402f');}
+function propDone(t){const P0=propS();if(t.job==='stick'){P0.next=(P0.next||0)+PROP_CAP;P0.stuck.push(t.bench);}}
+function propEnd(){
+  if(!propOn()||!S.prop)return;const P0=S.prop,st=propStrike();P0.last=st;
+  if(P0.stock>0){const v=Math.round(P0.stock*PROP_SURP_V);S.cash+=v;S.ys.rev+=v;S.ys.propSold=(S.ys.propSold||0)+v;if(!window.__quiet)setTimeout(()=>toast('cash',`Sold ${P0.stock} spare flats of plugs to other growers: +${fmt(v)}`),1200);}
+  P0.stock=0;
+  if(!P0.cert||st<PROP_CERT)S.ys.propProb=(S.ys.propProb||0)+1;
+  if(st<PROP_CERT){if(P0.cert&&!window.__quiet)setTimeout(()=>toast('bad',`Propagation house strike rate ${st}%: on probation. You pay ${Math.round(PROP_PROB*100)}% of planting costs until it runs well two periods in a row`),900);P0.cert=false;P0.run=0;}
+  else{P0.run=(P0.run||0)+1;if(!P0.cert&&P0.run>=2){P0.cert=true;if(!window.__quiet)setTimeout(()=>toast('good','Propagation house certified again: planting is covered'),900);}}
+}
+// what a planting actually costs once the propagation house has covered what it can
+function plugBill(pl,cost){
+  if(!propOn()||!S.prop||cost<=0)return cost;const P0=S.prop,k=pl.crop;// free plugs (germination room) don't use up the propagation house's stock
+  if(isShowCrop(k)&&!(P0.lic&&P0.lic[k]))return cost;
+  const fl=pl.flats.reduce((a,b)=>a+b,0),cov=Math.min(fl,P0.stock||0);if(!cov||!fl)return cost;
+  P0.stock-=cov;const cv=cost*cov/fl;let pay=cost-cv;if(!P0.cert)pay+=cv*PROP_PROB;
+  const cap=GEN[k]||(CROPS[k]&&CROPS[k].prem)||0;
+  if(cap){const paid=P0.roy[k]||0;if(paid<cap){const ry=Math.min(cap-paid,Math.max(1,Math.round(cv*PROP_ROY)));P0.roy[k]=paid+ry;pay+=ry;S.ys.roy=(S.ys.roy||0)+ry;}}
+  S.ys.propSaved=(S.ys.propSaved||0)+Math.max(0,cost-pay);
+  return Math.round(pay);
+}
 const houseIds=()=>{const a=[...Array(S.floors).keys()];if(hasShow())a.push(SH);return a;};
 const builtH=()=>houseIds().map(h=>HOUSES[h]);
 const benchIds=()=>houseIds().flatMap(h=>[0,1,2,3,4,5,6,7].map(i=>h*8+i));
-const hName=h=>h===SH?'Showcase house':floorName(h);
+const hName=h=>h===SH?'Showcase house':floorName(h)+(specOf(h)==='veg'?' (vegetables)':specOf(h)==='prop'?' (propagation)':'');
 const FIELD_H=30,SUC_H=31;
 const lvOf=h=>h===FIELD_H||h===SUC_H?0:HOUSES[h].L;
 // ---- succulent house: plants carry over from year to year; customers walk in to buy them ----
@@ -998,7 +1057,11 @@ const ROLES={
   pest:{name:'Applicator',does:'Sprays for pests',cost:160},
   fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:125},
   load:{name:'Loader',does:'Loads trucks at the dock',cost:180},
-  prize:{name:'Prize grower',does:'Runs the showcase house',cost:760}};
+  prize:{name:'Prize grower',does:'Runs the showcase house',cost:760},
+  olr:{name:'Olericulturist',does:'Runs a vegetable house alone: potting, watering and spraying',cost:300,spec:'veg'},
+  prop:{name:'Propagator',does:'Sticks, mists and cleans the propagation house',cost:280,spec:'prop'}};
+const roleTakes=(role,t)=>role==='olr'?(t.type==='pot'||t.type==='water'||t.type==='pest'):t.type===role;
+const CREW_SPR={olr:'pot',prop:'water'},crewSpr=k=>CREW_SPR[k]||k;
 const WAGE_CUT=.95;
 // wages rise with the cost of living each new year; crop prices don't, so a nursery has to keep getting better to stay ahead
 const WAGE_INFL=.03,inflF=(y=S.year)=>Math.pow(1+WAGE_INFL,Math.max(0,y-1)),roleCost=k=>Math.round(ROLES[k].cost*inflF()/5)*5;// wages came down 5%; older saves get the cut once on load
@@ -1024,7 +1087,7 @@ const UPS={
   heat:{name:'New heaters',icon:'heat',lv:['Modern heaters','High-efficiency heaters'],does:l=>`Heaters break down ${[0,35,60][l]}% less, fixes go ${[0,30,50][l]}% faster`,cost:[1600,3200]}};
 const capB=()=>CAP+2*upLv('roll');
 const upLv=k=>Math.min(UPS[k]?UPS[k].lv.length:9,((S.up&&S.up[k])||0)+(S.trial&&S.trial.k===k&&S.trial.year===S.year?1:0));
-const SHIRT={prize:'#b8860b',me:'#2f8a4e',pot:'#9a5b26',water:'#2a78d0',pest:'#cf3a2f',fix:'#56606b',load:'#2c8a47'};
+const SHIRT={olr:'#5f8f2a',prop:'#2f9b8f',prize:'#b8860b',me:'#2f8a4e',pot:'#9a5b26',water:'#2a78d0',pest:'#cf3a2f',fix:'#56606b',load:'#2c8a47'};
 const unitName=p=>(p>=4&&p<=5)?'Fans':'Heater';
 const floorName=f=>`House ${f+1}`;
 const levelName=L=>L?`floor ${L+1}`:'ground';
@@ -1064,6 +1127,7 @@ const IC={
   succ:{c:'#5a8a2a',f:['M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z','M7 15h10l-1.2 6H8.2z'],s:[]},
   star:{c:'#d9a400',f:['M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z'],s:[]},
   cat:{c:'#e0873f',f:['M4.6 10.2 5.4 3.6l4.4 3.7h4.4l4.4-3.7.8 6.6c1.4 5.2-1.9 9.3-7.4 9.3s-8.8-4.1-7.4-9.3z'],s:[]}};
+IC.olr={...IC.pot,c:'#5f8f2a'};IC.prop={...IC.mist,c:'#2f9b8f'};IC.spec={...IC.floor,c:'#7a5cc0'};
 const P2D={};for(const k in IC)P2D[k]={f:IC[k].f.map(d=>new Path2D(d)),s:IC[k].s.map(d=>new Path2D(d))};
 function svgIcon(k,size){const I=IC[k];return`<span class="ic" style="width:${size}px;height:${size}px;background:${I.c}"><svg viewBox="0 0 24 24" width="${Math.round(size*.62)}" height="${Math.round(size*.62)}"><g fill="#fff" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${I.f.map(d=>`<path d="${d}" stroke="none"/>`).join('')}${I.s.map(d=>`<path d="${d}" fill="none"/>`).join('')}</g></svg></span>`;}
 function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><g fill="#fff" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${I.f.map(d=>`<path d="${d}" stroke="none"/>`).join('')}${I.s.map(d=>`<path d="${d}" fill="none"/>`).join('')}</g></svg>`;}
@@ -1144,7 +1208,9 @@ const TAX_Y=3,TAX_CUT=.5;
 const taxOn=(y=S.year)=>y<=TAX_Y,taxLeft=()=>Math.max(0,TAX_Y-S.year+1);
 // each extra house costs a bit more upkeep than the one before it (bigger sites cost more to run)
 const FLOOR_STEP=70,houseOH=f=>f<=1?0:FLOOR_OH*(f-1)+FLOOR_STEP*(f-1)*(f-2)/2,nextHouseOH=()=>houseOH(S.floors+1)-houseOH(S.floors);
-const upkeepFull=()=>Math.round((OVERHEAD+houseOH(S.floors)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
+const houseShare=h=>h===0?OVERHEAD*.5:FLOOR_OH+FLOOR_STEP*(h-1);
+const specOH=()=>{let a=0;for(let h=0;h<S.floors;h++){const k=specOf(h);if(k)a+=houseShare(h)*SPEC_UP[k];}return a;};
+const upkeepFull=()=>Math.round((OVERHEAD+houseOH(S.floors)+specOH()+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
 const upkeep=()=>Math.round(upkeepFull()*(taxOn()?1-TAX_CUT:1));
 // income tax on operating profit, paid at year end once the startup break is over. Graduated: each slice of profit is taxed at its own rate.
 const ITAX=[[10000,0],[50000,.15],[150000,.25],[Infinity,.35]];
@@ -1159,6 +1225,7 @@ function fitsP(pp,top){
   if(top<0||pp.s<minStart())return false;
   const hh=Math.floor(top/8),shw=isShowCrop(pp.crop);
   if(hh===SH){if(!hasShow()||!shw)return false;}else if(shw||top+pp.h>S.floors*8)return false;
+  else{const sp=specOf(hh);if(sp==='prop'||isVeg(pp.crop)!==(sp==='veg'))return false;}
   if(Math.floor(top/8)!==Math.floor((top+pp.h-1)/8))return false;
   for(let r=top;r<top+pp.h;r++)for(let c=pp.s;c<=pp.e;c++){const o=plotAt(r,c);if(o&&o!==pp.plot)return false;}
   return true;
@@ -1217,19 +1284,19 @@ function planBound(y){
 const planActual=()=>Math.round(S.orders.filter(o=>!o.showcase&&!o.show).reduce((a,o)=>a+o.qty*o.price*(1+.1*upLv('pots')),0));
 const PLAN_TIERS=[{min:.95,n:'Masterfully planned',st:3,cash:.05},{min:.9,n:'Well planned',st:2,cash:0},{min:.85,n:'Thoughtfully planned',st:1,cash:0}];
 // ---- spring vegetable contracts ----
-const VEG_P=[2,3];
+const VEG_P=[2,3],VEG_FALL=[6,7],VEG_FALL_F=.4,VEG_FALL_PRICE=.9,VEG_GROC=.8;// spring is the money: fall lines are fewer and cheaper, grocers pay less
 const vcNow=()=>S.vc&&S.vc.year===S.year&&!S.vc.none?S.vc:null;
 const vcLineV=l=>Math.round(l.h*capB()*l.price*(1+.1*upLv('pots')));
 const vcTotal=vc=>vc.lines.reduce((a,l)=>a+vcLineV(l),0);
 function makeVegContracts(){
-  const B=S.floors*8,used=new Set(),out=[];
+  const B=Math.max(1,specHouses('veg').length)*8,used=new Set(),out=[];
   for(const [f,size] of [[.25,'Small'],[.45,'Medium'],[.65,'Large']]){
     let cust=pickCust(true)||pickCust(false);for(let k=0;k<6&&used.has(cust);k++)cust=pickCust(false);used.add(cust);
     const lines=[];
-    for(const p of VEG_P){let left=Math.max(2,Math.round(B*f));const opts=Object.keys(VEGC).filter(k=>CROPS[k].sell.includes(p)).sort(()=>rnd()-.5);let i=0;
+    for(const p of [...VEG_P,...VEG_FALL]){const fall=VEG_FALL.includes(p);let left=Math.max(fall?1:2,Math.round(B*f*(fall?VEG_FALL_F:1)));const opts=Object.keys(VEGC).filter(k=>CROPS[k].sell.includes(p)).sort(()=>rnd()-.5);let i=0;
       while(left>0){const h=Math.min(left,ri(2,4));const k=opts[i++%opts.length];
-        lines.push({id:S.nid++,crop:k,p,h,price:Math.round(CROPS[k].price*tierOf(cust).pm*(S.veg&&S.veg.org?ORG_PRICE:1)*(1+.03*sk('negot'))*(.95+rnd()*.12))});left-=h;}}
-    const vc={size,cust,lines,miss:0,year:S.year};vc.bonus=Math.round(vcTotal(vc)*.4/50)*50;out.push(vc);
+        lines.push({id:S.nid++,crop:k,p,h,price:Math.round(CROPS[k].price*(fall?VEG_FALL_PRICE:1)*tierOf(cust).pm*(S.veg&&S.veg.org?ORG_PRICE:1)*(1+.03*sk('negot'))*(.95+rnd()*.12))});left-=h;}}
+    const vc={size,cust,lines,miss:0,year:S.year};vc.bonus=Math.round(vc.lines.filter(l=>VEG_P.includes(l.p)).reduce((a,l)=>a+vcLineV(l),0)*.4/50)*50;out.push(vc);
   }
   return out;
 }
@@ -1238,13 +1305,18 @@ function vegAsk(){
   if(!$('modal').hidden){setTimeout(vegAsk,500);return;}
   const cs=makeVegContracts();
   const lineTxt=(vc,p)=>{const m={};vc.lines.filter(l=>l.p===p).forEach(l=>m[l.crop]=(m[l.crop]||0)+l.h);return Object.entries(m).map(([k,h])=>`${h} ${CROPS[k].name.toLowerCase()}`).join(', ');};
-  modal(`<h2>Spring vegetable contract</h2><p>Promise a customer benches of vegetable starts for early and late spring. Their orders arrive at the start of each of those periods; you plant them first, and they ship the same period. Every line you can’t plant cuts the contract bonus by a third and costs reputation.</p>
-    <div class="opts">${cs.map((vc,i)=>`<button class="opt vco" type="button" data-vc="${i}"><b>${vc.size}: ${esc(vc.cust)}</b><span>Early spring: ${lineTxt(vc,2)} benches</span><span>Late spring: ${lineTxt(vc,3)} benches</span><span class="vcv">Orders ${fmt(vcTotal(vc))} + bonus ${fmt(vc.bonus)}</span></button>`).join('')}
-    <button class="opt" type="button" id="vcNo"><b>No contract this year</b><span>Grow only flowers this spring</span></button></div>`);
+  modal(`<h2>Vegetable contract</h2><p>Promise a customer benches of vegetable starts in your vegetable house: the big spring run, plus a smaller fall run of cool-season transplants. Their orders arrive at the start of each of those periods; you plant them first, and they ship the same period. Every spring line you can’t plant cuts the bonus by a third; any missed line costs reputation.</p>
+    <div class="opts">${cs.map((vc,i)=>`<button class="opt vco" type="button" data-vc="${i}"><b>${vc.size}: ${esc(vc.cust)}</b><span>Early spring: ${lineTxt(vc,2)} benches</span><span>Late spring: ${lineTxt(vc,3)} benches</span><span>Fall: ${lineTxt(vc,6)} / ${lineTxt(vc,7)} benches</span><span class="vcv">Orders ${fmt(vcTotal(vc))} + bonus ${fmt(vc.bonus)}</span></button>`).join('')}
+    <button class="opt" type="button" id="vcNo"><b>No contract this year</b><span>Fill the vegetable house with grocer orders only</span></button></div>`);
   $('mbox').querySelectorAll('[data-vc]').forEach(b=>b.onclick=()=>{S.vc=cs[+b.dataset.vc];save();closeModal();toast('good',`Contract signed with ${short1(S.vc.cust)}. Keep ${S.vc.lines.filter(l=>l.p===2).reduce((a,l)=>a+l.h,0)} benches free for early spring`);renderSheet();});
   $('vcNo').onclick=()=>{S.vc={year:S.year,none:true};save();closeModal();};
 }
 function vegOffers(c){
+  for(let i=0,n=specHouses('veg').length*(VEG_P.includes(c)?1:2);i<n;i++){const ks=Object.keys(VEGC).filter(k=>CROPS[k].sell.includes(c));if(!ks.length)break;const k=pick(ks),h=ri(1,3),cust=pickCust(false);
+    S.offers.unshift({id:S.nid++,crop:k,p:c,qty:h*capB(),price:Math.round(CROPS[k].price*VEG_GROC*tierOf(cust).pm*(S.veg&&S.veg.org?ORG_PRICE:1)*(.95+rnd()*.1)),cust,veg:true,groc:true,h});}
+  vegLines(c);
+}
+function vegLines(c){
   const vc=vcNow();if(!vc)return;
   const ls=vc.lines.filter(l=>l.p===c&&!l.done);if(!ls.length)return;
   S.offers=[...ls.map(l=>({id:S.nid++,crop:l.crop,p:c,qty:l.h*capB(),price:l.price,cust:vc.cust,veg:true,vline:l.id,h:l.h})),...S.offers];
@@ -1252,8 +1324,9 @@ function vegOffers(c){
 }
 function vegSettle(c){
   const vc=vcNow();if(!vc)return;
+  if(!vegOn()){vc.lines.filter(l=>l.p===c).forEach(l=>l.done=1);return;}// an old save's contract with no vegetable house yet: let it lapse quietly
   for(const l of vc.lines.filter(l=>l.p===c&&!l.done)){l.done=1;
-    if(!S.orders.some(o=>o.vline===l.id)){l.miss=1;vc.miss++;custRep(vc.cust,-5,`vegetable line not planted (${CROPS[l.crop].name.toLowerCase()})`);
+    if(!S.orders.some(o=>o.vline===l.id)){l.miss=1;if(VEG_P.includes(l.p))vc.miss++;custRep(vc.cust,-5,`vegetable line not planted (${CROPS[l.crop].name.toLowerCase()})`);
       if(!window.__quiet)toast('bad',`No ${CROPS[l.crop].name.toLowerCase()} for ${short1(vc.cust)}. The contract bonus drops to ${fmt(vegBonusNow(vc))}`);}}
 }
 const vegBonusNow=vc=>Math.round(vc.bonus*Math.max(0,1-vc.miss/3)/50)*50;
@@ -1262,6 +1335,44 @@ function vegPay(){
   vc.paid=1;const b=vegBonusNow(vc);
   if(b>0){S.cash+=b;S.ys.rev+=b;if(!vc.miss)custRep(vc.cust,4,'vegetable contract filled');}
   if(!window.__quiet)setTimeout(()=>toast(b>0?'cash':'bad',b>0?`${short1(vc.cust)} paid the vegetable contract bonus: ${fmt(b)}${vc.miss?` (${vc.miss} line${vc.miss>1?'s':''} missed)`:''}`:`No vegetable bonus this year: too many lines missed`),900);
+}
+// ---- turning houses into specialty houses ----
+function convertHouse(h,k){
+  if(S.phase!=='plan'){toast('bad','Change a house between periods');return;}
+  if(h<0||h>=S.floors||specOf(h)===k)return;
+  if(k&&!specOpen(k)){toast('bad',`${SPEC_N[k]}s open at ${stg(k==='veg'?VEG_LV:PROP_LV).n}`);return;}
+  if(k&&specHouses(k).length>=SPEC_MAX[k]){toast('bad',`You can have ${SPEC_MAX[k]} ${SPEC_N[k].toLowerCase()}${SPEC_MAX[k]>1?'s':''}`);return;}
+  if(k&&regHouses().filter(x=>x!==h).length<1){toast('bad','Keep at least one house for flowers');return;}
+  if(S.plots.some(pl=>!pl.done&&plotF(pl)===h)){toast('bad',`${floorName(h)} still has orders on its benches. Move or bin them first`);return;}
+  const free=k==='veg'&&S.veg&&S.veg.cert&&!S.veg.conv,cost=!k?SPEC_BACK:free?0:SPEC_COST[k];
+  if(cost&&!spend(cost,k?SPEC_N[k].toLowerCase():'converting back to flowers'))return;
+  S.ys.build=(S.ys.build||0)+cost;S.spec=S.spec||{};
+  if(k)S.spec[h]=k;else delete S.spec[h];
+  if(k==='veg'){S.veg=S.veg||{cert:0,germ:0,org:0};S.veg.cert=1;S.veg.conv=1;}
+  if(k==='prop')propS();
+  S.crew.forEach(r=>{if(r.role!=='load'&&r.role!=='prize'&&!homeOK(r.role,r.home))r.home=firstHome(r.role);});
+  syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
+  toast('good',k?`${floorName(h)} is now a ${SPEC_N[k].toLowerCase()}${k==='veg'&&!S.crew.some(r=>r.role==='olr')?'. Hire an olericulturist to run it':k==='prop'&&!S.crew.some(r=>r.role==='prop')?'. Hire a propagator to run it':''}`:`${floorName(h)} grows flowers again`);
+  renderSheet();hud();
+}
+function buyLic(k){if(S.phase!=='plan'||!propOn())return;const P0=propS();if(P0.lic[k])return;const c=licCost(k);if(!spend(c,`a propagation licence for ${CROPS[k].name.toLowerCase()}`))return;S.ys.build=(S.ys.build||0)+c;P0.lic[k]=1;toast('good',`Your propagation house can make ${CROPS[k].name.toLowerCase()} plugs now`);renderSheet();hud();}
+function specHTML(plan){
+  if(!specOpen('veg'))return`<h3 style="margin:18px 2px 0;font-size:18px">Specialty houses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">At ${stg(VEG_LV).n} you can turn a house into a vegetable house, and at ${stg(PROP_LV).n} into a propagation house.</p>${lockChip(VEG_LV)}`;
+  const sh=a=>Math.round(houseShare(a));
+  const rows=Array.from({length:S.floors},(_,h)=>{const k=specOf(h),busy=S.plots.some(pl=>!pl.done&&plotF(pl)===h);
+    const btn=(kk,lab,c)=>`<button class="btn${kk?' sun':''}" type="button" data-spec="${h}:${kk}"${plan&&!busy?'':' disabled'}>${lab}${c?` · ${fmt(c)}`:''}</button>`;
+    const opts=k?btn('','Back to flowers',SPEC_BACK):[specOpen('veg')&&specHouses('veg').length<SPEC_MAX.veg?btn('veg','Vegetables',S.veg&&S.veg.cert&&!S.veg.conv?0:SPEC_COST.veg):'',specOpen('prop')&&specHouses('prop').length<SPEC_MAX.prop?btn('prop','Propagation',SPEC_COST.prop):''].join('');
+    return`<div class="uprow">${svgIcon(k==='veg'?'olr':k==='prop'?'prop':'floor',40)}<div class="rn"><b>${floorName(h)}${k?' · '+SPEC_N[k]:''}</b><span>${k==='veg'?`Vegetables only. Upkeep ${fmt(sh(h)*(1+SPEC_UP.veg))} instead of ${fmt(sh(h))} a period; vegetable jobs go 40% faster.`:k==='prop'?`No orders. Upkeep ${fmt(sh(h)*(1+SPEC_UP.prop))} instead of ${fmt(sh(h))} a period.`:busy?'Has orders on its benches: clear them to convert.':'Flowers.'}</span></div><span class="spb">${opts}</span></div>`;}).join('');
+  let prop='';
+  if(propOn()){const P0=propS(),st=S.phase==='run'?propStrike():(P0.last??100),cap=specHouses('prop').length*8*PROP_CAP;
+    const roy=Object.keys(GEN).concat(Object.keys(CROPS).filter(k=>CROPS[k].prem)).filter(k=>owns(k)).map(k=>{const cp=GEN[k]||CROPS[k].prem,pd=Math.min(cp,P0.roy[k]||0);return`<span class="roy${pd>=cp?' done':''}">${cropPill(k)} ${pd>=cp?'paid off':`${fmt(pd)} of ${fmt(cp)}`}</span>`;}).join('');
+    const lic=Object.keys(CROPS).filter(k=>isShowCrop(k)&&owns(k)).map(k=>P0.lic[k]?`<span class="roy done">${cropPill(k)} licensed</span>`:`<button class="btn" type="button" data-lic="${k}"${plan?'':' disabled'}>${CROPS[k].name} licence · ${fmt(licCost(k))}</button>`).join('');
+    prop=`<div class="propc${P0.cert?'':' prob'}"><b>Propagation: ${P0.cert?'certified':'on probation'} · strike rate ${st}%</b>
+      <span>Sticks plugs for up to ${cap} flats a period, ready the period after. Planting from its plugs is free while it's certified (strike rate ${PROP_CERT}% or more). Below that you pay ${Math.round(PROP_PROB*100)}% of planting costs until it runs well ${2} periods in a row${P0.cert?'':` (${P0.run||0} of 2 so far)`}. Missed misting costs ${PROP_MISS.mist}%, missed cleaning ${PROP_MISS.san}%. Spare plugs sell to other growers at the end of each period.</span>
+      <span>This year: saved ${fmt(S.ys.propSaved||0)} on planting, sold ${fmt(S.ys.propSold||0)} in spare plugs, paid ${fmt(S.ys.roy||0)} royalties.</span>
+      ${roy?`<small>ROYALTIES: ${Math.round(PROP_ROY*100)}% of plug value until each variety is paid off</small><div class="roys">${roy}</div>`:''}
+      ${lic?`<small>SHOWCASE FLOWERS NEED A LICENCE</small><div class="roys">${lic}</div>`:''}</div>`;}
+  return`<h3 style="margin:18px 2px 0;font-size:18px">Specialty houses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Turn a house into a vegetable house${specOpen('prop')?' or a propagation house':` (propagation houses open at ${stg(PROP_LV).n})`}. A house has to be empty to change.</p>${rows}${prop}`;
 }
 function buyVeg(k){
   if(S.phase!=='plan'&&k!=='org'){toast('bad','Buy this between periods');return;}
@@ -1276,10 +1387,10 @@ function vegHTML(plan){
   const v=S.veg||{},lk=stage()<VEG_LV,vc=vcNow();
   const row=(icon,name,desc,btn)=>`<div class="uprow">${svgIcon(icon,44)}<div class="rn"><b>${name}</b><span>${desc}</span></div>${btn}</div>`;
   const buy=(k,c,dis)=>`<button class="btn sun" type="button" data-veg="${k}"${dis?' disabled':''}>${fmt(c)}</button>`;
-  const lines=vc?[2,3].map(p=>`<div class="vcl"><small>${PN[p].toUpperCase()}</small>${vc.lines.filter(l=>l.p===p).map(l=>`<span class="${l.miss?'miss':S.orders.some(o=>o.vline===l.id)?'ok':''}">${cropPill(l.crop)} ${l.h} bench${l.h>1?'es':''}</span>`).join('')}</div>`).join(''):'';
-  return`<p style="margin:0 2px 10px;color:var(--mute);font-size:14px">Vegetable starts are grown on a contract: at the start of each year you promise a customer benches for early and late spring. Their orders come first in those periods and are ready the same period you plant them.</p>
-    ${row('pot','Vegetable nursery certificate',lk?'Lets you sign spring vegetable contracts.':v.cert?'Certified. You’re offered a contract at the start of each year.':'Lets you sign spring vegetable contracts.',lk?lockChip(VEG_LV):v.cert?'<b class="ok">Certified</b>':buy('cert',VEG_CERT,!plan))}
-    ${v.cert?row('soil','Germination room',['Grow your own vegetable plugs: they cost 60% less.','Plugs cost 60% less. Expand it and they’re free.','Vegetable plugs are free.'][v.germ||0],(v.germ||0)>=2?'<b class="ok">Built</b>':buy('germ',VEG_GERM[v.germ||0],!plan))
+  const lines=vc?[...VEG_P,...VEG_FALL].map(p=>`<div class="vcl"><small>${PN[p].toUpperCase()}</small>${vc.lines.filter(l=>l.p===p).map(l=>`<span class="${l.miss?'miss':S.orders.some(o=>o.vline===l.id)?'ok':''}">${cropPill(l.crop)} ${l.h} bench${l.h>1?'es':''}</span>`).join('')}</div>`).join(''):'';
+  return`<p style="margin:0 2px 10px;color:var(--mute);font-size:14px">Vegetable starts grow in a vegetable house: a spring contract (the big money), a smaller fall run, and herb and greens orders from grocers all year. They come first in planning and are ready the same period you plant them. An olericulturist can run the house alone.</p>
+    ${row('olr','Vegetable house',lk?'Vegetables grow only in a vegetable house.':vegOn()?`You have ${specHouses('veg').length}. Contracts and grocer orders go to it.`:`Vegetables grow only in a vegetable house. Turn one of your houses into one in Houses${v.cert&&!v.conv?': your first conversion is free':''}.`,lk?lockChip(VEG_LV):vegOn()?'<b class="ok">Running</b>':'<button class="btn sun" type="button" data-gosub="houses">Houses</button>')}
+    ${vegOn()?row('soil','Germination room',['Grow your own vegetable plugs: they cost 60% less.','Plugs cost 60% less. Expand it and they’re free.','Vegetable plugs are free.'][v.germ||0],(v.germ||0)>=2?'<b class="ok">Built</b>':buy('germ',VEG_GERM[v.germ||0],!plan))
       +row('bug','Organic certification',v.org?`Vegetable contracts pay ${Math.round((ORG_PRICE-1)*100)}% more. Every spray on vegetable benches costs ${fmt(ORG_SPRAY)}.`:`New vegetable contracts pay ${Math.round((ORG_PRICE-1)*100)}% more, but every spray on vegetable benches costs ${fmt(ORG_SPRAY)} in organic pesticide.`,v.org?'<b class="ok">Certified</b>':buy('org',VEG_ORG,false)):''}
     ${vc?`<div class="vcard"><b>This year: ${esc(vc.cust)}</b><span>Orders ${fmt(vcTotal(vc))} · bonus ${fmt(vegBonusNow(vc))}${vc.paid?' (paid)':''}${vc.miss?` · ${vc.miss} line${vc.miss>1?'s':''} missed`:''}</span>${lines}</div>`:v.cert&&S.vc&&S.vc.year===S.year?'<p style="color:var(--mute)">No vegetable contract this year.</p>':''}`;
 }
@@ -1616,7 +1727,7 @@ function genOffers(){
   const c=S.period;S.offers=[];genContracts();
   const cand=candFlex(c);if(!cand.length)return;
   const mine=cand.filter(x=>owns(x.k));
-  const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.round(base*S.floors)+(sk('greenlight')?1:0);
+  const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.round(base*Math.max(1,regHouses().length))+(sk('greenlight')?1:0);
   const theirs=cand.filter(x=>!owns(x.k)),sure=mine.length?Math.min(n,Math.max(2,Math.ceil(n*.5))):0;
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
@@ -1696,7 +1807,9 @@ function genPopup(){
 function addTask(t){t.id=S.nid++;t.born=t.born??S.t;S.tasks.push(t);return t;}
 function dropTask(t){S.tasks=S.tasks.filter(x=>x!==t);S.queue=S.queue.filter(x=>x!==t);}
 const taskF=t=>t.type==='load'||t.type==='phone'?0:t.type==='tree'||t.type==='festj'?FIELD_H:t.type==='shop'||t.type==='succ'?SUC_H:t.type==='star'?t.h:t.type==='fix'?t.f:BENCH[t.bench].f;
-function workOf(t){if(t.type==='tree')return TJOB[t.job].w;if(t.type==='shop')return 1.4;if(t.type==='festj')return 1.6;if(t.type==='succ')return t.job==='repot'?1.8:1.2;const m=t.type==='pot'?[1,.75,.55][upLv('potter')]:t.type==='load'?[1,.7,.5][upLv('fork')]:t.type==='fix'?[1,.7,.5][upLv('heat')]*(hasBuild('shed')?.85:1):1;if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return(1.2+(pl?orderOf(pl).qty:10)*.09)*m;}return(t.rows?WORK[t.type]*t.rows.length:WORK[t.type])*m;}
+function workOf(t){return workOf0(t)*(t.bench!=null&&(t.type==='pot'||t.type==='water'||t.type==='pest')&&specOf(BENCH[t.bench].f)==='veg'?VEG_QUICK:1);}
+const VEG_QUICK=.6;
+function workOf0(t){if(t.type==='prop')return PJOB[t.job].w;if(t.type==='tree')return TJOB[t.job].w;if(t.type==='shop')return 1.4;if(t.type==='festj')return 1.6;if(t.type==='succ')return t.job==='repot'?1.8:1.2;const m=t.type==='pot'?[1,.75,.55][upLv('potter')]:t.type==='load'?[1,.7,.5][upLv('fork')]:t.type==='fix'?[1,.7,.5][upLv('heat')]*(hasBuild('shed')?.85:1):1;if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return(1.2+(pl?orderOf(pl).qty:10)*.09)*m;}return(t.rows?WORK[t.type]*t.rows.length:WORK[t.type])*m;}
 function taskLabel(t){
   if(t.type==='load'){const pl=S.plots.find(p=>p.id===t.plot);return'Load '+(pl?crop(pl.crop).name:'');}
   if(t.type==='phone')return'Phone';
@@ -1705,6 +1818,7 @@ function taskLabel(t){
   if(t.type==='shop')return`${t.who==='A walk-in'?'Walk-in':t.who}: ${SIZES[t.want.z].toLowerCase()}${t.want.sp?' '+SUCS[t.want.sp].n.toLowerCase().replace('barrel ',''):''}`;
   if(t.type==='succ'){const p=sucPlants()[t.slot];return(t.job==='repot'?'Repot ':'Treat rot: ')+(p?SUCS[p.sp].n.toLowerCase().replace('barrel ',''):'');}
   if(t.type==='tree'){const tr=treesOf()[t.spot];return TJOB[t.job].n+' '+(tr?TREES[tr.sp].n.toLowerCase().replace('japanese ','j. '):'tree');}
+  if(t.type==='prop')return PJOB[t.job].n+' '+benchName(t.bench);
   if(t.type==='fix')return'Fix '+unitName(S.period).toLowerCase()+(t.f===SH?' in ★':S.floors>1?' in '+(t.f+1):'');
   const nm=t.type==='care'?CARE[t.care]:({pot:'Pot',water:'Water',pest:'Spray'})[t.type];
   if(t.rows)return nm+' '+benchName(t.rows[0])+(t.rows.length>1?'–'+LETTERS[t.rows[t.rows.length-1]]:'');
@@ -1723,11 +1837,12 @@ function target(t){
 }
 const engaged=t=>me.task===t||staff.some(w=>w.task===t)||!!(robo&&robo.task===t);
 function complete(t){
+  if(t.type==='prop'){propDone(t);dropTask(t);return;}
   const pl=t.plot!=null?S.plots.find(p=>p.id===t.plot):null;
   if(t.type==='pot'&&pl&&!pl.done){
     const late=Math.max(0,S.t-t.due)/PSEC*.8*(1-.3*sk('gentle'))*(1-.25*decB(plotF(pl),'papel'));let lost=0;
     pl.rows.forEach((r,k)=>{pl.potted[k]=true;pl.alive[k]=Math.round(pl.flats[k]*(1-late));lost+=pl.flats[k]-pl.alive[k];});
-    let cost=Math.round(pl.flats.reduce((a,b)=>a+b,0)*crop(pl.crop).cost*vegPlugM(pl.crop)*(1-.05*sk('bulk')));if(S.plugDeal&&S.plugDeal.crop===pl.crop){cost=Math.round(cost/2);S.plugDeal=null;float(BENCH[t.bench],'Half-price plugs','#2e7d4a');}S.cash-=cost;S.ys.plugs+=cost;
+    let cost=Math.round(pl.flats.reduce((a,b)=>a+b,0)*crop(pl.crop).cost*vegPlugM(pl.crop)*(1-.05*sk('bulk')));if(S.plugDeal&&S.plugDeal.crop===pl.crop){cost=Math.round(cost/2);S.plugDeal=null;float(BENCH[t.bench],'Half-price plugs','#2e7d4a');}cost=plugBill(pl,cost);S.cash-=cost;S.ys.plugs+=cost;
     if(S.trowel){const k=pl.rows.length-1;pl.flats[k]+=TROWEL_N;pl.alive[k]+=TROWEL_N;float(BENCH[pl.rows[k]],`+${TROWEL_N} flats · diamond trowel`,'#2a8fc0');}
     if(lost)float(BENCH[t.bench],`${lost} lost, potted late`,'#c8402f');
   }
@@ -1785,14 +1900,14 @@ function gradeOf(q){return q>=90?'A':q>=75?'B':'C';}
 const GRADE_M={A:1,B:.7,C:.45};
 function finishShip(pl,bought,truckId){
   if(pl.show){const o=orderOf(pl),C=crop(pl.crop),sent=Math.min(have(pl),o.qty),q=Math.round(pl.q??100),gr=gradeOf(q),rev=Math.round(sent*o.price*GRADE_M[gr]*(1+.1*upLv('pots')));
-    S.cash+=rev;S.ys.rev+=rev;o.status='shipped';o.sent=sent;S.ys.full+=sent>=o.qty?1:0;S.ys.short+=sent<o.qty?1:0;
+    S.cash+=rev;S.ys.rev+=rev;if(isVeg(o.crop))S.ys.vegRev=(S.ys.vegRev||0)+rev;o.status='shipped';o.sent=sent;S.ys.full+=sent>=o.qty?1:0;S.ys.short+=sent<o.qty?1:0;
     S.ys.cr=S.ys.cr||[];if(sent>0&&!S.ys.cr.includes(pl.crop))S.ys.cr.push(pl.crop);
     S.ys.show=S.ys.show||[];const score=Math.min(100,Math.round(q*sent/o.qty)+(CROPS[pl.crop].prem?5:0)+2*decB(SH,'ribbon'));S.ys.show.push({crop:pl.crop,show:o.show,q,sent,qty:o.qty,score});
     toast('good',`${plural(pl.crop)} entered in the ${o.show}: grade ${gr}, score ${score}, +${fmt(rev)}`);
     const k=truckById(truckId);if(k&&k.state!=='gone')truckLeaves(k,false);return;}
   const o=orderOf(pl),C=crop(pl.crop),alive=have(pl)+bought,sent=Math.min(alive,o.qty),extra=alive-sent;
   const pm=(1+.1*upLv('pots'))*(catOn('beatrice')?1.05:1)*(1+.05*decB(plotF(pl),'heart')),buyCost=bought*Math.round(C.price*1.2),st=o.scan?.65+rnd()*.35:1,rev=Math.round(sent*o.price*pm*st),clear=extra*Math.round(o.price*(hasBuild('stand')?.6:.35)*pm);
-  S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;S.ys.buy+=buyCost;if(o.fest&&S.fy&&sent>=o.qty*.9)S.fy.got[o.fest]=(S.fy.got[o.fest]||0)+1;
+  S.cash+=rev+clear-buyCost;S.ys.rev+=rev+clear;if(isVeg(o.crop))S.ys.vegRev=(S.ys.vegRev||0)+rev+clear;S.ys.buy+=buyCost;if(o.fest&&S.fy&&sent>=o.qty*.9)S.fy.got[o.fest]=(S.fy.got[o.fest]||0)+1;
   if(sent>0&&!isVeg(pl.crop)&&!isFestC(pl.crop)){S.ys.cr=S.ys.cr||[];if(!S.ys.cr.includes(pl.crop))S.ys.cr.push(pl.crop);}o.status='shipped';o.sent=sent;if(o.contract)contractShipped(o.contract);
   const k=truckById(truckId),waited=k&&k.arrived!=null?(S.t-k.arrived)-((k.deadline-k.arrived)-TRUCK_WAIT):0,slow=waited>TRUCK_WAIT*.5;
   if(o.scan)toast('cash',`Big Box sold through ${Math.round(st*100)}% of your ${C.name.toLowerCase()}`);
@@ -1822,18 +1937,18 @@ function syncStaff(){
   for(const r of S.crew){if(r.role==='prize')r.home=SH;else if(r.home>=S.floors)r.home=0;let w=staff.find(x=>x.id===r.id);if(!w){const hh=r.role==='load'?0:r.home,H=HOUSES[hh];w=mkWorker(r.id,r.role,H.ox+1.5+staff.length%7,H.oy+6.5);w.f=H.L;staff.push(w);}w.rec=r;}
 }
 function hire(role){
-  const name=freshName();
-  S.crew.push({id:'s'+S.nid++,name,role,home:role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1),n:role==='prize'?VET:0,wage:roleCost(role),att:role==='prize'?1:undefined});syncStaff();
+  const name=freshName();let hm=role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1);if(role!=='prize'&&role!=='load'&&!homeOK(role,hm))hm=firstHome(role);
+  S.crew.push({id:'s'+S.nid++,name,role,home:hm,n:role==='prize'||ROLES[role].spec?VET:0,wage:roleCost(role),att:role==='prize'?1:undefined});syncStaff();
 }
 function fireCrew(id){const r=S.crew.find(x=>x.id===id);if(r)S.pastNames=[...(S.pastNames||[]),r.name].slice(-20);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
-function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load'||r.role==='prize')return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
+function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load'||r.role==='prize'||!homeOK(r.role,f))return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
 const ATT=[0,13,10,7,4,.6],PSLOW=[1,1.5,1.35,1.2,1.08,1],ATT_N=['','Distracted','Steady','Careful','Sharp','Meticulous'];
 function staffPick(w){
   if(w.task)return;
   const home=w.rec?w.rec.home:0;
   if(w.rec&&w.rec.away===ckey())return;
   if(w.role==='prize'){const d=ATT[clamp(w.rec.att||1,1,5)];const t=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===SH&&S.t-t.born>=d&&!S.queue.includes(t)&&!engaged(t)).sort((a,b)=>(a.type==='care'?0:1)-(b.type==='care'?0:1)||(a.due??999)-(b.due??999))[0];if(t)assign(w,t);return;}
-  const away=S.busyUntil&&S.t<S.busyUntil,t=S.tasks.filter(t=>t.type===w.role&&(t.type==='load'||taskF(t)===home)&&(away||!S.queue.includes(t))&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
+  const away=S.busyUntil&&S.t<S.busyUntil,t=S.tasks.filter(t=>roleTakes(w.role,t)&&(t.type==='load'||taskF(t)===home)&&(away||!S.queue.includes(t))&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
     .sort((a,b)=>w.role==='load'?Math.abs(BAYS[a.bay||0].x-w.x)/3+(a.due-S.t)*.15-(Math.abs(BAYS[b.bay||0].x-w.x)/3+(b.due-S.t)*.15):(a.due??999)-(b.due??999))[0];
   if(t){if(S.queue.includes(t))S.queue=S.queue.filter(x=>x!==t);assign(w,t);}
 }
@@ -1989,7 +2104,7 @@ function enqueue(t){
 // ---------------- period flow ----------------
 function startPeriod(){
   vegSettle(S.period);
-  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=S.floors*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;if(S.visit){const n=S.visit;S.visit=null;crmOf(n).visit=S.year;S.busyUntil=PSEC*.25;S.busyWhat=`Visiting ${short1(n)}`;custRep(n,12,'site visit');if(!window.__quiet)setTimeout(()=>toast('good',`Your grower is visiting ${short1(n)} this morning and will be back soon`),400);}S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=Math.max(1,regHouses().length)*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;if(S.visit){const n=S.visit;S.visit=null;crmOf(n).visit=S.year;S.busyUntil=PSEC*.25;S.busyWhat=`Visiting ${short1(n)}`;custRep(n,12,'site visit');if(!window.__quiet)setTimeout(()=>toast('good',`Your grower is visiting ${short1(n)} this morning and will be back soon`),400);}S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});syncRobo();if(robo){robo.task=null;robo.path=[];robo.work=0;robo.leg=null;}
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
@@ -2009,12 +2124,13 @@ function startPeriod(){
   if(!window.__quiet){const nc=(rnd()<.8?1:0)+(stage()>=9&&rnd()<.35?1:0);for(let i=0;i<nc;i++)S.events.push({at:PSEC*(.12+rnd()*.6),k:'call'});}
   S.plots.filter(pl=>pl.show&&!pl.done&&pl.s<=c&&pl.e>=c).forEach(pl=>{const n=pl.e===c?2:3;for(let i=0;i<n;i++)S.events.push({at:PSEC*(.12+i*(.72/n)+rnd()*.12),k:'care',plot:pl.id});});
   if(c>=2&&c<=5&&rnd()<.6)S.events.push({at:PSEC*(.15+rnd()*.3),k:'popup'});
-  schedTreeJobs(c);sucSched(c);festSched(c);
+  propStart(c);schedTreeJobs(c);sucSched(c);festSched(c);
   if(!window.__quiet&&rnd()<Math.min(.95,(catOn('minaou')?.75:.5)*(1+.3*sk('starspot'))*(1+.06*houseIds().reduce((a,h)=>a+decB(h,'egg'),0))))S.events.push({at:PSEC*(.1+rnd()*.6),k:'star'});
   S.events.sort((a,b)=>a.at-b.at);
   closeSheet();hud();
 }
 function fire(e){
+  if(e.k==='pmist'||e.k==='psan'){propEvent(e);return;}
   const c=S.period;
   if(e.k==='truck'){
     const k=S.trucks.find(k=>k.plot===e.plot);if(!k)return;
@@ -2050,6 +2166,7 @@ function tick(dt){
     if(t.type==='tree'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}treeMiss(t);continue;}
     if(t.type==='festj'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}S.fy.patch[t.fest]=(S.fy.patch[t.fest]||[]).filter(s=>s!==t.spot);if(!window.__quiet)toast('bad','Customers at the festival patch gave up waiting');continue;}
     if((t.type==='shop'||t.type==='succ')&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}sucMiss(t);continue;}
+    if(t.type==='prop'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}propMiss(t);continue;}
     if(t.type==='star'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}toast('star','The star faded away');continue;}
     if(t.type==='phone'&&S.t>=t.due){dropTask(t);if(me.task===t){me.task=null;me.path=[];}toast('phone','Missed a call');continue;}
     if(t.type==='care'&&S.t>=t.due){const pl=S.plots.find(p=>p.id===t.plot);if(pl){pl.q=Math.max(0,(pl.q??100)-15);float(BENCH[t.bench],`Missed ${CARE[t.care].toLowerCase()} −15`,'#c8402f');}dropTask(t);continue;}
@@ -2106,7 +2223,7 @@ function drinkCup(){
   floats.push({x:me.x,y:me.y-.5,f:me.f,text:'☕ Coffee break!',color:'#8a5a22',t0:performance.now()});
   toast('good',n?`Coffee break! The whole team got to ${n} job${n>1?'s':''} at once`:'Coffee break! Nothing was waiting, but it hit the spot');
 }
-const idleNow=()=>!window.__noSkip&&!sucOn()&&!S.plots.some(pl=>!pl.done&&pl.s<=S.period)&&!S.trucks.some(k=>k.state==='coming'||k.state==='line'||k.state==='dock')&&!ask&&!S.offers.some(o=>o.popup)&&!S.tasks.some(t=>t.type==='phone'||t.type==='star'||t.type==='tree');
+const idleNow=()=>!window.__noSkip&&!sucOn()&&!propOn()&&!S.plots.some(pl=>!pl.done&&pl.s<=S.period)&&!S.trucks.some(k=>k.state==='coming'||k.state==='line'||k.state==='dock')&&!ask&&!S.offers.some(o=>o.popup)&&!S.tasks.some(t=>t.type==='phone'||t.type==='star'||t.type==='tree');
 function busyFloat(){if(S.busyUntil&&S.t<S.busyUntil&&!S.busyShown){S.busyShown=1;float({x:me.x-.5,y:me.y-.5,f:me.f},S.busyWhat||'Busy','#2a78d0');}if(!(S.busyUntil&&S.t<S.busyUntil))S.busyShown=0;}
 function simStep(dt){busyFloat();
   const mh=sk('foreman')?houseAtXY(Math.floor(me.x),Math.floor(me.y),me.f):-1;
@@ -2125,7 +2242,7 @@ function settleBooks(){
   if(lp)toast('cash',`Loan payment: ${fmt(lp)} plus ${fmt(li)} interest`);
 }
 function endPeriod(){
-  if(ask)resolveAsk(0);S.otShown=0;cup=null;
+  if(ask)resolveAsk(0);S.otShown=0;cup=null;propEnd();
   const c=S.period;
   S.trucks.filter(k=>k.state==='line'||k.state==='dock'||k.state==='coming').forEach(k=>truckLeaves(k,true));
   let fails=0;
@@ -2319,13 +2436,14 @@ function drawBackWalls(H){
 function drawFront(H){}
 function drawHouseTag(H){
   const z=H.L*FH;
-  {const p=P(H.ox+5.5,H.oy+7.6,10+z);cx.font='700 17px Outfit,sans-serif';const t=H.show?'★ Showcase':floorName(H.h),w=cx.measureText(t).width+22;cx.fillStyle=H.show?'#8a6a12':'#173426';rr(p[0]-w/2,p[1]-13,w,26,13);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+1);}
+  {const p=P(H.ox+5.5,H.oy+7.6,10+z);cx.font='700 17px Outfit,sans-serif';const sp=H.show?'':specOf(H.h),t=H.show?'★ Showcase':floorName(H.h)+(sp==='veg'?' · Vegetables':sp==='prop'?' · Propagation':''),w=cx.measureText(t).width+22;cx.fillStyle=H.show?'#8a6a12':sp==='veg'?'#3f6a1a':sp==='prop'?'#1f6f66':'#173426';rr(p[0]-w/2,p[1]-13,w,26,13);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,p[0],p[1]+1);}
 }
 const SOIL=['#6e5038','#5a4230','#4b3727'];
 function drip(x,y,z){const l=upLv('hose');if(l<2)return;const a=P(x,y+.5,z+31),c=P(x+1,y+.5,z+31);cx.strokeStyle='#2f7a3f';cx.lineWidth=Math.max(1,1.6*sc);cx.beginPath();cx.moveTo(a[0],a[1]);cx.lineTo(c[0],c[1]);cx.stroke();if(l>2){cx.fillStyle='#2a78d0';for(const t of [.25,.75]){const q=P(x+t,y+.5,z+31);cx.beginPath();cx.arc(q[0],q[1],Math.max(1,1.6*sc),0,7);cx.fill();}}}
 function drawBenchTile(b,i){
   const x=b.x+i,y=b.y,z=b.lv*FH;
   const nm=['bench_left','bench_mid','bench_right'][i],rl=upLv('roll')||b.f===SH?'|roll':'',B=n=>spr(n+rl,x,y,z+6);
+  if(specOf(b.f)==='prop'){const on=S.prop&&((S.prop.stuck||[]).includes(b.i)||(S.prop.stock||0)>0);B(on?nm+'_tray':nm);drip(x,y,z);if(on)spr('pothos_0',x,y,z+6);return;}
   const pl=S.phase==='done'?null:liveAt(b.i,S.period),k=pl?pl.rows.indexOf(b.i):-1;
   if(!pl){B(nm);drip(x,y,z);return;}
   if(!pl.potted[k]){B(pl.s===S.period&&S.phase==='run'?nm+'_tray':nm);drip(x,y,z);return;}
@@ -2526,7 +2644,7 @@ function petCat(c){
 function drawPerson(w,shirt,now){
   if(w===robo)return drawRobo(w,now);
   const x=w.x,y=w.y,z=w.y<0?0:w.f*FH,walking=w.path.length>0,working=w.task&&!walking&&w.leg!=='lift',b=walking?Math.abs(Math.sin(now/95))*3:working?Math.abs(Math.sin(now/140))*2:0;
-  const who=w===me?growerId():'crew_'+w.role,face=w.face||'front',lk=w===me?gsk():'|'+lookOf(w.rec);
+  const who=w===me?growerId():'crew_'+crewSpr(w.role),face=w.face||'front',lk=w===me?gsk():'|'+lookOf(w.rec);
   const id=(working?(Math.floor(now/320)%2?`${who}_work`:`${who}_front_0`):`${who}_${face}_${walking?Math.floor(now/170)%2:0}`)+lk;
   spr(id,x-.5,y-.5,z+6);
   if(working&&w.work>0){const need=workOf(w.task)*(w===me?1:slowOf(w.rec)),f=clamp(w.work/need,0,1),p=P(x,y,66+z);
@@ -2593,8 +2711,8 @@ function drawIcons(){
   const fOnly=focusMode()&&focusH>=0;
   for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF&&(!fOnly||taskF(t)===focusH)).sort((a,b)=>a.id-b.id)){
     const p=t.type==='tree'||t.type==='festj'?(()=>{const q=spotXY(t.spot);return P(q.x+.5,q.y+.5,74);})():t.type==='shop'?P(SUCO.ox+SUC_SPOTS[t.spot][0]+.5,SUCO.oy+SUC_SPOTS[t.spot][1]+.5,78):t.type==='succ'?(()=>{const q=sucTile(t.slot);return P(q.x+.5,q.y+.5,56);})():t.type==='star'?P(t.x+.5,t.y+.5,40+ZB()):t.type==='phone'?P(HOUSES[0].ox+PHONE.x+.55,HOUSES[0].oy+.1,92+ZB()):t.type==='fix'?P(unitOf(t.f).x+.5,unitOf(t.f).y+.5,80+ZB()):P(BENCH[t.bench].x+1.5,BENCH[t.bench].y+.5,70+ZB());
-    if(group){const key=taskF(t)+(t.care||t.type),g=groups[key]||(groups[key]={sx:0,sy:0,k:t.care||t.type,tasks:[]});g.sx+=p[0];g.sy+=p[1];g.tasks.push(t);continue;}
-    items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:t.type==='care'?t.care:t.type,t,tasks:[t]});
+    if(group){const key=taskF(t)+(t.ic||t.care||t.type),g=groups[key]||(groups[key]={sx:0,sy:0,k:t.ic||t.care||t.type,tasks:[]});g.sx+=p[0];g.sy+=p[1];g.tasks.push(t);continue;}
+    items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:t.ic||(t.type==='care'?t.care:t.type),t,tasks:[t]});
   }
   for(const g of Object.values(groups)){const n=g.tasks.length,x=g.sx/n,y=g.sy/n;g.tasks.sort((a,b)=>left(a)-left(b));items.push({x,y,ax:x,ay:y,k:g.k,t:g.tasks[0],tasks:g.tasks,n});}
   const gap=r*2+14;
@@ -3219,8 +3337,8 @@ let stripSig='';
 function houseLoad(h){const ts=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===h);return{n:ts.length,hot:ts.some(t=>t.due!=null&&!engaged(t)&&(t.due-S.t)<(t.due-t.born)*.35)};}
 function houseMap(cur,mk,lab,withShow){
   const star=withShow&&hasShow()?`<button type="button" ${mk(SH)} class="shb${cur===SH?' on':''}" aria-label="Showcase house">★</button>`:'';
-  if(S.floors<=4)return`<div class="hmap row">${lab?`<span class="hl0">${lab}</span>`:''}<div class="hmg">${Array.from({length:S.floors},(_,h)=>`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`).join('')}${star}</div></div>`;
-  return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}" aria-label="House ${h+1}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}${star?`<div class="hml"><small>Show</small><div class="hmg one">${star}</div></div>`:''}</div>`;
+  if(S.floors<=4)return`<div class="hmap row">${lab?`<span class="hl0">${lab}</span>`:''}<div class="hmg">${Array.from({length:S.floors},(_,h)=>`<button type="button" ${mk(h)} class="${cur===h?'on':''}${specOf(h)?' sp-'+specOf(h):''}" aria-label="${esc(hName(h))}">${h+1}</button>`).join('')}${star}</div></div>`;
+  return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}${specOf(h)?' sp-'+specOf(h):''}" aria-label="${esc(hName(h))}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}${star?`<div class="hml"><small>Show</small><div class="hmg one">${star}</div></div>`:''}</div>`;
 }
 let hpOpen=false;
 function renderStrip(){
@@ -3266,9 +3384,9 @@ function renderTray(){
   const sig=S.queue.map(t=>t.id).join(',')+'|'+staff.map(w=>w.id+':'+(w.task?.id||'')+':'+w.rec.home).join(',')+'|'+(me.task?.id||'')+'|'+S.phase;
   if(sig!==traySig){
     traySig=sig;
-    $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.care||t.type,28)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?(isPhone()?'Tap icons to queue jobs':'Tap the big icons to give your grower jobs'):'Plan the period, then start it'}</span>`;
+    $('qMe').innerHTML=S.queue.length?S.queue.map(t=>`<div class="card" data-id="${t.id}">${svgIcon(t.ic||t.care||t.type,28)}<span class="lb">${taskLabel(t)}</span><i class="bar"><i></i></i><button class="x" type="button" data-x="${t.id}" aria-label="Remove">×</button></div>`).join(''):`<span class="empty">${S.phase==='run'?(isPhone()?'Tap icons to queue jobs':'Tap the big icons to give your grower jobs'):'Plan the period, then start it'}</span>`;
     $('laneC').hidden=!staff.length;
-    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}"><img src="${personURL('crew_'+w.role+'_front_0|'+lookOf(w.rec))}" alt=""></span>${w.role==='prize'?'<b class="af">★</b>':S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
+    $('qC').innerHTML=staff.map(w=>`<button class="av${w.task?'':' idle'}" type="button" data-w="${w.id}" aria-label="${esc(w.rec.name)}, ${ROLES[w.role].name}"><svg class="ring" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="23" class="rt"/><circle cx="26" cy="26" r="23" class="rp"/></svg><span class="ai" style="background:${IC[w.role].c}"><img src="${personURL('crew_'+crewSpr(w.role)+'_front_0|'+lookOf(w.rec))}" alt=""></span>${w.role==='prize'?'<b class="af">★</b>':S.floors>1&&w.role!=='load'?`<b class="af">${w.rec.home+1}</b>`:''}${w.task?'':'<b class="az">idle</b>'}</button>`).join('');
     if(crewPop)renderCrewPop();
   }
   const th=$('tray').offsetHeight;if(th!==trayH){trayH=th;layout();}
@@ -3410,6 +3528,7 @@ const booked=()=>Math.round(S.orders.filter(o=>o.status!=='failed').reduce((a,o)
 function evalPv(top){
   const pp=sel;if(!pp)return{ok:false,reason:''};
   if(pp.s<minStart())return{ok:false,reason:'Too late to pot this one'};
+  {const hh=Math.floor(top/8),sp=hh===SH?'':specOf(hh);if(sp==='prop')return{ok:false,reason:'The propagation house grows plugs, not orders'};if(hh!==SH&&isVeg(pp.crop)&&sp!=='veg')return{ok:false,reason:'Vegetables grow only in a vegetable house'};if(sp==='veg'&&!isVeg(pp.crop))return{ok:false,reason:'The vegetable house grows vegetables only'};}
   const hit=new Set();
   for(let r=top;r<top+pp.h;r++)for(let c=pp.s;c<=pp.e;c++){const o=plotAt(r,c);if(o)hit.add(o);}
   for(const pl of hit){
@@ -3613,7 +3732,7 @@ function renderSheet(){
       <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(wageOf(r))}/period${bunkOn()?" (bunkhouse)":""}${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
-      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(roleCost(k))}/period</small></span></button>`).join('')}</div>
+      <div class="hires">${Object.entries(ROLES).filter(([k,R])=>k!=='prize'&&(!R.spec||specHouses(R.spec).length)).map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+crewSpr(k)+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(roleCost(k))}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
@@ -3624,6 +3743,7 @@ function renderSheet(){
       <div class="gens">${Object.entries(CROPS).filter(([k])=>!notFlower(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(nextHouseOH())} more upkeep each period (each house costs a little more to run than the last). Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
+      ${specHTML(plan)}
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
@@ -3651,6 +3771,9 @@ function renderSheet(){
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
   el.querySelectorAll('[data-veg]').forEach(b=>b.onclick=()=>buyVeg(b.dataset.veg));
+  el.querySelectorAll('[data-spec]').forEach(b=>b.onclick=()=>{const [h,k]=b.dataset.spec.split(':');convertHouse(+h,k);});
+  el.querySelectorAll('[data-lic]').forEach(b=>b.onclick=()=>buyLic(b.dataset.lic));
+  el.querySelectorAll('[data-gosub]').forEach(b=>b.onclick=()=>{upSub=b.dataset.gosub;renderSheet();});
   el.querySelectorAll('[data-ds]').forEach(b=>b.onclick=()=>{const [h,i]=b.dataset.ds.split(':').map(Number);decoSlot(h,i);});{const w=el.querySelector('#wrB');if(w)w.onclick=wardrobeModal;}el.querySelectorAll('[data-db]').forEach(b=>b.onclick=()=>buyDeco(b.dataset.db));
   el.querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{upSub=b.dataset.sub;renderSheet();$('scr').scrollTop=0;});
   el.querySelectorAll('[data-plant]').forEach(b=>b.onclick=()=>plantModal(+b.dataset.plant));
@@ -3937,7 +4060,8 @@ const STAGES=[
   {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1,yrs:3}}];
 const GATE_UP={bays:[3,6,10],pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
 const GATE_GEN={vinca:1,begonia:3,geranium:4,fern:5,kale:6,hydrangea:8,poinsettia:11};
-const HOUSE_CAP=[1,1,1,2,2,2,3,3,4,4,5,6,7,8,9,10,11,12,12,12,12];
+// 8 houses at most (ground and second floor); later levels open specialty houses instead
+const HOUSE_CAP=[1,1,1,2,2,2,3,3,4,4,5,6,7,8,8,8,8,8,8,8,8];
 // one more crew slot at every other nursery level (2, 4, 6...) on top of the base curve
 const CREW_CAP=[2,2,3,4,4,5,6,7,8,9,10,11,13,15,17,19,21,23,25,27,28].map((n,g)=>n+Math.floor(g/2));
 const FIELD_LV=5,FIELD_CAP=[[5,6],[10,12],[15,18]];
@@ -3960,6 +4084,7 @@ function rewardsOf(g){ // what opens when you reach stage g
   if(HOUSE_CAP[g]>HOUSE_CAP[g-1])out.push({t:'house',n:HOUSE_CAP[g]});
   if(CREW_CAP[g]>CREW_CAP[g-1])out.push({t:'crew',n:CREW_CAP[g]});
   for(const [lv,n] of FIELD_CAP)if(g===lv)out.push({t:'field',n});
+  if(g===VEG_LV)out.push({t:'spec',k:'veg'});if(g===PROP_LV)out.push({t:'spec',k:'prop'});
   if(g===STAGES.length)out.push({t:'trophy'});
   if(g>STAGES.length)out.push({t:'cash',n:5000});
   return out;
@@ -4072,6 +4197,7 @@ function rewardTile(r){
   if(r.t==='crew')return`<div class="rw">${svgIcon('crew',42)}<b>Up to ${r.n} crew</b><small>Hiring</small></div>`;
   if(r.t==='house')return`<div class="rw">${svgIcon('floor',42)}<b>Up to ${r.n} houses</b><small>Building</small></div>`;
   if(r.t==='field')return`<div class="rw"><img src="${spriteURL('tree_oak_3','8 0 48 64')}" alt="" class="rwp"><b>${r.n} tree spots</b><small>Tree field</small></div>`;
+  if(r.t==='spec')return`<div class="rw">${svgIcon(r.k==='veg'?'olr':'prop',42)}<b>${SPEC_N[r.k]}</b><small>Specialty</small></div>`;
   if(r.t==='trophy')return`<div class="rw">${trophySVG(42)}<b>Golden Trowel</b><small>Trophy</small></div>`;
   return`<div class="rw">${svgIcon('cash',42)}<b>${fmt(r.n)} bonus</b><small>Prize money</small></div>`;
 }
@@ -4270,7 +4396,7 @@ function ledgerHTML(){
   return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
-    <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
+    <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='spec'?svgIcon(r.k==='veg'?'olr':'prop',22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
     <h3 class="lh3">Magazine ratings</h3><p class="edrow">${EDS.map((E,i)=>`<span class="${i===edIx()?'on':''}" style="--ec:${E.c}">${E.n}</span>`).join('<i>\u203a</i>')}</p>${profitChart()}${ledgerTable()}`;
 }
 function buyGen(k){
@@ -4447,6 +4573,7 @@ function renderBoard(){
     const val=ctag+(st==='done'?fmt(Math.round((o.sent||0)*o.price*(1+.1*upLv('pots')))):fmt(Math.round(o.qty*o.price*(1+.1*upLv('pots')))));
     h+=blkHTML({cls:`${mv?' mv':''}${isSel?' picked':''}${lifted?' lift':''}${ev&&ev.ok&&ev.gone.includes(pl)?' bump':''}`,color:C.color,left,top:m.hh+top*m.rh+2,w:bw,h:h2*m.rh-4,st,name:C.name,count:`${hv}/${o.qty}`,short:hv<o.qty&&!pl.done,val,fut,rm:mv,id:pl.id,crop:pl.crop,stage:st==='grow'?Math.max(1,prog(pl)<.5?1:2):3});
   }
+  if(specOf(boardF)==='prop')h+=`<div class="bprop" style="left:${m.lab}px;top:${m.hh}px;width:${8*m.cw}px;height:${8*m.rh}px"><b>Propagation house</b><span>No orders here: it grows plugs for your other houses.</span></div>`;
   h+=`<div class="nowline" style="left:${nowX-1.5}px;top:${m.hh-6}px;height:${m.rh*8+6}px"></div>`;
   if(hand){
     if(placing.of.contract)for(let k=placing.k+1;k<placing.of.n;k++){const d=delivery(placing.of,k,placing.cid),pp=piece(d),r=firstFit(d);if(r<0||Math.floor(r/8)!==boardF)continue;h+=blkHTML({cls:' later',color:crop(d.crop).color,left:m.lab+pp.s*m.cw+2,top:m.hh+(r-base)*m.rh+2,w:(pp.e-pp.s+1)*m.cw-4,h:pp.h*m.rh-4,st:'ghost',name:'',count:`#${k+1}`,val:crop(d.crop).name,ghost:true,crop:d.crop});}

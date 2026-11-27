@@ -52,12 +52,18 @@ window.AG = (() => {
     let acts = 0;
     // a new house when the nursery allows it
     tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 3 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
+    // specialty houses: a vegetable house once there are 3 houses, a propagation house once there are 5; each gets its specialist
+    tryDo('spec', () => {
+      const conv = (k, minH) => { if (!specOpen(k) || specHouses(k).length || S.floors < minH) return; const h = [...regHouses()].reverse().find(h => h > 0 && !S.plots.some(pl => !pl.done && plotF(pl) === h)); if (h == null) return; const c = k === 'veg' && S.veg && S.veg.cert && !S.veg.conv ? 0 : SPEC_COST[k]; if (!afford(c)) return; convertHouse(h, k); if (specOf(h) === k) { use('spec'); acts++; } };
+      conv('veg', 3); conv('prop', 5);
+      for (const [k, role] of [['veg', 'olr'], ['prop', 'prop']]) if (specHouses(k).length && !S.crew.some(r => r.role === role) && crewRoom() > 0 && S.cash > 2000) { hire(role); use('hire'); acts++; }
+    });
     // loading bays: one more at two, four and seven houses (the old automatic schedule), each staffed below
     tryDo('bays', () => { const want = S.floors >= 7 ? 4 : S.floors >= 4 ? 3 : S.floors >= 2 ? 2 : 1; while (bayCount() < want && upOpen('bays', upLv('bays')) && afford(UPS.bays.cost[upLv('bays')])) { const l = upLv('bays'); buyUp('bays'); if (upLv('bays') === l) break; use('upgrades'); acts++; } });
     // crew: water, pot and pest in each house beyond the first, a loader from two houses, a fixer from four
     tryDo('crew', () => {
       while (S.floors >= 2 && crewRoom() > 0 && S.crew.filter(c => c.role === 'load').length < bayCount() - 1 && S.cash > 2000) { hire('load'); use('hire'); acts++; }
-      for (let h = 1; h < S.floors; h++) for (const r of ['water', 'pot', 'pest']) if (crewRoom() > 0 && !roleIn(r, h) && S.cash > 2000) { hire(r); setHome(S.crew[S.crew.length - 1].id, h); use('hire'); acts++; }
+      for (let h = 1; h < S.floors; h++) if (!specOf(h)) for (const r of ['water', 'pot', 'pest']) if (crewRoom() > 0 && !roleIn(r, h) && S.cash > 2000) { hire(r); setHome(S.crew[S.crew.length - 1].id, h); use('hire'); acts++; }
       if (S.floors >= 4 && crewRoom() > 0 && !S.crew.some(c => c.role === 'fix')) { hire('fix'); use('hire'); acts++; }
       if (S.floors >= 2 && crewRoom() > 0 && !roleIn('water', 0)) { hire('water'); setHome(S.crew[S.crew.length - 1].id, 0); use('hire'); acts++; }
     });
@@ -158,7 +164,7 @@ window.AG = (() => {
   }
 
   // ---------- playing a period ----------
-  const crewJob = t => S.crew.some(r => r.role === t.type && (t.type === 'load' || r.home === taskF(t))) || (prizeR() && t.type !== 'load' && taskF(t) === SH);
+  const crewJob = t => S.crew.some(r => roleTakes(r.role, t) && (t.type === 'load' || r.home === taskF(t))) || (prizeR() && t.type !== 'load' && taskF(t) === SH);
   // the crew gets first go at their jobs; anything they leave waiting, the grower picks up
   const covered = t => crewJob(t) && S.t - t.seen < (P.react + P.patience) * PACE;
   function runStep(dt) {
@@ -227,7 +233,7 @@ window.AG = (() => {
     if (S.phase === 'over') { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: S.lost || '?' }; return false; }
     const h = S.hist[S.hist.length - 1];
     const ys = S.ys || {};
-    R.years.push({ full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
+    R.years.push({ spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
     think(P.yearEnd); skills(); checkMS();
     tryDo('nextYear', () => { nextYear(); enterHome(); }); home(); checkMS(); tryDo('leaveHome', () => leaveHome()); closeModal(); checkMS();
     return true;
@@ -235,7 +241,8 @@ window.AG = (() => {
 
   function start(prof, seed) {
     P = prof; R = { profile: prof.name, ms: {}, used: {}, errors: {}, years: [], over: null };
-    if (!window.__tlWrap) { const o = truckLeaves; window.truckLeaves = function (k, m) { if (m && R && R.dock) { const pl = S.plots.find(p => p.id === k.plot); if (pl && !pl.done) R.dock.empty++; } return o.apply(this, arguments); }; window.__tlWrap = 1; }
+    if (!window.__tlWrap) { const o = truckLeaves; window.truckLeaves = function (k, m) { if (m && R && R.dock) { const pl = S.plots.find(p => p.id === k.plot); if (pl && !pl.done) { R.dock.empty++; const ey = (R.ey = R.ey || {}), e = (ey[S.year] = ey[S.year] || { n: 0, line: 0, dock: 0, noLoad: 0, short: 0, loaders: 0, cash: 0 }); e.n++; if (k.state === 'line') e.line++; else e.dock++; const t = S.tasks.find(t => t.type === 'load' && t.truck === k.id); if (t && !engagedT(t)) e.noLoad++; if (have(pl) < orderOf(pl).qty) e.short++; e.loaders = S.crew.filter(c => c.role === 'load').length; e.bays = bayUse(); e.cash = Math.round(S.cash); } } return o.apply(this, arguments); }; window.__tlWrap = 1; }
+    window.engagedT = t => { try { return engaged(t); } catch (e) { return false; } };
     clock = 0; lastTap = -99; lapseUntil = -1; cupSeenAt = null;
     window.__quiet = true; window.__agent = 1; window.__autoLoan = 1; window.__rushHire = 1;
     window.__agentCall = (ctx, ok) => { use('call'); ok = ok.filter(o => !/Ends the game/.test(o.fx || '')); return ok.length > 1 && rand() < P.callYes ? ok[0] : ok[ok.length - 1]; };
