@@ -1242,7 +1242,7 @@ const FESTS={
   tour:{n:'Garden club tour',p:-1,kind:'tour',deco:'bench',buy:'No buy-in. Have every house free of pests and breakdowns when they visit'}};
 const FCROP={vroses:['Valentine roses','#d8102f',[1]],kumquat:['Kumquat trees','#ff9a1a',[1]],elily:['Easter lilies','#c9bf8a',[2]],mbasket:['Hanging baskets','#c84ac0',[3]],
   seedling:['Tree seedlings','#3f9a4a',[3]],patriot:['Patriotic petunias','#2a3f9a',[4]],sunfl:['Fair sunflowers','#d8a21a',[5]],marigold:['Marigolds','#ff9a1a',[6]]};
-for(const k in FCROP){const [n,c,sell]=FCROP[k];CROPS[k]={name:n,g:1,sell,price:48,loss:.04,q:[8,16],color:c,fest:true,cost:0};}
+for(const k in FCROP){const [n,c,sell]=FCROP[k];CROPS[k]={name:n,g:1,sell,price:60,loss:.04,q:[8,16],color:c,fest:true,cost:0};}
 const isFestC=k=>!!(CROPS[k]&&CROPS[k].fest);
 // decorations: festival rewards (with small boosts) and the star-priced store
 const DECO={heart:{n:'Heart arch',b:'Sales from this house +5%'},egg:{n:'Egg basket',b:'Stars turn up a little more often'},swing:{n:'Porch swing',b:'Water requests here wait 15% longer'},
@@ -1262,9 +1262,9 @@ Object.entries(DMOUNT).forEach(([k,m])=>{DECO[k].m=m.split(' ');});
 Object.entries({swing:'Hanging baskets',egg:'Egg garland',bath:'Wall fountain',palm:'Potted palms',tiki:'Tiki torches',flamingo:'Flamingo pair',gnome:'Garden gnomes',catstatue:'Cat figurines',scarecrow:'Scarecrow and corn',fan:'Wall fan',radio:'Shelf radio'}).forEach(([k,n])=>DECO[k].n=n);
 const decFits=(k,i)=>{k=k&&k.replace('g:','');return!!(DECO[k]&&DECO[k].m.includes(DSPOT[i].m));};
 const decWhere=k=>DECO[k].m.map(m=>MOUNT_N[m]).join(' or ');
-// ---- gold decorations: every third time a festival pays out, its decoration comes in gold ----
+// ---- gold decorations: every second time a festival pays out, its decoration comes in gold ----
 // A gold piece is placed as 'g:<key>' and gives twice the boost.
-const GOLD_EVERY=3;
+const GOLD_EVERY=2;
 const GOLDB={heart:'Sales from this house +10%',egg:'Stars turn up more often (counts double)',swing:'Water requests here wait 30% longer',bunting:'Crew who work this house don’t get rusty',jack:'Pests 20% less often here',lights:'Crew here 10% faster in winter',
   lantern:'Breakdowns 30% less often here',papel:'Late potting loses half as many plants here',ribbon:'Showcase entries +4 score (showcase house)',birdhouse:'Pests spread 40% less here',bench:'Water requests here 20% less often'};
 const dBase=k=>k&&k.startsWith('g:')?k.slice(2):k,isGold=k=>!!k&&k.startsWith('g:');
@@ -1409,10 +1409,25 @@ function drawDecos(H,L,now){
   if(isGold(sl[2]))gl.push(wallPt(H,'b',3.9,40,.3),wallPt(H,'b',5.1,58,.3),wallPt(H,'b',4.5,76,.2));if(isGold(sl[3]))gl.push(wallPt(H,'b',6.2,62,.2),wallPt(H,'b',6.8,44,.2));if(isGold(sl[4]))gl.push(wallPt(H,'s',2,32,.15),wallPt(H,'s',4.4,30,.15));
   if(gl.length)L.push({d:H.ox+H.oy+99,f:()=>gl.forEach((p,i)=>sparkle(p,now,i+H.h*3))});
 }
+// Festivals open at nursery level 3 and grow with the nursery: 2 a year, then 3 from level 6, 4 from level 10. Never two in one period.
+const FEST_LV=3,festCap=()=>stage()<FEST_LV?0:stage()<6?2:stage()<10?3:4;
+const FEST_W={valentine:3,easter:3,mother:3,july:3,halloween:3,christmas:3,lunar:1,arbor:1,fair:1,dia:1,tour:1};
+function festDraw(keep,n,tourP){
+  const used=new Set(keep.map(k=>k==='tour'?tourP:FESTS[k].p)),out=[...keep];
+  let pool=Object.keys(FESTS).filter(k=>!out.includes(k)&&(FESTS[k].kind!=='field'||fieldOpen()));
+  while(out.length<n){pool=pool.filter(k=>!used.has(k==='tour'?tourP:FESTS[k].p));if(!pool.length)break;
+    let r=rnd()*pool.reduce((a,k)=>a+FEST_W[k],0),k=pool[pool.length-1];for(const x of pool){r-=FEST_W[x];if(r<=0){k=x;break;}}
+    out.push(k);used.add(k==='tour'?tourP:FESTS[k].p);pool=pool.filter(x=>x!==k);}
+  return out;
+}
 function festGen(){
-  if(S.fy&&S.fy.year===S.year)return;
-  const opt=['lunar','arbor','fair','dia','tour'].sort(()=>rnd()-.5).slice(0,2),list=[...Object.keys(FESTS).filter(k=>FESTS[k].always),...opt];
-  S.fy={year:S.year,list,tourP:ri(2,6),done:{},lines:{},got:{},patch:{}};
+  if(S.fy&&S.fy.year===S.year){
+    // saves from before the cap: keep what's already been decided or has passed, redraw the rest
+    if(!S.fy.v2){const fy=S.fy,keep=fy.list.filter(k=>fy.done[k]!=null||(festP(k)===S.period&&S.phase!=='plan'));
+      const free=festDraw([],8,fy.tourP).filter(k=>!keep.includes(k)&&festP(k)>S.period&&!keep.some(x=>festP(x)===festP(k)));
+      fy.list=[...keep,...free].slice(0,Math.max(keep.length,festCap()));fy.v2=1;}
+    return;}
+  const tourP=ri(2,6);S.fy={year:S.year,list:festDraw([],festCap(),tourP),tourP,done:{},lines:{},got:{},patch:{},v2:1};
 }
 const festP=k=>k==='tour'?S.fy.tourP:FESTS[k].p;
 const festNow=c=>S.fy&&S.fy.year===S.year?S.fy.list.filter(k=>festP(k)===c):[];
@@ -1468,7 +1483,8 @@ function festItems(){
 }
 function festAlmHTML(){
   festGen();const rows=[...S.fy.list].sort((a,b)=>festP(a)-festP(b));
-  return rows.map(k=>{const F=FESTS[k],D=DECO[F.deco];return`<div class="alfest"><img src="${spriteURL('deco_'+F.deco,'8 4 48 48')}" alt=""><span><b>${F.n}</b> · ${PN[festP(k)].toLowerCase()}<small>${F.buy}.${F.kind==='field'&&!fieldOpen()?' Needs the tree field.':''} Reward: ${D.n.toLowerCase()} (${D.b.charAt(0).toLowerCase()+D.b.slice(1)}).${F.always?'':' <em>Not every year.</em>'}</small></span></div>`;}).join('');
+  if(!rows.length)return`<p class="alnote">No festivals yet. They start at level ${FEST_LV} with two a year, and more come as the nursery grows.</p>`;
+  return`<p class="alnote">${rows.length} this year. Each one is optional: join the ones your benches can spare.</p>`+rows.map(k=>{const F=FESTS[k],D=DECO[F.deco];return`<div class="alfest"><img src="${spriteURL('deco_'+F.deco,'8 4 48 48')}" alt=""><span><b>${F.n}</b> · ${PN[festP(k)].toLowerCase()}<small>${F.buy}.${F.kind==='field'&&!fieldOpen()?' Needs the tree field.':''} Reward: ${D.n.toLowerCase()} (${D.b.charAt(0).toLowerCase()+D.b.slice(1)}).</small></span></div>`;}).join('');
 }
 // ---- decorating ----
 const decoHouses=()=>builtH().map(H=>H.h);
@@ -1485,7 +1501,7 @@ function decoHTML(plan){
   S.place=S.place||{};
   const fest=Object.keys(DECO).filter(k=>!DECO[k].st),store=Object.keys(DECO).filter(k=>DECO[k].st);
   const houses=decoHouses().map(h=>`<div class="dhouse"><b>${hName(h)}</b><div class="dslots">${[0,1,2,3,4].map(i=>{const k=(S.place[h]||[])[i];return`<button type="button" class="dslot${k?' has':''}${isGold(k)?' gold':''}" data-ds="${h}:${i}" aria-label="${DSPOT[i].n}">${k?`<img src="${spriteURL('deco_'+dBase(k),'8 4 48 48')}" alt="${dName(k)}">`:'+'}<i>${DSPOT[i].s}</i></button>`;}).join('')}</div></div>`).join('');
-  return`<p style="margin:0 2px 10px;color:var(--mute);font-size:14px">Each house has five spots on its frame: two garlands, the doorway, a wall piece and the side ledge. Festival decorations give a small boost to their house, and every third win of a festival brings its decoration in gold, with twice the boost. Most store items are just for fun.</p>
+  return`<p style="margin:0 2px 10px;color:var(--mute);font-size:14px">Each house has five spots on its frame: two garlands, the doorway, a wall piece and the side ledge. Festival decorations give a small boost to their house, and every second win of a festival brings its decoration in gold, with twice the boost. Most store items are just for fun.</p>
     ${houses}
     <h3 style="margin:16px 2px 4px;font-size:16px">Festival decorations</h3>
     <div class="dgrid">${fest.map(k=>`<div class="dcard${decOwned(k)?'':' lk'}"><img src="${spriteURL('deco_'+k,'8 4 48 48')}" alt=""><b>${DECO[k].n}${decOwned(k)>1?` ×${decOwned(k)}`:''}</b><i class="dw">${decWhere(k)}</i><small>${DECO[k].b}</small><em>${decOwned(k)?`${decOwned(k)-decUsed(k)} to place`:`Earn at ${FESTS[festOfDeco(k)].n}`}</em><span class="gp">${winsLeft(festOfDeco(k))===1?'Gold on the next win':`Gold in ${winsLeft(festOfDeco(k))} wins`}</span></div>`).join('')}</div>
