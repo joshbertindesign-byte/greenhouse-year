@@ -35,7 +35,10 @@ FL = {'petunia': ('#ffd6ef', '#f26bb5', '#c23c8b'), 'vinca': ('#ece3ff', '#9b7ff
       'orchid': ('#ffffff', '#f6c9ec', '#b8297f'), 'rose': ('#ff8a8a', '#d8202f', '#8a0f1c'), 'peony': ('#fff0f3', '#ffadc4', '#e0567f'), 'calla': ('#fffdf3', '#f6edcf', '#c9b77a')}
 FL.update({'tomato': ('#ffb0a0', '#ef3b2c', '#a8121f'), 'pepper': ('#fff1a0', '#f2a531', '#c2571f'), 'lettuce': ('#eaffc4', '#9be06a', '#4f9a3f'),
            'cabbage': ('#e2f4ef', '#8fc7b5', '#4f8a7a'), 'cucumber': ('#fff6a8', '#f2d43a', '#b8941f'), 'basil': ('#d8ffb0', '#5fcf4a', '#257a2f'),
-           'dahlia': ('#ffb0d8', '#d8247a', '#8a0f4a'), 'ranunculus': ('#ffe0c4', '#ff8a5a', '#c84a2a'), 'lisianthus': ('#efe0ff', '#9a5ad8', '#5a2a9a')})
+           'dahlia': ('#ffb0d8', '#d8247a', '#8a0f4a'),
+           'vroses': ('#ff8a9a', '#e0102f', '#8a0018'), 'elily': ('#ffffff', '#fbf8ee', '#d9cfae'), 'mbasket': ('#ffd6f4', '#e86ad0', '#9a3aa8'),
+           'patriot': ('#ffffff', '#e0303f', '#2a3f9a'), 'kumquat': ('#ffd27a', '#ff9a1a', '#c8600f'), 'marigold': ('#ffe27a', '#ffaa1a', '#d8641a'),
+           'sunfl': ('#fff2a0', '#ffd21a', '#c89a0f'), 'seedling': ('#c8f0a0', '#6fc25a', '#2f7a3f'), 'ranunculus': ('#ffe0c4', '#ff8a5a', '#c84a2a'), 'lisianthus': ('#efe0ff', '#9a5ad8', '#5a2a9a')})
 for k, (a, b2, c) in FL.items(): rad(f'gF_{k}', [(0, a, None), (.55, b2, None), (1, c, None)])
 rad('gLettuce', [(0, '#f3ffd0', None), (.5, '#a8e070', None), (1, '#5aa84a', None)])
 rad('gCabbage', [(0, '#e6f6f0', None), (.5, '#94c9b9', None), (1, '#4c8576', None)])
@@ -48,6 +51,7 @@ TYPE = {'petunia': 'petal', 'vinca': 'petal', 'geranium': 'umbel', 'begonia': 'u
         'hydrangea': 'mop', 'pothos': 'vine', 'fern': 'frond', 'kale': 'rosette',
         'orchid': 'orchid', 'rose': 'rose', 'peony': 'peony', 'calla': 'calla',
         'dahlia': 'pom', 'ranunculus': 'peony', 'lisianthus': 'rose',
+        'vroses': 'rose', 'elily': 'calla', 'mbasket': 'petal', 'patriot': 'petal', 'kumquat': 'pom', 'marigold': 'pom', 'sunfl': 'umbel', 'seedling': 'frond',
         'tomato': 'tom', 'pepper': 'pep', 'lettuce': 'lettuce', 'cabbage': 'cab', 'cucumber': 'cuke', 'basil': 'basil'}
 VEG = ('tomato', 'pepper', 'lettuce', 'cabbage', 'cucumber', 'basil')
 SHOW = ('orchid', 'rose', 'peony', 'calla', 'dahlia', 'ranunculus', 'lisianthus')
@@ -438,6 +442,100 @@ def coffee():
         b += f'<path d="M{x},14 q-2.5,-3 0,-5.5 q2.5,-2.5 0,-5.5" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" opacity="{.85 - i * .15:.2f}"/>'
     return b
 add('coffee', coffee(), 64, 64, (32, 56))
+
+# ------------------------------------------------------------------ decorations (one tile, centred)
+def seg(a, b2, col, w=1):
+    return f'<path d="M{f2(a[0])},{f2(a[1])} L{f2(b2[0])},{f2(b2[1])}" stroke="{col}" stroke-width="{w}" stroke-linecap="round"/>'
+def deco(k):
+    I = Iso(); x, y = I.P(.5, .5, 0); b = ell(x, y + 1, 12, 4, '#1d3a24', 'opacity=".18"')
+    pole = lambda px, h, c='#8a5a3a': f'<rect x="{f2(px-1)}" y="{f2(y-h)}" width="2" height="{f2(h)}" fill="{c}"/>'
+    if k == 'heart':
+        b += f'<path d="M{x-14},{y} v-22 a14,14 0 0 1 28,0 v22" fill="none" stroke="#e8c48a" stroke-width="3"/>'
+        for a in range(9):
+            t = a / 8; px, py = x - 14 + 28 * t, y - 22 - math.sin(t * math.pi) * 14
+            b += heart(px, py, 2.4, '#ff5a7a', '#a8123a')
+        b += heart(x, y - 30, 4.5, '#ff2f5a', '#8a0f2a')
+    elif k == 'egg':
+        b += f'<path d="M{x-10},{y-8} q10,10 20,0 l-2,8 q-8,4 -16,0 Z" fill="#c9965a" stroke="#7a5a30" stroke-width=".8"/><path d="M{x-10},{y-8} q10,-16 20,0" fill="none" stroke="#a8763a" stroke-width="1.6"/>'
+        for dx, c in ((-5, '#ff9ac8'), (0, '#9ad8ff'), (5, '#ffe27a'), (-2, '#b8f0a0')):
+            b += ell(x + dx, y - 9 - (2 if dx == -2 else 0), 2.6, 3.4, c, 'stroke="#00000033" stroke-width=".4"')
+    elif k == 'swing':
+        b += f'<path d="M{x-14},{y} L{x-10},{y-34} L{x+10},{y-34} L{x+14},{y}" fill="none" stroke="#7a5a3a" stroke-width="2"/>'
+        b += seg((x - 7, y - 34), (x - 7, y - 14), '#b8a07a', .8) + seg((x + 7, y - 34), (x + 7, y - 14), '#b8a07a', .8)
+        b += poly([(x - 9, y - 14), (x + 9, y - 14), (x + 8, y - 10), (x - 8, y - 10)], '#e8c48a', '#8a6a3a', .7) + poly([(x - 9, y - 14), (x + 9, y - 14), (x + 9, y - 21), (x - 9, y - 21)], '#d0a868', '#8a6a3a', .6)
+        b += ell(x - 4, y - 16, 3, 2, '#ff9ac8') + ell(x + 4, y - 16, 3, 2, '#9ad8ff')
+    elif k == 'bunting':
+        b += pole(x - 14, 30) + pole(x + 14, 30)
+        b += f'<path d="M{x-14},{y-28} q14,8 28,0" fill="none" stroke="#5a5a5a" stroke-width=".6"/>'
+        for i in range(6):
+            t = (i + .5) / 6; px = x - 14 + 28 * t; py = y - 28 + math.sin(t * math.pi) * 4
+            b += poly([(px - 2.2, py), (px + 2.2, py), (px, py + 5)], ['#e0303f', '#ffffff', '#2a5fc0'][i % 3], '#00000033', .3)
+    elif k == 'jack':
+        for dx, dy, r in ((-6, -2, 6), (6, -1, 5.5), (0, -9, 6.5)):
+            b += ell(x + dx, y + dy - r * .6, r, r * .8, '#ff8a1a', 'stroke="#b8500f" stroke-width=".8"') + seg((x + dx, y + dy - r * 1.3), (x + dx + 1, y + dy - r * 1.6), '#4f7a2a', 1.4)
+            b += poly([(x + dx - 3, y + dy - r * .8), (x + dx - 1.5, y + dy - r * .8), (x + dx - 2.2, y + dy - r)], '#ffe27a') + poly([(x + dx + 1.5, y + dy - r * .8), (x + dx + 3, y + dy - r * .8), (x + dx + 2.2, y + dy - r)], '#ffe27a')
+            b += f'<path d="M{x+dx-3},{y+dy-r*.45} q3,2 6,0" stroke="#ffe27a" stroke-width="1.2" fill="none"/>'
+    elif k == 'lights':
+        b += poly([(x, y - 34), (x - 11, y - 4), (x + 11, y - 4)], '#2f7a4a', '#1f5a34', .8) + f'<rect x="{x-1.5}" y="{y-4}" width="3" height="4" fill="#7a5232"/>'
+        for i, (dx, dy) in enumerate(((-6, -8), (4, -10), (-3, -16), (5, -20), (-2, -25), (1, -30), (7, -6), (-8, -5))):
+            b += circ(x + dx, y + dy, 1.4, ['#ff5a5a', '#ffe27a', '#7ad8ff', '#9aff7a'][i % 4])
+        b += poly([(x, y - 38), (x + 2, y - 34), (x - 2, y - 34)], '#ffd23a')
+    elif k == 'lantern':
+        b += pole(x, 34, '#5a3a2a') + seg((x - 10, y - 32), (x + 10, y - 32), '#5a3a2a', 1.4)
+        for dx in (-8, 8):
+            b += seg((x + dx, y - 32), (x + dx, y - 28), '#c9a21f', .8) + ell(x + dx, y - 22, 5, 6.5, '#e0202f', 'stroke="#8a0f1a" stroke-width=".7"') + f'<rect x="{x+dx-3}" y="{y-29.5}" width="6" height="2" fill="#c9a21f"/><rect x="{x+dx-3}" y="{y-16}" width="6" height="2" fill="#c9a21f"/>'
+    elif k == 'papel':
+        b += pole(x - 14, 30) + pole(x + 14, 30)
+        for i in range(5):
+            t = (i + .5) / 5; px = x - 14 + 28 * t
+            b += poly([(px - 2.6, y - 28), (px + 2.6, y - 28), (px + 2.6, y - 21), (px, y - 19.5), (px - 2.6, y - 21)], ['#ff4fa0', '#ffb21a', '#3fc8a0', '#9a5ad8', '#ff5a3a'][i], '#00000022', .3)
+            b += circ(px, y - 24.5, .8, '#ffffff')
+    elif k == 'ribbon':
+        b += pole(x - 10, 30, '#9aa5ad') + pole(x + 10, 30, '#9aa5ad') + f'<rect x="{x-10}" y="{y-30}" width="20" height="13" rx="1.5" fill="#2a5fc0" stroke="#1a3f8a" stroke-width=".7"/>'
+        b += circ(x, y - 23.5, 4, '#ffd23a', '#c99a12', .6) + poly([(x - 2, y - 20), (x - 4, y - 13), (x - 1, y - 15)], '#2a5fc0') + poly([(x + 2, y - 20), (x + 4, y - 13), (x + 1, y - 15)], '#2a5fc0')
+    elif k == 'birdhouse':
+        b += pole(x, 24, '#7a5232') + poly([(x - 7, y - 24), (x + 7, y - 24), (x + 7, y - 36), (x - 7, y - 36)], '#ffd28a', '#a8763a', .7) + poly([(x - 9, y - 35), (x, y - 43), (x + 9, y - 35)], '#c0503f', '#7a2a20', .7) + circ(x, y - 30, 2, '#4a2a18')
+    elif k == 'bench':
+        b += poly([(x - 14, y - 8), (x + 14, y - 8), (x + 12, y - 5), (x - 12, y - 5)], '#c9965a', '#7a5a30', .7) + poly([(x - 14, y - 8), (x + 14, y - 8), (x + 14, y - 17), (x - 14, y - 17)], '#b8834a', '#7a5a30', .7)
+        for dx in (-11, 11): b += seg((x + dx, y - 5), (x + dx, y), '#4a4a4a', 1.6)
+        b += seg((x - 13, y - 12), (x + 13, y - 12), '#8a5a30', .5)
+    elif k == 'gnome':
+        b += ell(x, y - 6, 6, 6, '#3f6fc0', 'stroke="#1f3f80" stroke-width=".7"') + circ(x, y - 13, 4, '#ffd8b8') + poly([(x - 5, y - 15), (x + 5, y - 15), (x, y - 30)], '#e0303f', '#8a0f1a', .7)
+        b += f'<path d="M{x-4},{y-12} q4,9 8,0 Z" fill="#ffffff" stroke="#c9c2b0" stroke-width=".4"/>' + circ(x, y - 13.5, 1.1, '#ff9a8a')
+    elif k == 'flamingo':
+        b += seg((x - 1, y), (x - 1, y - 14), '#e86a8a', 1) + seg((x + 2, y), (x + 1, y - 14), '#e86a8a', 1) + ell(x, y - 18, 8, 5, '#ff8ab0', 'stroke="#c84a70" stroke-width=".7"')
+        b += f'<path d="M{x+6},{y-20} q4,-10 0,-14 q-3,-2 -2,2" fill="none" stroke="#ff8ab0" stroke-width="2.4" stroke-linecap="round"/>' + circ(x + 4, y - 33, 2.4, '#ff8ab0') + poly([(x + 1, y - 33), (x - 2.5, y - 31), (x + 1.5, y - 31.5)], '#2a2a2a')
+    elif k == 'chimes':
+        b += pole(x - 8, 36, '#7a5232') + seg((x - 8, y - 35), (x + 8, y - 35), '#7a5232', 1.4)
+        for i in range(5): px = x - 5 + i * 3.4; b += seg((px, y - 35), (px, y - 30 + i % 2 * 3), '#c9c2b0', .4) + f'<rect x="{f2(px-.8)}" y="{f2(y-30+i%2*3)}" width="1.6" height="{8 - i}" fill="#b8c8d8" stroke="#6a7a8a" stroke-width=".3"/>'
+    elif k == 'bath':
+        b += f'<path d="M{x-3},{y} l1,-14 h4 l1,14 Z" fill="#c9c2b0" stroke="#8a8478" stroke-width=".7"/>' + ell(x, y - 15, 12, 4.5, '#d9d2c0', 'stroke="#8a8478" stroke-width=".7"') + ell(x, y - 15.6, 9, 3, '#7ab8e0')
+        b += ell(x + 5, y - 19, 2.6, 1.8, '#8a5a3a') + circ(x + 7, y - 20.5, 1.4, '#8a5a3a')
+    elif k == 'palm':
+        b += poly([(x - 7, y - 10), (x + 7, y - 10), (x + 5, y), (x - 5, y)], 'url(#gPot)', '#a9512c', .7)
+        for a in (-2.6, -2.1, -1.57, -1.0, -.5):
+            ex, ey = x + math.cos(a) * 15, y - 28 + math.sin(a) * 10
+            b += f'<path d="M{x},{y-10} Q{x},{y-26} {f2(ex)},{f2(ey)}" fill="none" stroke="#3f9a4a" stroke-width="3" stroke-linecap="round"/>'
+    elif k == 'neon':
+        b += pole(x - 8, 14, '#4a4a4a') + pole(x + 8, 14, '#4a4a4a') + f'<rect x="{x-14}" y="{y-28}" width="28" height="14" rx="3" fill="#20202a" stroke="#4a4a5a" stroke-width=".8"/>'
+        b += f'<text x="{x}" y="{y-17.5}" font-family="Arial Black,Arial" font-weight="900" font-size="8.4" fill="#ff5ab0" text-anchor="middle" stroke="#ffd0ec" stroke-width=".3">OPEN</text>'
+    elif k == 'catstatue':
+        b += f'<rect x="{x-7}" y="{y-6}" width="14" height="6" fill="#c9c2b0" stroke="#8a8478" stroke-width=".6"/>' + ell(x, y - 13, 6, 7, '#9aa0a8', 'stroke="#5a606a" stroke-width=".6"') + circ(x, y - 22, 4.4, '#9aa0a8', '#5a606a', .6)
+        b += poly([(x - 4, y - 24), (x - 3, y - 29), (x - 1, y - 25)], '#9aa0a8', '#5a606a', .5) + poly([(x + 4, y - 24), (x + 3, y - 29), (x + 1, y - 25)], '#9aa0a8', '#5a606a', .5) + f'<path d="M{x+6},{y-8} q5,-2 3,-8" fill="none" stroke="#9aa0a8" stroke-width="2"/>'
+    elif k == 'scarecrow':
+        b += pole(x, 34, '#8a5a3a') + seg((x - 12, y - 24), (x + 12, y - 24), '#8a5a3a', 1.8) + poly([(x - 7, y - 26), (x + 7, y - 26), (x + 6, y - 12), (x - 6, y - 12)], '#5a8ad0', '#2a4a8a', .7)
+        b += circ(x, y - 30, 4.4, '#f2dca0', '#b8a060', .6) + ell(x, y - 34, 8, 2, '#c9a24a') + poly([(x - 4, y - 34), (x + 4, y - 34), (x + 2, y - 39), (x - 2, y - 39)], '#c9a24a')
+    elif k == 'tiki':
+        b += pole(x, 32, '#9a6a3a') + f'<path d="M{x-2.6},{y-31} l-1,-5 h7.2 l-1,5 Z" fill="#6a4a2a"/>' + f'<path d="M{x},{y-48} q-5,6 -2,11 q2,2 4,0 q3,-5 -2,-11 Z" fill="#ffb21a" stroke="#e0602a" stroke-width=".7"/>'
+    elif k == 'fan':
+        b += f'<rect x="{x-10}" y="{y-22}" width="20" height="20" rx="2" fill="#e8ecef" stroke="#8a96a3" stroke-width=".8"/>' + circ(x, y - 12, 7.5, '#c8d0d8', '#8a96a3', .6)
+        for a in (0, 2.1, 4.2): b += ell(x + math.cos(a) * 3.5, y - 12 + math.sin(a) * 3.5, 3.2, 1.6, '#6a7a8a', f'transform="rotate({f2(math.degrees(a))} {f2(x+math.cos(a)*3.5)} {f2(y-12+math.sin(a)*3.5)})"')
+    elif k == 'radio':
+        b += f'<rect x="{x-11}" y="{y-16}" width="22" height="13" rx="2" fill="#c0503f" stroke="#7a2a20" stroke-width=".8"/>' + circ(x - 5, y - 9.5, 4, '#e8dcc0', '#7a2a20', .6) + f'<rect x="{x+1}" y="{y-13}" width="8" height="5" rx="1" fill="#f2e6c8"/>' + seg((x + 8, y - 16), (x + 13, y - 26), '#9aa5ad', .8)
+        for i in range(3): b += f'<path d="M{x-14-i*3},{y-22+i} q-2,3 0,6" fill="none" stroke="#5a8ad0" stroke-width=".7"/>'
+    return f'<g transform="translate({x} {y}) scale(1.22) translate({-x} {-y})">{b}</g>'
+for _k in ('heart', 'egg', 'swing', 'bunting', 'jack', 'lights', 'lantern', 'papel', 'ribbon', 'birdhouse', 'bench', 'gnome', 'flamingo', 'chimes', 'bath', 'palm', 'neon', 'catstatue', 'scarecrow', 'tiki', 'fan', 'radio'):
+    add(f'deco_{_k}', deco(_k))
 
 # ------------------------------------------------------------------ people
 SKIN, HAND, SKO = '#ffd8b8', '#ffd3b0', '#c98a63'

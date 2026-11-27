@@ -641,6 +641,26 @@ def field_tree(sp, st):
     return b
 for _sp in ('jmaple', 'spruce', 'magnolia', 'rmaple', 'oak', 'ginkgo', 'cherry', 'pecan'):
     for _st in range(4): add(f'tree_{_sp}_{_st}', field_tree(_sp, _st), 96, 128, (48, 116))
+# festival field pieces
+def pumpkins():
+    x, y = 48, 116; b = ell(x, y, 26, 9, '#6a4a2e', 'opacity=".55"')
+    for k in range(5): b += f'<path d="M{x-24+k*10},{y-2} q6,-6 10,-1" fill="none" stroke="#4f8a2a" stroke-width="1.6"/>' + ell(x - 20 + k * 10, y - 6, 4.5, 2.6, '#5aa040', 'stroke="#2f6a2a" stroke-width=".5"')
+    for dx, dy, r in ((-14, 0, 7), (0, -4, 8.5), (14, 1, 7), (-6, 6, 6), (8, 7, 6.5)):
+        b += ell(x + dx, y + dy - r * .5, r, r * .78, '#ff8a1a', 'stroke="#b8500f" stroke-width=".8"')
+        for o in (-.45, 0, .45): b += f'<path d="M{f2(x+dx+o*r)},{f2(y+dy-r*1.2)} q{f2(o*3)},{f2(r*.7)} 0,{f2(r*1.3)}" fill="none" stroke="#e0701a" stroke-width=".6"/>'
+        b += seg((x + dx, y + dy - r * 1.25), (x + dx + 1.5, y + dy - r * 1.55), '#4f7a2a', 1.6)
+    return b
+def xmaslot():
+    x, y = 48, 116; b = ell(x, y, 28, 9, '#e8ecef', 'opacity=".9"')
+    for dx, dy, h in ((-16, -2, 34), (0, -6, 42), (16, -1, 32), (-7, 6, 28), (9, 7, 30)):
+        b += f'<rect x="{x+dx-3}" y="{y+dy-4}" width="6" height="4" fill="#c0503f"/>'
+        for t in range(3):
+            w = h * (.42 - t * .1); yy = y + dy - 4 - t * h * .28
+            b += poly([(x + dx - w, yy), (x + dx + w, yy), (x + dx, yy - h * .42)], '#2f7a4a' if t % 2 == 0 else '#3f8f58', '#1f5a34', .7)
+        b += ell(x + dx, y + dy - h * .35, h * .16, h * .04, '#ffffff', 'opacity=".75"')
+    b += f'<rect x="{x+18}" y="{y-26}" width="18" height="10" rx="1.5" fill="#c0303f" stroke="#7a1a20" stroke-width=".6"/><text x="{x+27}" y="{y-19}" font-family="Arial" font-weight="700" font-size="5" fill="#fff" text-anchor="middle">TREES</text>'
+    return b
+add('fest_pumpkin', pumpkins(), 96, 128, (48, 116)); add('fest_xmas', xmaslot(), 96, 128, (48, 116))
 # a dug tree, rootball wrapped in burlap
 def balled():
     x, y = 48, 116
