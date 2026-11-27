@@ -1816,7 +1816,7 @@ function goPlan(w,tg){
   const fx=Math.floor(w.x),fy=Math.floor(w.y),L=w.f,cur=houseAtXY(fx,fy,L);
   if(L===tg.f&&(L===0||cur===tg.h)){w.leg=null;w.path=route(fx,fy,tg.x,tg.y,L);return;}
   let lh,to;
-  if(L>0){lh=cur<0?L*4:cur;to=HOUSES[tg.h>=0?tg.h:0].s===HOUSES[lh].s?tg.f:0;}
+  if(L>0){lh=cur<0?L*4:cur;const th=HOUSES[tg.h>=0?tg.h:0];to=th&&th.s===HOUSES[lh].s?tg.f:0;} // the tree field and succulent house aren't in HOUSES: head for the ground floor
   else{lh=HOUSES[tg.h].s;to=tg.f;}
   const lf=liftOf(lh);w.leg='lift';w.liftTo=to;w.ride=0;w.path=route(fx,fy,lf.x,lf.y,L);
 }
@@ -2075,6 +2075,7 @@ function endPeriod(){
   S.trucks.filter(k=>k.state==='line'||k.state==='dock'||k.state==='coming').forEach(k=>truckLeaves(k,true));
   let fails=0;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>{
+    if(!S.plots.includes(pl)||!orderOf(pl))return; // an earlier failure in this loop can cancel the rest of a contract
     if(!pl.potted.some(Boolean)){pl.done=true;pl.fail=true;pl.e=c;orderOf(pl).status='failed';fails++;custRep(orderOf(pl).cust,-12,'order never potted');if(orderOf(pl).contract)contractFail(orderOf(pl).contract);}
     else pl.potted.forEach((v,k)=>{if(!v){pl.alive[k]=0;pl.flats[k]=0;}});
   });
@@ -4484,7 +4485,7 @@ function frame(now){
   const dt=Math.min(.1,(now-lastT)/1000);lastT=now;
   const paused=sheetOpen()||!$('modal').hidden||tipBlocking();
   if(S.phase==='run'&&!paused){
-    simStep(dt*speed*BASE_PACE);
+    try{simStep(dt*speed*BASE_PACE);}catch(e){console.error(e);} // one bad step shouldn't freeze the game
     if((uiT+=dt)>.15){uiT=0;hud();}
   }
   if(S.phase==='run'&&sheetOpen())renderSheetLite();

@@ -1,0 +1,233 @@
+// Greenhouse Year test agent. Runs inside the agent build of the game (a.html) and plays it the way a person would:
+// it plans each period, reacts to jobs after a human-like delay, uses every feature, spends stars at the homestead,
+// and keeps a "play clock" of how long a real person would have spent to get there.
+window.AG = (() => {
+  const PACE = BASE_PACE;                     // game seconds per real second at 1x speed
+  let P, R, clock, lastTap, lapseUntil, cupSeenAt;
+  const err = (where, e) => { const k = where + ': ' + (e && e.message || e); R.errors[k] = (R.errors[k] || 0) + 1; if (!R.stacks) R.stacks = {}; if (!R.stacks[k] && e && e.stack) R.stacks[k] = e.stack.split('\n').slice(0, 6).join(' | '); };
+  const use = (k, n = 1) => { R.used[k] = (R.used[k] || 0) + n; };
+  const tryDo = (k, f) => { try { const r = f(); return r; } catch (e) { err(k, e); } };
+  const rand = Math.random;
+
+  // ---------- drive a real modal: show it with quiet off, click the chosen button ----------
+  function ui(show, pick) {
+    const q = window.__quiet; window.__quiet = false;
+    try { closeModal(); show(); if ($('modal').hidden) return false;
+      const b = typeof pick === 'function' ? pick($('mbox')) : $('mbox').querySelector(pick);
+      if (b && !b.disabled) { b.click(); return true; } return false;
+    } finally { if (!$('modal').hidden) closeModal(); window.__quiet = q; }
+  }
+  const think = s => { clock += s; };        // planning/menu time, real seconds
+
+  // ---------- milestones ----------
+  const MS = [
+    ['Nursery level 3', () => stage() >= 3], ['Nursery level 5', () => stage() >= 5], ['Nursery level 7 (vegetables)', () => stage() >= 7],
+    ['Nursery level 10', () => stage() >= 10], ['Nursery level 12 (succulents)', () => stage() >= 12], ['Nursery level 15', () => stage() >= 15], ['Nursery level 20', () => stage() >= 20],
+    ['Grower level 5', () => glv() >= 5], ['Grower level 10', () => glv() >= 10], ['Grower level 20', () => glv() >= 20], ['Grower level 30 (Robo-Cat)', () => glv() >= 30],
+    ['2 greenhouses', () => S.floors >= 2], ['4 greenhouses', () => S.floors >= 4], ['6 greenhouses', () => S.floors >= 6], ['8 greenhouses', () => S.floors >= 8], ['12 greenhouses', () => S.floors >= 12],
+    ['First 5-star magazine year', () => S.hist.some(h => h.stars >= 5)],
+    ['Promoted to Greenhouse Monthly', () => (S.ed || 0) >= 1], ['Promoted to Pro Growers', () => (S.ed || 0) >= 2], ['Promoted to Prize Growers', () => (S.ed || 0) >= 3],
+    ['Showcase house built', () => !!S.show], ['First showcase ribbon', () => S.hist.some(h => h.ribbon != null && h.ribbon >= 0)], ['Prize grower hired', () => !!prizeR()],
+    ['First vegetable contract', () => !!(S.vc && !S.vc.none)], ['Succulent house built', () => sucOn()],
+    ['Tree field open', () => fieldOpen()], ['First tree sold', () => ((S.field || {}).sold || 0) > 0],
+    ['Festivals open', () => festCap() > 0], ['First festival won', () => Object.keys(S.fwin || {}).length > 0], ['First gold decoration', () => Object.keys(S.goldD || {}).length > 0],
+    ['First homestead build', () => LOTS.some(l => lotState(l.id).b)], ['Second cat adopted', () => S.cats.length > 1], ['4 cats', () => S.cats.length >= 4], ['6 cats', () => S.cats.length >= 6],
+    ['Office manager hired', () => mgrOn()], ['Bunkhouse built', () => hasBuild('bunk')], ['Solar array fully upgraded', () => solarLv() >= 3],
+    ['Masterfully planned year', () => S.hist.some(h => h.plan && h.plan.st === 3)], ['First coffee cup', () => R.used.cup > 0],
+    ['$100k in the bank', () => S.cash >= 100000],
+  ];
+  function checkMS() { for (const [n, f] of MS) if (!R.ms[n]) { let ok = false; try { ok = f(); } catch (e) { } if (ok) R.ms[n] = { min: +(clock / 60).toFixed(1), year: S.year, period: S.period }; } }
+
+  // ---------- spending between periods ----------
+  const buffer = () => P.buffer * (1 + .35 * (S.floors - 1));
+  const afford = c => S.cash > c + buffer();
+  const roleIn = (r, h) => S.crew.some(c => c.role === r && c.home === h);
+  function buyYear() {   // the big shop at the start of the year
+    let acts = 0;
+    // a new house when the nursery allows it
+    tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 3 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
+    // crew: water, pot and pest in each house beyond the first, a loader from two houses, a fixer from four
+    tryDo('crew', () => {
+      while (S.floors >= 2 && crewRoom() > 0 && S.crew.filter(c => c.role === 'load').length < bayCount() - 1 && S.cash > 2000) { hire('load'); use('hire'); acts++; }
+      for (let h = 1; h < S.floors; h++) for (const r of ['water', 'pot', 'pest']) if (crewRoom() > 0 && !roleIn(r, h) && S.cash > 2000) { hire(r); setHome(S.crew[S.crew.length - 1].id, h); use('hire'); acts++; }
+      if (S.floors >= 4 && crewRoom() > 0 && !S.crew.some(c => c.role === 'fix')) { hire('fix'); use('hire'); acts++; }
+      if (S.floors >= 2 && crewRoom() > 0 && !roleIn('water', 0)) { hire('water'); setHome(S.crew[S.crew.length - 1].id, 0); use('hire'); acts++; }
+    });
+    // genetics, cheapest first
+    tryDo('genetics', () => { for (const k of Object.keys(GEN).sort((a, b) => GEN[a] - GEN[b])) if (!owns(k) && cropOpen(k) && afford(GEN[k])) { buyGen(k); if (owns(k)) { use('genetics'); acts++; } } });
+    // upgrades in a sensible order, one level at a time
+    tryDo('upgrades', () => { for (let pass = 0; pass < 3; pass++) for (const k of P.upOrder) { const l = upLv(k), U = UPS[k]; if (l < U.lv.length && upOpen(k, l) && afford(U.cost[l])) { buyUp(k); if (upLv(k) > l) { use('upgrades'); acts++; } } } });
+    // vegetables
+    tryDo('veg', () => {
+      if (stage() >= VEG_LV && !(S.veg && S.veg.cert) && afford(VEG_CERT)) { buyVeg('cert'); use('vegCert'); acts++; }
+      if (S.veg && S.veg.cert && (S.veg.germ || 0) < 2 && afford(VEG_GERM[S.veg.germ || 0])) { buyVeg('germ'); use('vegGerm'); acts++; }
+      if (S.veg && S.veg.cert && !S.veg.org && S.floors >= 4 && afford(VEG_ORG * 3)) { buyVeg('org'); use('vegOrg'); acts++; }
+      if (vegOn() && !(S.vc && S.vc.year === S.year)) { const cs = makeVegContracts(); S.vc = cs[Math.min(cs.length - 1, S.floors >= 4 ? 2 : 1)]; use('vegContract'); think(P.modal); }
+    });
+    // showcase house, prize grower, classes, premium genetics
+    tryDo('showcase', () => {
+      if (S.showOpen && !S.show && afford(SHOW_COST)) { buildShow(); if (S.show) { use('showcase'); acts++; } }
+      if (S.show && prizeOpen() && !prizeR() && afford(5000)) { hirePrize(); if (prizeR()) { use('prizeGrower'); acts++; } }
+      if (prizeR() && (prizeR().att || 1) < 5 && afford(3000)) { takeClass(); use('class'); acts++; }
+      if (S.show) for (const k of Object.keys(SHOWC)) { const C = SHOWC[k]; if (C.prem && !S.owned.includes(k) && stage() >= C.lv && afford(C.prem * 1.5)) { buyPrem(k); if (S.owned.includes(k)) { use('premGenetics'); acts++; } } }
+    });
+    // succulent house
+    tryDo('succulents', () => { if (!sucOn() && stage() >= SUC_LV && afford(SUC_COST)) { sucBuild(); if (sucOn()) { use('sucHouse'); acts++; } } if (sucOn() && sucCap() <= 12 && S.floors >= 6 && afford(SUC_EXP * 2)) { sucExpand(); use('sucExpand'); acts++; } });
+    // office manager
+    tryDo('office', () => { if (!mgrOn() && stage() >= MGR_LV && (S.office || 1) >= 2 && afford(6000)) { hireMgr(); if (mgrOn()) { use('manager'); acts++; } } });
+    // keep the best customers sweet
+    tryDo('customers', () => {
+      if (S.cash > 20000) { const top = Object.keys(S.cust || {}).sort((a, b) => custR(b) - custR(a))[0]; if (top && crmOf(top).gift !== S.year) { crmGift(top); use('crmGift'); acts++; } }
+      if (mgrOn() && S.cash > 30000) for (const n of Object.keys(S.cust || {})) if (tierIx(custR(n)) <= 1 && crmOf(n).amends !== S.year) { crmAmends(n); use('crmAmends'); acts++; break; }
+    });
+    return acts;
+  }
+  function skills() { let n = 0; tryDo('skills', () => { for (let pass = 0; pass < 4 && skPts() > 0; pass++) for (const k of P.skillOrder) { if (skPts() < 1) break; const b = sk(k); skBuy(k); if (sk(k) > b) n++; } }); if (n) { use('skills', n); closeModal(); } return n; }
+  function decorate() {
+    let n = 0;
+    tryDo('decorate', () => {
+      if (!decorOpen()) return; S.place = S.place || {};
+      // store pieces with boosts once the homestead is comfortable
+      for (const k of ['fan', 'radio']) if ((S.stars || 0) > P.starReserve + 25 && decOwned(k) < S.floors) { buyDeco(k); use('decoBuy'); }
+      for (const h of decoHouses()) { const sl = S.place[h] || (S.place[h] = [null, null, null, null, null]);
+        for (let i = 0; i < 5; i++) { if (!spotOpen(i)) continue;
+          const score = k => (isGold(k) ? 4 : 0) + (DECO[dBase(k)].b ? 2 : 0);
+          const inv = [...Object.keys(S.goldD || {}).map(k => 'g:' + k), ...Object.keys(DECO)].filter(k => decFits(k, i) && (decOwned(k) > decUsed(k)) && !sl.includes(k) && !sl.includes(dBase(k)) && !sl.includes('g:' + dBase(k))).sort((a, b) => score(b) - score(a));
+          if (inv[0] && (!sl[i] || score(inv[0]) > score(sl[i]))) { sl[i] = inv[0]; n++; } } }
+    });
+    if (n) use('decoPlace', n); return n;
+  }
+  function trees() {
+    let n = 0;
+    tryDo('trees', () => {
+      if (!fieldOpen() || !treeLive() || !treeWindow()) return;
+      const T = treesOf();
+      for (const i of Object.keys(T)) { const t = T[i]; if (treeReady(t) && !t.sell) { if (ui(() => sellModal(+i), (S.stars || 0) < P.starReserve ? '#slS' : '#slC')) { use('treeSell'); n++; } } }
+      for (let i = 0; i < fieldCap(); i++) { if (treesOf()[i] || (S.stars || 0) < 2 + P.starReserve / 3) continue;
+        const best = b => [...b.querySelectorAll('[data-sp]')].filter(x => !x.disabled).sort((x, y) => TREES[y.dataset.sp].cash / TREES[y.dataset.sp].yrs - TREES[x.dataset.sp].cash / TREES[x.dataset.sp].yrs)[0];
+        if (ui(() => plantModal(i), best)) { use('treePlant'); n++; } }
+    });
+    return n;
+  }
+  function succulents() {
+    let n = 0;
+    tryDo('sucPlant', () => { if (!sucOn()) return; const order = Object.keys(SUCS).sort((a, b) => trendM(b) - trendM(a));
+      for (let i = 0; i < sucCap(); i++) if (!sucPlants()[i] && !sucBlocked(i) && S.cash > SUCS[order[0]].pup + buffer()) { sucPlant(i, order[n % 2]); use('sucPup'); n++; } });
+    return n;
+  }
+  function festivals() {
+    let n = 0;
+    tryDo('festivals', () => { festGen();
+      for (const k of festNow(S.period)) { if (FESTS[k].kind === 'tour' || S.fy.done[k] != null) continue;
+        const F = FESTS[k], cost = F.kind === 'bench' ? festBenches() * capB() * CROPS[F.crop].price * .3 : Math.min(4, festEmpty().length) * F.each;
+        const join = S.cash > cost + buffer() * .5 && rand() < P.festJoin;
+        ui(() => festAsk(), join ? '#fsY' : '#fsN'); if (S.fy.done[k] === 1) { use('festJoin'); n++; } else if (S.fy.done[k] == null) S.fy.done[k] = 0; think(P.modal); } });
+    return n;
+  }
+  function placeOffers() {
+    let n = 0;
+    tryDo('placing', () => {
+      const offers = S.offers.slice().sort((a, b) => ((b.veg ? 2 : 0) + (b.fest ? 1 : 0)) - ((a.veg ? 2 : 0) + (a.fest ? 1 : 0)) || (b.contract - a.contract) || (b.qty * b.price - a.qty * a.price));
+      for (const o of offers) { if (P.skipChance && rand() < P.skipChance && !o.veg && !o.contract) continue; if (autoAccept(o)) n++; }
+      // the office manager holds a good order that didn't fit
+      if (mgrOn()) for (let k = 0; k < HOLD_MAX; k++) { const q = queue(); if (q.length && holdable(q[0]) && (S.held || []).length < HOLD_MAX) { holdHand(); use('hold'); } else break; }
+    });
+    use('ordersPlaced', n); return n;
+  }
+  function planPeriod() {
+    const y0 = S.period === 0; let acts = 0;
+    if (y0) { acts += buyYear(); acts += decorate(); }
+    acts += festivals(); acts += trees(); acts += succulents(); acts += skills();
+    const n = placeOffers();
+    think(P.planBase + P.perOrder * n + P.perAct * acts + (y0 ? P.yearStart : 0));
+    tryDo('start', () => tryStart(true));
+    if (S.phase === 'plan') { tryDo('start2', () => { S.offers = []; tryStart(true); }); }
+  }
+
+  // ---------- playing a period ----------
+  const crewJob = t => S.crew.some(r => r.role === t.type && (t.type === 'load' || r.home === taskF(t))) || (prizeR() && t.type !== 'load' && taskF(t) === SH);
+  // the crew gets first go at their jobs; anything they leave waiting, the grower picks up
+  const covered = t => crewJob(t) && S.t - t.seen < (P.react + P.patience) * PACE;
+  function runStep(dt) {
+    const now = S.t;
+    for (const t of S.tasks) if (t.seen == null) t.seen = now;
+    // zoning out now and then
+    if (clock >= lapseUntil && rand() < P.lapse * dt / PACE) { lapseUntil = clock + P.lapseLen; use('lapse'); }
+    const attentive = clock >= lapseUntil;
+    if (attentive) {
+      // mid-period offers (pop-ups)
+      for (const o of S.offers.filter(o => o.popup)) { if (o.seenAt == null) o.seenAt = now; if (now - o.seenAt >= P.react * PACE * 1.5) { tryDo('popup', () => autoAccept(o)) ? use('popupTaken') : null; o.popup = false; } }
+      // the coffee cup
+      if (cup) { if (cupSeenAt == null) cupSeenAt = now; if (now - cupSeenAt >= P.react * PACE && rand() < P.cupNotice * dt * 2) { tryDo('cup', () => drinkCup()); use('cup'); cupSeenAt = null; } } else cupSeenAt = null;
+      // glance at the board every so often, then tap several jobs in a quick burst
+      if (now - lastTap >= P.glance * PACE || now < lastTap) {
+        lastTap = now;
+        const waiting = () => S.queue.filter(t => S.tasks.includes(t) && me.task !== t).length;
+        let c = S.tasks.filter(t => now - t.seen >= P.react * PACE && !S.queue.includes(t) && !engaged(t) && !covered(t) && (t.type !== 'load' || truckById(t.truck)?.state === 'dock'));
+        c.sort(P.fifo ? (a, b) => a.seen - b.seen : (a, b) => (a.due ?? now + 99) - (b.due ?? now + 99));
+        let taps = 0;
+        for (const t of c) { if (waiting() >= P.maxQueue) break; tryDo('enqueue', () => enqueue(t)); use('tap:' + t.type); taps++; }
+      }
+    }
+    try { simStep(dt); } catch (e) { err('simStep', e); }
+    clock += dt / PACE;
+  }
+
+  // ---------- the homestead ----------
+  function home() {
+    let acts = 0;
+    tryDo('home', () => {
+      const free = () => LOTS.filter(l => !l.pre && !lotState(l.id).b);
+      const cleared = () => free().filter(l => lotState(l.id).clear);
+      const getLot = () => { const c = cleared(); if (c.length) return c[0]; const u = free().filter(l => !lotState(l.id).clear).sort((a, b) => a.cost - b.cost)[0]; if (u && (S.stars || 0) >= u.cost) { clearLot(u.id); use('lotClear'); acts++; return lotState(u.id).clear ? u : null; } return null; };
+      const build = k => { const B = BUILDS[k]; if ((B.uniq && hasBuild(k)) || (S.stars || 0) < bcost(k) + (cleared().length ? 0 : 3)) return false;
+        if (B.lm) { // a landmark needs this plot and the empty plot to its right
+          const pair = LOTS.filter(l => !l.pre && !lotState(l.id).b && lmPart(l.id) && !lotState(lmPart(l.id).id).b).sort((a, b) => (lotState(b.id).clear ? 1 : 0) + (lotState(lmPart(b.id).id).clear ? 1 : 0) - (lotState(a.id).clear ? 1 : 0) - (lotState(lmPart(a.id).id).clear ? 1 : 0))[0];
+          if (!pair) return false; for (const L of [pair, lmPart(pair.id)]) if (!lotState(L.id).clear) { if ((S.stars || 0) < L.cost) return false; clearLot(L.id); use('lotClear'); acts++; }
+          buildLot(pair.id, k); if (hasBuild(k)) { use('build:' + k); acts++; return true; } return false; }
+        const L = getLot(); if (!L) return false; buildLot(L.id, k); if (lotState(L.id).b === k) { use('build:' + k); acts++; return true; } return false; };
+      for (const step of P.homeOrder) {
+        if (step === 'cats') { const want = ['beatrice', 'minaou', 'max', 'anna', 'miley', 'gremlin', 'otis', 'smokey'];
+          for (const c of want) { if (catOn(c) || (c === 'smokey' && !smokeyHere())) continue; if (S.cats.length >= catCap()) { const l = S.catHouse || 1; if (l < 4 && (S.stars || 0) >= CATHOUSE_COST[l + 1] + 2) { growCatHouse(); use('catHouse'); acts++; } else break; }
+            if (S.cats.length < catCap() && (S.stars || 0) >= catCost(c)) { adoptCat(c); if (catOn(c)) { use('adopt'); acts++; } } } }
+        else if (step === 'office') { if ((S.office || 1) < 2 && stage() >= MGR_LV - 1 && (S.stars || 0) >= OFFICE_COST) { growOffice(); use('officeGrow'); acts++; } }
+        else if (step === 'solarUp') { const L = LOTS.find(l => lotState(l.id).b === 'solar' && !lotState(l.id).part); if (L && solarLv() < 3 && (S.stars || 0) >= BUILDS.solar.ups[solarLv() - 1]) { upLandmark(L.id); use('solarUp'); acts++; } }
+        else if (step === 'reserve') { if ((S.stars || 0) <= P.starReserve) break; }
+        else if (BUILDS[step]) { if (BUILDS[step].lv && stage() < BUILDS[step].lv) continue; build(step); }
+      }
+    });
+    tryDo('wardrobe', () => { if (Object.keys(S.hats || {}).length) { S.hatSet = S.hatSet || {}; use('hats'); } });
+    flushHJobs && tryDo('flush', () => flushHJobs());
+    think(P.homeBase + P.homePerAct * acts); return acts;
+  }
+
+  // ---------- one year ----------
+  function year() {
+    const y = S.year;
+    let guard = 0;
+    while (S.phase !== 'done' && S.phase !== 'over' && guard++ < 400000) {
+      if (S.phase === 'plan') { planPeriod(); checkMS(); continue; }
+      if (S.phase === 'run') { const p = S.period; runStep(P.dt); if (S.phase !== 'run' || S.period !== p) checkMS(); continue; }
+      if (S.phase === 'home') { tryDo('leave', () => leaveHome()); continue; }
+      break;
+    }
+    if (S.phase === 'over') { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: S.lost || '?' }; return false; }
+    const h = S.hist[S.hist.length - 1];
+    const ys = S.ys || {};
+    R.years.push({ y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
+    think(P.yearEnd); skills(); checkMS();
+    tryDo('nextYear', () => { nextYear(); enterHome(); }); home(); checkMS(); tryDo('leaveHome', () => leaveHome()); closeModal(); checkMS();
+    return true;
+  }
+
+  function start(prof, seed) {
+    P = prof; R = { profile: prof.name, ms: {}, used: {}, errors: {}, years: [], over: null };
+    clock = 0; lastTap = -99; lapseUntil = -1; cupSeenAt = null;
+    window.__quiet = true; window.__agent = 1; window.__autoLoan = 1; window.__rushHire = 1;
+    window.__agentCall = (ctx, ok) => { use('call'); ok = ok.filter(o => !/Ends the game/.test(o.fx || '')); return ok.length > 1 && rand() < P.callYes ? ok[0] : ok[ok.length - 1]; };
+    try { save = () => { }; } catch (e) { }
+    fresh(); S.welcomed = true; S.tipsOff = 1; S.coached = 1; S.homeSeen = 1; genOffers(); beginPlan(); closeModal(); closeSheet();
+  }
+  function years(n) { for (let i = 0; i < n; i++) { if (!year()) break; } return R; }
+  return { start, years, get R() { return R; } };
+})();
