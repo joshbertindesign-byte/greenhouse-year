@@ -364,3 +364,72 @@ def robocat(pose):
     return f'<g transform="translate(32 52) scale(1.16) translate(-32 -52)">{b}</g>'
 for _p in ('walk0', 'walk1', 'sit', 'work0', 'work1', 'sleep'):
     add(f'robo_{_p}', robocat(_p))
+
+# ---------------------------------------------------------------- weekly login prizes
+def p_topiary():
+    b = ell(0, 0, 7, 2.2, '#1d3a24', 'opacity=".2"')
+    b += poly([(-5.5, -9), (5.5, -9), (4.2, 0), (-4.2, 0)], '#d9d2c0', '#8a8478', .7) + f'<rect x="-6.5" y="-11" width="13" height="2.6" rx="1" fill="#e8e2d2" stroke="#8a8478" stroke-width=".5"/>'
+    b += line((0, -11), (0, -16), '#7a5232', 1.6)
+    for i, (y, r) in enumerate(((-19, 6.2), (-28, 5.2), (-36, 4.2), (-43, 3.2))):
+        b += ell(0, y, r, r * .78, '#3f9a4a', 'stroke="#246330" stroke-width=".7"') + ell(-r * .35, y - r * .3, r * .4, r * .25, '#7fd08a', 'opacity=".6"')
+    b += circ(0, -47.5, 1.6, '#ffd23a', '#c99a12', .5)
+    return b
+def p_bonsai():
+    b = ell(0, 0, 6, 1.6, '#1d3a24', 'opacity=".25"') + f'<rect x="-6" y="-3.4" width="12" height="3.4" rx="1" fill="#3a5a8a" stroke="#22385a" stroke-width=".5"/>'
+    b += qd('M-.5,-3.4 Q-2,-7 1,-9 Q3,-11 1.4,-13', '#6a4a2a', 1.6) + qd('M1,-9 Q4,-10 5.4,-11.4', '#6a4a2a', 1)
+    for x, y, r in ((-2.4, -13.6, 3.4), (2.2, -14.6, 3), (5.4, -12, 2.4), (-4.8, -11.2, 2.2)): b += ell(x, y, r, r * .62, '#4f9a4a', 'stroke="#2f6a2f" stroke-width=".5"')
+    return b
+def p_cans():
+    b = f'<path d="M-12,0 L12,0 L12,1.8 L-12,1.8 Z" fill="#7a5232"/>'
+    for dx, s in ((-6, 1), (5.5, .82)):
+        g_ = f'<path d="M-5,-10 L5,-10 L4.4,0 L-4.4,0 Z" fill="#c8743a" stroke="#7a3f1a" stroke-width=".6"/>' + qd('M-3.6,-10 Q0,-15 3.6,-10', '#7a3f1a', 1) + qd('M4.6,-6 L10,-11.6', '#c8743a', 1.6) + ell(10.6, -12.2, 1.6, 1, '#a85a2a') + line((-4.6, -6), (4.6, -6), '#e09a5a', .6)
+        b += f'<g transform="translate({dx} 0) scale({s})">{g_}</g>'
+    return b
+def p_chandelier():
+    b = line((0, 0), (0, 6), '#c99a12', .7) + circ(0, 6.5, 1.4, '#d8b02a', '#8a6a12', .4)
+    b += ell(0, 12, 11, 2.6, 'none', 'stroke="#d8b02a" stroke-width="1.2"') + qd('M0,7 Q-8,8 -10,12 M0,7 Q8,8 10,12 M0,7 V16', '#d8b02a', .8)
+    for x in (-10, -5, 0, 5, 10):
+        y = 12 + (1.6 if abs(x) < 7 else 0)
+        b += f'<rect x="{x-.8}" y="{y-5}" width="1.6" height="4.4" fill="#fff8e0"/>' + f'<path d="M{x},{y-7.2} q-1,1.2 0,2.2 q1,-1 0,-2.2 Z" fill="#ffb21a"/>'
+        b += line((x, y), (x, y + 3.4), '#cfe8f0', .4) + poly([(x, y + 3.4), (x - 1.2, y + 5.4), (x, y + 7.6), (x + 1.2, y + 5.4)], '#e8f8ff', '#8ab8c8', .3)
+    b += poly([(0, 16), (-1.6, 18.6), (0, 21.6), (1.6, 18.6)], '#e8f8ff', '#8ab8c8', .4)
+    return b
+for _k, (_f, _w, _h, _ax, _ay) in {'topiary': (p_topiary, 18, 54, 9, 52), 'bonsai': (p_bonsai, 16, 20, 8, 18), 'cans': (p_cans, 34, 22, 17, 18), 'chandelier': (p_chandelier, 28, 26, 14, 1)}.items():
+    add(f'dp_{_k}', g(_f(), _ax, _ay), _w, _h, (_ax, _ay))
+def icon2(k):
+    if k == 'seeds':
+        b = frame('rail') + swag(11, 53, 12, 8, '#7a5a3a')
+        for i in range(6):
+            t = (i + .5) / 6; x, yy = sag_at(11, 53, 12, 8, t)
+            c = ['#f6efd8', '#e8f0d8', '#f6e0e8', '#e0ecf6', '#fff3c4', '#f0e4f8'][i]; fc = ['#ff5a7a', '#ffb21a', '#c86ae8', '#4fa8ff', '#ff8a1a', '#3fae5a'][i]
+            b += f'<rect x="{f2(x-2.6)}" y="{f2(yy+.4)}" width="5.2" height="7.4" fill="{c}" stroke="#8a7a5a" stroke-width=".4"/>' + flower(x, yy + 3.4, 1.6, fc) + line((x - 2, yy + 6.4), (x + 2, yy + 6.4), '#8a7a5a', .4)
+        return b
+    if k == 'topiary': return frame('door') + g(gs(p_topiary(), 0, 0, .78), 16, 50) + g(gs(p_topiary(), 0, 0, .78), 48, 50)
+    if k == 'bonsai': return frame('ledge') + g(p_bonsai(), 18, 41) + g(gs(p_bonsai(), 0, 0, 1.15), 32, 41) + g(f'<g transform="scale(-1 1)">{p_bonsai()}</g>', 46, 41)
+    if k == 'cans': return frame('wall') + g(gs(p_cans(), 0, 0, 1.3), 32, 32)
+    if k == 'chandelier': return frame('wall') + g(gs(p_chandelier(), 0, 0, 1.25), 32, 10)
+for _k in ('seeds', 'topiary', 'bonsai', 'cans', 'chandelier'):
+    add(f'deco_{_k}', icon2(_k))
+def hat2(k):
+    if k == 'crown':
+        b = f'<path d="M-5.6,0 L-6,-7 L-3,-4 L0,-8.6 L3,-4 L6,-7 L5.6,0 Z" fill="#ffd23a" stroke="#b8860b" stroke-width=".6"/>' + f'<rect x="-5.8" y="-1.8" width="11.6" height="2.2" fill="#e8b830" stroke="#b8860b" stroke-width=".4"/>'
+        b += circ(0, -.7, .9, '#d8202f') + circ(-3.4, -.7, .7, '#2a5fc0') + circ(3.4, -.7, .7, '#3fae5a') + circ(0, -8.6, .9, '#ffffff') + circ(-6, -7, .7, '#ffffff') + circ(6, -7, .7, '#ffffff')
+    elif k == 'beanie':
+        b = f'<path d="M-5.8,.4 Q-6,-7.4 0,-7.6 Q6,-7.4 5.8,.4 Z" fill="#d8202f" stroke="#7a0f1a" stroke-width=".6"/>' + f'<path d="M-3,-7 Q0,-7.8 3,-7 L3.4,-1 L-3.4,-1 Z" fill="#2a5fc0" opacity=".9"/><path d="M-5.8,-1.2 Q0,.2 5.8,-1.2 L5.8,.4 Q0,1.6 -5.8,.4 Z" fill="#ffd23a"/>'
+        b += line((0, -7.6), (0, -10.4), '#5a5a5a', .8) + ell(-3.4, -10.8, 3.4, 1, '#ffd23a', 'stroke="#b8860b" stroke-width=".4"') + ell(3.4, -10.8, 3.4, 1, '#3fae5a', 'stroke="#2f7a3f" stroke-width=".4"') + circ(0, -10.8, .9, '#5a5a5a')
+    elif k == 'wizard':
+        b = ell(0, 0, 8.6, 2.2, '#2a3a8a', 'stroke="#10204a" stroke-width=".6"') + f'<path d="M-4.6,-.4 L4.6,-.4 Q2,-8 -.6,-16 Q-2.4,-8 -4.6,-.4 Z" fill="#3a4ab0" stroke="#10204a" stroke-width=".6"/>'
+        for x, y, r in ((-1.6, -4, 1.1), (1.8, -7, .9), (-.6, -10.4, .8), (2.2, -2.4, .7)): b += f'<path d="M{x},{y-r} L{x+r*.3},{y-r*.3} L{x+r},{y} L{x+r*.3},{y+r*.3} L{x},{y+r} L{x-r*.3},{y+r*.3} L{x-r},{y} L{x-r*.3},{y-r*.3} Z" fill="#ffd23a"/>'
+    else:  # party
+        b = f'<path d="M-4.6,0 L4.6,0 L.6,-13 Z" fill="#ff6aa8" stroke="#c0407e" stroke-width=".6"/>' + qd('M-3,-4.4 L3.4,-3 M-1.6,-8.4 L2,-7.6', '#ffe27a', 1.2) + circ(.6, -13.6, 1.8, '#5ac8ff', '#2a8ac0', .4) + qd('M-4.4,.6 Q-6,3 -4.8,5', '#8a8a8a', .4)
+        for x, y, c in ((-1.4, -1.8, '#5ac8ff'), (1.8, -6, '#3fae5a'), (-.4, -10, '#ffd23a')): b += circ(x, y, .7, c)
+    return b
+for _k in ('crown', 'beanie', 'wizard', 'party'):
+    add(f'hat_{_k}', g(hat2(_k), 14, 18), 28, 24, (14, 18))
+def trowel():
+    b = f'<path d="M32,8 L44,22 Q46,30 38,36 L33,40 L24,31 L28,26 Q22,18 32,8 Z" fill="#bfeaff" stroke="#3a8ab0" stroke-width="1"/>'
+    b += f'<path d="M32,8 L36,24 L28,26 Q22,18 32,8 Z" fill="#e8f8ff"/><path d="M36,24 L44,22 Q46,30 38,36 Z" fill="#8fd0f0"/><path d="M28,26 L36,24 L38,36 L33,40 L24,31 Z" fill="#a8def8"/>'
+    b += line((26, 34), (18, 42), '#c9a24a', 3) + f'<path d="M18,42 L10,50 Q8,54 12,54 L20,46 Z" fill="#5a3a22" stroke="#2a1a0a" stroke-width=".7"/>'
+    for x, y in ((30, 14), (40, 30), (35, 22)): b += f'<path d="M{x},{y-3} L{x+.8},{y-.8} L{x+3},{y} L{x+.8},{y+.8} L{x},{y+3} L{x-.8},{y+.8} L{x-3},{y} L{x-.8},{y-.8} Z" fill="#ffffff"/>'
+    return b
+add('trowel_dia', trowel())
