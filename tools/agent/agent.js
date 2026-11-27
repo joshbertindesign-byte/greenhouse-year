@@ -260,10 +260,11 @@ window.AG = (() => {
     while (S.phase !== 'done' && S.phase !== 'over' && guard++ < 3000000) {
       if (S.phase === 'plan') { planPeriod(); checkMS(); continue; }
       if (S.phase === 'run') { const p = S.period; runStep(P.dt); if (S.phase !== 'run' || S.period !== p) checkMS(); continue; }
-      if (S.phase === 'home') { tryDo('leave', () => leaveHome()); continue; }
+      if (S.phase === 'home') { if (S.fail && S.fail.year === S.year && S.fail.n >= 2 && S.floors > 1) tryDo('sell', () => { if (sellHouse()) use('soldHouse'); }); tryDo('leave', () => leaveHome()); continue; }
       break;
     }
-    if (S.phase === 'over') { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: S.lost || '?' }; return false; }
+    if (S.failLog && S.failLog.length > 80) { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: "loop" }; return false; }
+    if (S.phase === "over") { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: S.lost || '?' }; return false; }
     const h = S.hist[S.hist.length - 1];
     const ys = S.ys || {};
     R.restarts = (S.failLog || []).length; R.failLog = (S.failLog || []).slice();

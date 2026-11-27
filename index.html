@@ -2855,29 +2855,48 @@ const catCap=()=>CATHOUSE[S.catHouse||1];
 let homeSel=null,panX=0,panY=0,homeZoom=1;
 // ---------------- a failed year starts over ----------------
 // Ending a year below zero, or losing every customer, rewinds to the start of that year (as you left the homestead).
-// You keep your grower's XP and skills and anything earned in real time. After three failed tries the fourth comes with
-// a cash stipend sized from how far short your tries fell, but that year's goal can't be met.
+// You keep your grower's XP and skills and anything earned in real time. There is no bailout: if a year keeps failing,
+// you can sell your newest greenhouse (sellHouse) for cash and a smaller, cheaper nursery.
 let yearCk=null;
 const KEEP=['glv','gxp','sk','robo','roboNew','daily','hats','hatSet','trowel','mailAt','mails','giftAt','gifts','dev','tips','tipsOff','coached','homeSeen','welcomed','pastNames','failLog'];
 const FAIL_STIPEND_AT=3;
 const yearShort=()=>Math.round(-(S.cash-taxDue()-unpaid()));
+// ---- selling the newest greenhouse: cash now, and a smaller nursery that's cheaper to run ----
+const SELL_F=.75;
+const sellValue=()=>S.floors>1?Math.round(FLOOR_COST[S.floors-1]*SELL_F/100)*100:0;
+function sellHouse(){
+  const h=S.floors-1;if(h<1)return false;
+  if(S.phase!=='plan'&&S.phase!=='home'){toast('bad','Sell a house between periods');return false;}
+  if(S.plots.some(pl=>!pl.done&&plotF(pl)===h)){toast('bad',`${floorName(h)} still has orders on its benches`);return false;}
+  const v=sellValue(),gone=S.crew.filter(r=>r.home===h&&r.role!=='load'&&r.role!=='prize');let owed=0;
+  gone.forEach(r=>{owed+=r.owed||0;r.owed=0;S.pastNames=[...(S.pastNames||[]),r.name].slice(-20);});
+  S.crew=S.crew.filter(r=>!gone.includes(r));S.cash+=v-owed;S.ys.sold=(S.ys.sold||0)+v;
+  if(S.spec)delete S.spec[h];if(S.place)delete S.place[h];S.floors=h;
+  S.crew.forEach(r=>{if(r.role!=='load'&&r.role!=='prize'&&(r.home>=S.floors||!homeOK(r.role,r.home)))r.home=firstHome(r.role);});
+  staff=[];syncStaff();layout();if(S.phase==='home')renderHome();renderSheet();hud();
+  toast('cash',`Sold ${floorName(h)} for ${fmt(v)}${gone.length?`. ${gone.length} crew went with it`:''}${owed?`, and their ${fmt(owed)} back pay was settled`:''}`);
+  return true;
+}
 function failYear(why){
   const ck=yearCk||(()=>{try{return localStorage.getItem('gy8ck');}catch(e){return null;}})();
   let d=null;try{d=ck&&JSON.parse(ck);}catch(e){}
   if(!d||d.year!==S.year){S.lost=why==='rep'?'rep':'bank';gameOver();return;}
+  const yy=S.ys||{},cause=yy.rev>0?`Wages were ${Math.round((yy.crew||0)/yy.rev*100)}% of your sales and upkeep ${Math.round((yy.overhead||0)/yy.rev*100)}%.`:'';
   const y=S.year,prev=S.fail&&S.fail.year===y?S.fail:{n:0,worst:0},n=prev.n+1,short=Math.max(0,yearShort()),worst=Math.max(prev.worst,short,why==='rep'?Math.round(payroll()*4):0);
-  S.failLog=(S.failLog||[]).concat([{year:y,why,period:S.period,cash:Math.round(S.cash)}]);
+  S.failLog=(S.failLog||[]).concat([{year:y,why,period:S.period,cash:Math.round(S.cash),owed:unpaid(),floors:S.floors,crew:S.crew.length,roles:S.crew.map(r=>r.role).join(','),rev:Math.round(yy.rev||0),wages:Math.round(yy.crew||0),up:Math.round(yy.overhead||0),plugs:Math.round(yy.plugs||0),rep:Math.round(avgRep())}]);
   const keep={};KEEP.forEach(k=>{if(S[k]!==undefined)keep[k]=S[k];});
   if(d.assist&&d.assist.year===y){d.cash-=d.assist.amt;delete d.assist;}// take back the last stipend so they don't stack
   decoFix(d);S=d;Object.assign(S,keep);S.fail={year:y,n,worst};
-  let stip=0;if(n>=FAIL_STIPEND_AT){stip=Math.round((worst*1.3+payroll()+upkeep()*2)/500)*500;S.cash+=stip;S.assist={year:y,amt:stip};}
+  const stip=0;
   yearCk=JSON.stringify(S);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}
   viewF=0;staff=[];syncStaff();syncRobo();me.task=null;me.path=[];
   if(window.__quiet){S.phase='home';return;}
   enterHome();
-  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red${unpaid()?', counting wages you still owe':''}.`} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
-    ${stip?`<div class="taxb last">${svgIcon('cash',40)}<span><b>Help for try ${n+1}: ${fmt(stip)}</b> That's about what it takes to get through this year even playing loosely, based on your last ${n} tries. The catch: this year's goal can't be met. It waits for next year.</span></div>`:`<p class="dim">Try ${n+1}. ${n+1>=FAIL_STIPEND_AT+1?'':`If this year fails ${FAIL_STIPEND_AT-n} more time${FAIL_STIPEND_AT-n>1?'s':''}, the next try comes with a cash stipend (but no goal that year).`}</p>`}
-    <button class="btn go" type="button" id="fyOk">Back to the homestead</button>`);
+  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red${unpaid()?', counting wages you still owe':''}.`} ${cause} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
+    ${S.floors>1?`<div class="taxb last">${svgIcon('floor',40)}<span><b>Too big to keep up?</b> You can sell ${floorName(S.floors-1)} for ${fmt(sellValue())}. Its crew${specOf(S.floors-1)?' and its specialty':''} go with it; decorations come back to storage. A smaller nursery is cheaper to run.</span></div>`:''}
+    <p class="dim">Try ${n+1} at year ${y}.</p>
+    <div class="ab2">${S.floors>1?`<button class="btn" type="button" id="fySell">Sell ${floorName(S.floors-1)}</button>`:''}<button class="btn go" type="button" id="fyOk">Back to the homestead</button></div>`);
+  if($('fySell'))$('fySell').onclick=()=>{sellHouse();closeModal();};
   $('fyOk').onclick=closeModal;
 }
 function enterHome(){
@@ -3785,6 +3804,7 @@ function renderSheet(){
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(nextHouseOH())} more upkeep each period (each house costs a little more to run than the last). Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       ${specHTML(plan)}
+      ${S.floors>1?`<h3 style="margin:18px 2px 0;font-size:18px">Sell a greenhouse</h3><div class="uprow">${svgIcon('floor',40)}<div class="rn"><b>Sell ${floorName(S.floors-1)}</b><span>${fmt(sellValue())} now. Its crew${specOf(S.floors-1)?' and its specialty':''} go with it; decorations come back to storage. Only your newest house can be sold, and it has to be empty.</span></div><button class="btn" type="button" id="sellH"${plan&&!S.plots.some(pl=>!pl.done&&plotF(pl)===S.floors-1)?'':' disabled'}>Sell · ${fmt(sellValue())}</button></div>`:''}
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
@@ -3812,6 +3832,7 @@ function renderSheet(){
   el.querySelectorAll('[data-buf]').forEach(b=>b.onclick=()=>{S.buf=+b.dataset.buf;renderSheet();});
   el.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{sortBy=b.dataset.sort;renderSheet();});
   el.querySelectorAll('[data-veg]').forEach(b=>b.onclick=()=>buyVeg(b.dataset.veg));
+  if($('sellH'))$('sellH').onclick=()=>sellHouse();
   el.querySelectorAll('[data-spec]').forEach(b=>b.onclick=()=>{const [h,k]=b.dataset.spec.split(':');convertHouse(+h,k);});
   el.querySelectorAll('[data-lic]').forEach(b=>b.onclick=()=>buyLic(b.dataset.lic));
   el.querySelectorAll('[data-gosub]').forEach(b=>b.onclick=()=>{upSub=b.dataset.gosub;renderSheet();});
@@ -3920,11 +3941,19 @@ function readyCheck(){
   $('rdNo').onclick=closeModal;
 }
 function payday(){
-  if(!S.crew.length&&!S.mgr)return;
+  if(!S.crew.length&&!S.mgr&&!S.backPay)return;
   const due=payroll();
   if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});S.backPay=0;return;}
-  S.crew.forEach(r=>{r.owed=(r.owed||0)+wageOf(r);r.missed=(r.missed||0)+1;});
-  const warn=S.crew.filter(r=>r.missed===1),risk=S.crew.filter(r=>r.missed>=2),gone=risk.filter(()=>rnd()<QUIT_P),stay=risk.filter(r=>!gone.includes(r));
+  // short: pay whoever you can, longest-unpaid first, then what you owe people who left; the rest waits
+  let cash=Math.max(0,S.cash),paid=0;
+  if(S.mgr&&cash>=S.mgr.wage){cash-=S.mgr.wage;paid+=S.mgr.wage;}
+  const unpaidNow=[];
+  for(const r of S.crew.slice().sort((a,b)=>(b.missed||0)-(a.missed||0))){const amt=wageOf(r)+(r.owed||0);if(cash>=amt){cash-=amt;paid+=amt;r.owed=0;r.missed=0;}else unpaidNow.push(r);}
+  if(S.backPay&&cash>0){const b=Math.min(cash,S.backPay);S.backPay-=b;cash-=b;paid+=b;}
+  S.cash-=paid;S.ys.crew+=paid;
+  if(!unpaidNow.length)return;
+  unpaidNow.forEach(r=>{r.owed=(r.owed||0)+wageOf(r);r.missed=(r.missed||0)+1;});
+  const warn=unpaidNow.filter(r=>r.missed===1),risk=unpaidNow.filter(r=>r.missed>=2),gone=risk.filter(()=>rnd()<QUIT_P),stay=risk.filter(r=>!gone.includes(r));
   gone.forEach(r=>fireCrew(r.id));
   S.ys.missed=(S.ys.missed||0)+1;
   if(window.__quiet){if(window.__rushHire)gone.forEach(rushHire);return;}
