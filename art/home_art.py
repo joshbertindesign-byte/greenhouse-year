@@ -478,6 +478,34 @@ def b_frame(I):
     x, y = I.P(.35, 2.8, 0); b += seg((x, y), (x, y - 16), '#6a4a2a', 1.4) + poly([(x - 8, y - 24), (x + 8, y - 24), (x + 8, y - 15), (x - 8, y - 15)], '#ffd23a', '#8a6a12', .8) + seg((x - 5, y - 20), (x + 5, y - 20), '#2b2b2b', 1)
     return b
 
+# ---------------------------------------------------------------- landmarks (two lots wide along u)
+LW, LH = 340, 300
+def bunkhouse():
+    I = Iso(HAX, HAY); b = shadow(I, .5, .5, 6.5, 2.35)
+    b += I.box(.45, .5, 6.55, 2.6, 0, 4, '#cfc3a6', '#b8ab8c', '#a89a7a', '#8a7d60', .6)
+    b += I.box(.6, .6, 6.4, 1.9, 4, 34, '#b97a4a', '#a8683a', '#8a5230', '#5a3418', .9)
+    for z in range(8, 34, 4):  # log courses
+        b += seg(I.P(.6, 1.9, z), I.P(6.4, 1.9, z), '#00000022', .7) + seg(I.P(6.4, .6, z), I.P(6.4, 1.9, z), '#00000022', .7)
+    for u0 in (1.0, 2.2, 4.2, 5.4):
+        b += win_v(I, 1.9, u0, u0 + .55, 14, 27)
+    b += fv(I, 1.91, 3.1, 3.75, 4, 26, '#6a3e22', '#4a2a18', .7) + circ(*I.P(3.65, 1.93, 15), 1, '#ffd23a')
+    b += win_u(I, 6.4, .95, 1.55, 14, 26)
+    b += gable_u(I, .6, .6, 6.4, 1.9, 34, 20, 'url(#gRoofG)', '#2f5a3e', '#a8683a', '#1f3f2a', o=.14, lines=5)
+    b += I.box(1.4, .95, 1.75, 1.3, 40, 62, '#9a9a9a', '#8a8a8a', '#6f6f6f', '#4a4a4a', .6)  # chimney
+    for k in range(3): b += circ(*I.P(1.6, 1.1, 66 + k * 7), 3 + k, '#ffffff', 'none', 1, f'opacity="{.55 - k * .15:.2f}"')
+    # porch over the door
+    b += I.box(2.55, 1.9, 4.35, 2.55, 4, 7, '#c9a26a', '#b08a52', '#9a7642', '#6a5232', .6)
+    for u in (2.62, 4.2):
+        b += I.box(u, 2.42, u + .08, 2.5, 7, 25, '#e8c48a', '#d0a868', '#b8905a', '#8a6a3a', .5)
+    b += poly([I.P(2.5, 1.9, 29), I.P(4.4, 1.9, 29), I.P(4.4, 2.62, 24), I.P(2.5, 2.62, 24)], '#4f8a5e', '#1f3f2a', .8)
+    b += I.box(1.0, 1.98, 1.6, 2.2, 4, 8, '#b8905a', '#a07a48', '#8a6a3a', '#5a4022', .5) + I.box(5.0, 1.98, 5.6, 2.2, 4, 8, '#b8905a', '#a07a48', '#8a6a3a', '#5a4022', .5)
+    b += tree(*I.P(6.7, .3, 0), 1.0, seed=11) + bush(*I.P(.35, 2.1, 0), 6, seed=7) + bush(*I.P(6.75, 2.3, 0), 5, seed=9, flowers='#ff8ab0')
+    # sign
+    x, y = I.P(3.4, 2.85, 0); b += seg((x - 9, y), (x - 9, y - 14), '#6a4a2a', 1.4) + seg((x + 9, y), (x + 9, y - 14), '#6a4a2a', 1.4) + poly([(x - 12, y - 22), (x + 12, y - 22), (x + 12, y - 13), (x - 12, y - 13)], '#8a5a3a', '#4a2a18', .7)
+    return b
+rad('gRoofG', [(0, '#6fae7a', None), (1, '#3f7a52', None)], .3, .2, 1)
+add('h_bunk', bunkhouse(), LW, LH, (HAX, HAY))
+
 for _id, fn in (('h_farm', farmhouse), ('h_deb_brush', deb_brush), ('h_deb_rocks', deb_rocks), ('h_deb_stump', deb_stump), ('h_deb_junk', deb_junk),
                 ('h_garden', b_garden), ('h_stand', b_stand), ('h_shed', b_shed), ('h_pergola', b_pergola), ('h_pond', b_pond), ('h_orchard', b_orchard),
                 ('h_beds', b_beds), ('h_frame', b_frame)):

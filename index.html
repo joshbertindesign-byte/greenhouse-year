@@ -356,6 +356,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+.bopt.lm{grid-column:1/-1;border-color:#c9a26a!important;background:#fff8ea}
 .mast .edn{color:var(--ec)!important}.mast .edl{display:flex;justify-content:center;gap:6px;margin-top:6px}.mast .edl i{width:22px;height:5px;border-radius:3px;background:#e6dcc2}.mast .edl i.past{background:#c9b88a}.mast .edl i.on{background:var(--ec)}
 .edpromo{margin:10px 0 4px;padding:10px 12px;border-radius:10px;font-size:14.5px;line-height:1.4;font-family:Outfit,sans-serif}.edpromo.up{background:#fff4cf;border:2px solid #e8c25a}.edpromo.down{background:#f6ece8;border:2px solid #e2b9ad}
 .edrow{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin:0 2px 10px;font-size:13px;color:var(--mute)}.edrow span{padding:3px 9px;border-radius:99px;background:#efe9d8}.edrow span.on{background:var(--ec);color:#fff;font-weight:700}.edrow i{font-style:normal}
@@ -1060,7 +1061,8 @@ const plotF=pl=>BENCH[pl.rows[0]].f;
 function prog(pl){const el=(S.period-pl.s)+(S.phase==='run'?S.t/PSEC:0);return el/((pl.g||crop(pl.crop).g)-.85);}
 const minStart=()=>S.phase==='plan'?S.period:S.period+1;
 const roundKey=()=>S.year*100+S.period*2+(S.phase==='plan'?0:1);
-const crewCost=()=>S.crew.reduce((a,r)=>a+r.wage,0)+(S.mgr?S.mgr.wage:0);
+const wageOf=r=>Math.round(r.wage*(bunkOn()?BUNK_WAGE:1));
+const crewCost=()=>S.crew.reduce((a,r)=>a+wageOf(r),0)+(S.mgr?S.mgr.wage:0);
 const SHOW_COST=15000,SHOW_OH=250;
 const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(S.fixedYear===S.year?.75:1));
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
@@ -1718,7 +1720,7 @@ function endPeriod(){
   S.crew.forEach(r=>{if(r.n<VET)r.n++;r.tp=(r.tp||0)+1;});
   {const rusted=[],fast=catOn('gremlin')||sk('mentor')>0;
     for(const r of S.crew.filter(r=>r.role!=='prize'&&(r.tp||0)>1)){const j=r.jobs||0;
-      if(j<RUST_MIN){if((r.rust||0)<RUST_MAX){r.rust=(r.rust||0)+1;rusted.push(r);}}
+      if(j<RUST_MIN){if((r.rust||0)<RUST_MAX&&!(bunkOn()&&c<=1)){r.rust=(r.rust||0)+1;rusted.push(r);}}
       else if(r.rust)r.rust=Math.max(0,r.rust-(fast?2:1));}
     S.crew.forEach(r=>r.jobs=0);
     if(rusted.length&&!window.__quiet)S.rustNote=rusted.map(r=>r.name);}
@@ -1734,7 +1736,7 @@ function crewNews(){
   if(S.rustNote&&S.rustNote.length){const n=S.rustNote;S.rustNote=null;setTimeout(()=>toast('crew',`${n.length>2?`${n.length} of your crew`:n.join(' and ')} got rusty: not enough to do last period. They’re a little slower until they’re busy again`),700);}
   if(S.period===0&&S.year===1)return;
   const vets=S.crew.filter(r=>r.role!=='prize'&&r.n>=VET&&(r.tp||0)>=VET+4);
-  const r=vets.find(r=>rnd()<Math.min(.015,.005+.0005*((r.tp||0)-VET)));
+  const r=vets.find(r=>rnd()<Math.min(.015,.005+.0005*((r.tp||0)-VET))*(bunkOn()?.5:1));
   if(!r)return;
   fireCrew(r.id);
   if(window.__quiet)return;
@@ -2219,7 +2221,13 @@ const BUILDS={
   pergola:{n:'Pergola',cost:4,does:'A shady spot for lunch'},
   pond:{n:'Pond',cost:5,does:'Frogs, lilies and a bench'},
   orchard:{n:'Fruit trees',cost:12,does:'Shake them every 6 hours for a star or two'},
-  beds:{n:'Flower beds',cost:3,does:'Leftover plugs, put to good use'}};
+  beds:{n:'Flower beds',cost:3,does:'Leftover plugs, put to good use'},
+  bunk:{n:'Bunkhouse',cost:30,uniq:1,lm:1,lv:10,does:'Landmark, two plots wide. Crew live on site: wages 15% lower, no rust in winter, and veterans retire half as often'}};
+// A landmark takes this plot and the empty plot to its right.
+const lmPart=id=>{const L=lotOf(id);return L&&LOTS.find(l=>!l.pre&&l.y===L.y&&l.x===L.x+4);};
+const lmRoom=id=>{const R2=lmPart(id);if(!R2)return false;const st=lotState(R2.id);return!!st.clear&&!st.b&&!jobFor(R2.id);};
+const lmMain=id=>{const st=lotState(id);return st.part||id;};
+const bunkOn=()=>hasBuild('bunk'),BUNK_WAGE=.85;
 const SHAKE_MS=6*3600e3,orchardN=()=>LOTS.filter(l=>lotState(l.id).b==='orchard').length;
 const bcost=k=>k==='orchard'?12+6*orchardN():BUILDS[k].cost;
 const ripe=id=>{const st=lotState(id);return st.b==='orchard'&&Date.now()>=(st.shk||0);};
@@ -2251,11 +2259,12 @@ function leaveHome(){if(S.phase!=='home')return;flushHJobs();save();try{localSto
 function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);return false;}S.stars-=n;return true;}
 function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
   const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});save();renderHome();}
-function buildLot(id,k){const B=BUILDS[k],st=lotState(id);if(!st.clear||st.b||jobFor(id))return;if(B.uniq&&hasBuild(k))return;if(!spendStars(bcost(k)))return;S.home[id]={clear:true,b:k};addHJob({lot:id,kind:'build',prev:{clear:true},b:k});save();renderHome();}
+function buildLot(id,k){const B=BUILDS[k],st=lotState(id);if(!st.clear||st.b||jobFor(id))return;if(B.uniq&&hasBuild(k))return;if(B.lm&&(!lmRoom(id)||stage()<(B.lv||1)))return;if(!spendStars(bcost(k)))return;S.home[id]={clear:true,b:k};if(B.lm)S.home[lmPart(id).id]={clear:true,b:k,part:id};addHJob({lot:id,kind:'build',prev:{clear:true},b:k});save();renderHome();}
 function adoptCat(id){if(catOn(id))return;if(id==='smokey'&&!smokeyHere())return;if(S.cats.length>=catCap()){toast('bad','The cat house is full. Expand it first');return;}if(!spendStars(catCost(id)))return;S.cats.push(id);const c=CATS.find(x=>x.id===id);const sp=bowlSpots()[0];c.x=sp.ex;c.y=sp.ey;c.f=0;c.path=[];c.mode='sit';c.t=4;addHJob({lot:CH_LOT().id,kind:'greet',cat:id});save();renderHome();}
 function growCatHouse(){const l=S.catHouse||1;if(l>=4||HJ.some(j=>j.kind==='grow'&&j.lot===CH_LOT().id))return;if(!spendStars(CATHOUSE_COST[l+1]))return;S.catHouse=l+1;addHJob({lot:CH_LOT().id,kind:'grow',prev:l});save();renderHome();}
 function growOffice(){if((S.office||1)>=2)return;if(!spendStars(OFFICE_COST))return;S.office=2;addHJob({lot:OF_LOT().id,kind:'grow',prev:1});save();renderHome();}
 function renderHome(){
+  if(homeSel&&homeSel!=='mail'&&lotOf(homeSel))homeSel=lmMain(homeSel);
   const P0=$('homeP');P0.hidden=S.phase!=='home';if(P0.hidden)return;
   const L=homeSel&&lotOf(homeSel),st=L?lotState(L.id):{},stars=S.stars||0,star=n=>`<b class="stp">★ ${n}</b>`;
   let body='';
@@ -2272,7 +2281,7 @@ function renderHome(){
   else if(!st.clear)body=`<div class="hmt"><b>${L.deb==='brush'?'Overgrown brush':L.deb==='rocks'?'A pile of rocks':L.deb==='stump'?'An old stump':'A junk pile'}</b><button class="btn sun sm" type="button" id="clrB"${stars<L.cost?' disabled':''}>Clear · ★ ${L.cost}</button></div><p class="hmh">Clearing it opens a plot to build on. Sometimes there's a star underneath.</p>`;
   else if(st.b==='orchard'){const go=HJ.some(j=>j.kind==='shake'&&j.lot===L.id),rp=ripe(L.id);body=`<div class="hmt"><b>Fruit trees</b><span>${go?'Your grower is shaking them':rp?'Ripe!':`Ripe again in ${ripeLeft(L.id)}`}</span>${rp&&!go?'<button class="btn sun sm" type="button" id="shkB">Shake the trees</button>':''}</div><p class="hmh">Shake them every 6 hours for a star or two.</p>`;}
   else if(st.b){const B=BUILDS[st.b];body=`<div class="hmt"><b>${B.n}</b></div><p class="hmh">${B.does}.</p>`;}
-  else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const dis=(B.uniq&&hasBuild(k))||stars<bcost(k);return`<button type="button" class="bopt" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
+  else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const lk=B.lm&&stage()<(B.lv||1),nr=B.lm&&!lmRoom(L.id),dis=(B.uniq&&hasBuild(k))||stars<bcost(k)||lk||nr;return`<button type="button" class="bopt${B.lm?' lm':''}" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':lk?`Opens at level ${B.lv}`:nr?'Needs the cleared plot to the right':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
   const hint=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`,sel=!!(homeSel&&(homeSel==='mail'||L));
   P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmSk" style="margin-left:auto">Skills${skPts()?` (${skPts()})`:''}</button><button class="btn sm" type="button" id="hmAlm">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${hint}</div>`;
   const pop=$('hpop');pop.hidden=!sel;pop.innerHTML=sel?`<button type="button" class="hpx" id="hpX" aria-label="Close">×</button>${body}`:'';if(sel){$('hpX').onclick=()=>{homeSel=null;renderHome();};placeHpop();}
@@ -2287,7 +2296,7 @@ let homeH=0;
 // Keep the pop-up beside its spot on the map as the view pans and zooms.
 function placeHpop(){
   const el=$('hpop');if(!el||el.hidden)return;if(S.phase!=='home'){el.hidden=true;return;}
-  const L=homeSel&&homeSel!=='mail'?lotOf(homeSel):null,a=homeSel==='mail'?P(MAIL.x+.5,MAIL.y+.5,40):L?P(L.x+1.5,L.y+1.5,30):null;if(!a)return;
+  const L=homeSel&&homeSel!=='mail'?lotOf(homeSel):null,a=homeSel==='mail'?P(MAIL.x+.5,MAIL.y+.5,40):L?P(L.x+(BUILDS[lotState(L.id).b]?.lm?3.5:1.5),L.y+1.5,30):null;if(!a)return;
   const w=Math.min(380,VW-20);el.style.width=w+'px';el.style.maxHeight=Math.max(160,viewBot-viewTop-16)+'px';
   const h=el.offsetHeight,room=a[1]-viewTop-18,below=viewBot-a[1]-18;
   let top=room>=h||room>=below?a[1]-18-h:a[1]+18;top=clamp(top,viewTop+8,Math.max(viewTop+8,viewBot-h-8));
@@ -2295,13 +2304,13 @@ function placeHpop(){
 }
 // ---------------- gift cards: show one on your screen, a friend snaps it ----------------
 const GIFT_MS=12*3600e3,GIFT_MAX=3,GIFT_URL='https://joshbertindesign-byte.github.io/greenhouse-year/';
-const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
+const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b',bunk:'k'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
 const CAT_IDS=['anna','miley','max','gremlin','beatrice','minaou','otis','smokey'];
 const giftHash=str=>{let h=2166136261;for(const c of 'gy-gift-v1|'+str){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}return h.toString(36).padStart(5,'0').slice(-5);};
 const myUid=()=>S.uid||(S.uid=Math.random().toString(36).slice(2,8));
 const hrsLeft=ms=>{const t=Math.max(1,Math.ceil(ms/60000)),h=Math.floor(t/60),m=t%60;return h?`${h}h ${m}m`:`${m}m`;};
 function snapFields(){
-  const home=LOTS.filter(l=>!l.pre).map(l=>{const st=lotState(l.id);return st.b?BCODE[st.b]:st.clear?'1':'0';}).join('');
+  const home=LOTS.filter(l=>!l.pre).map(l=>{const st=lotState(l.id);return st.part?'q':st.b?BCODE[st.b]:st.clear?'1':'0';}).join('');
   const cats=S.cats.map(c=>CAT_IDS.indexOf(c)).filter(i=>i>=0).join('')||'0';
   const rib=S.hist.filter(h=>h.ribbon!=null&&h.ribbon>=0).slice(-8).map(h=>h.ribbon).join('')||'-';
   const ups=Object.keys(UPS).map(k=>Math.min(9,upLv0(k))).join('');
@@ -2313,7 +2322,7 @@ function parseGift(str){
   if(!str)return null;str=String(str).replace(/%7C/gi,'|');const i=str.indexOf('G1|');if(i<0)return null;str=str.slice(i).trim();
   const parts=str.split('|');if(parts.length!==17)return null;const h=parts.pop();if(giftHash(parts.join('|'))!==h)return null;
   const [,uid,gid,nm,g,yr,lv,best,fl,sh,home,ch,of,cats,rib,ups]=parts;let n='A nursery';try{n=decodeURIComponent(nm);}catch(e){}
-  const ids=LOTS.filter(l=>!l.pre),hm={};[...home].forEach((c,k)=>{const L=ids[k];if(!L)return;if(c==='1')hm[L.id]={clear:true};else if(BDEC[c])hm[L.id]={clear:true,b:BDEC[c]};});
+  const ids=LOTS.filter(l=>!l.pre),hm={};[...home].forEach((c,k)=>{const L=ids[k];if(!L)return;if(c==='1')hm[L.id]={clear:true};else if(c==='q'){const M=LOTS.find(l=>!l.pre&&l.y===L.y&&l.x===L.x-4);hm[L.id]={clear:true,b:'bunk',part:M&&M.id};}else if(BDEC[c])hm[L.id]={clear:true,b:BDEC[c]};});
   return{uid,gid,n,g:g==='f'?'f':'m',yr:+yr||1,lv:clamp(+lv||1,1,10),best:clamp(+best||0,0,5),fl:clamp(parseInt(fl,36)||1,1,12),sh:sh==='1',home:hm,ch:clamp(+ch||1,1,3),of:clamp(+of||1,1,2),
     cats:[...cats].map(k=>CAT_IDS[+k]).filter(Boolean),rib:rib==='-'?[]:[...rib].map(Number).filter(x=>x>=0&&x<5),up:Object.fromEntries(Object.keys(UPS).map((k,i)=>[k,+(ups[i]||0)]))};
 }
@@ -2417,7 +2426,7 @@ function openMail(quiet){
 function homeTap(e){
   {const [X,Y]=P(MAIL.x,MAIL.y,32);if(Math.hypot(e.clientX-X,e.clientY-Y)<Math.max(26,40*sc)){tapMail();return;}}
   let best=null,bd=1e9;for(const L of LOTS){const [X,Y]=P(L.x+1.5,L.y+1.5,14),d=Math.hypot(e.clientX-X,e.clientY-Y);if(d<bd){bd=d;best=L;}}
-  homeSel=best&&bd<TW*sc*1.6?best.id:null;if(homeSel&&ripe(homeSel))shakeLot(homeSel);renderHome();
+  homeSel=best&&bd<TW*sc*1.6?lmMain(best.id):null;if(homeSel&&ripe(homeSel))shakeLot(homeSel);renderHome();
 }
 // drawing helpers for homestead pieces (world coordinates)
 // scenery around the homestead
@@ -2479,6 +2488,7 @@ function drawLot(L){
   if(L.pre==='office'){spr('h_office_'+v.l,L.x,L.y,0);drawRibbons(L,v.l);return;}
   if(!v.clear)return spr('h_deb_'+L.deb,L.x,L.y,0);
   if(j&&j.kind==='build'&&j.working)return spr('h_frame',L.x,L.y,0);
+  if(v.part)return;
   if(v.b){const sh=j&&j.kind==='shake'&&j.working?Math.sin(performance.now()/35)*.035:0;spr('h_'+v.b,L.x+sh,L.y-sh,0);}
 }
 function drawHomestead(now){
@@ -2489,7 +2499,7 @@ function drawHomestead(now){
   for(const L of LOTS_D){if(L.pre)continue;const v=lotLook(L);
     if(v.clear&&!v.b){poly([P(L.x+.15,L.y+.15,0),P(L.x+2.85,L.y+.15,0),P(L.x+2.85,L.y+2.85,0),P(L.x+.15,L.y+2.85,0)],'#cdb48a','rgba(110,80,40,.25)');for(let k=1;k<6;k++){const a=P(L.x+.15+k*.45,L.y+.2,0),b=P(L.x+.15+k*.45,L.y+2.8,0);cx.strokeStyle='rgba(120,90,50,.25)';cx.lineWidth=1.5*sc;cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke();}
       cx.save();cx.setLineDash([5*sc,5*sc]);cx.strokeStyle='rgba(110,80,40,.55)';cx.lineWidth=2*sc;cx.beginPath();const q=[P(L.x,L.y,0),P(L.x+3,L.y,0),P(L.x+3,L.y+3,0),P(L.x,L.y+3,0)];cx.moveTo(...q[0]);q.slice(1).forEach(v=>cx.lineTo(...v));cx.closePath();cx.stroke();cx.restore();}}
-  const items=[...(mgrOn()?[{d:14.9-3.25,f:()=>spr('mgr_front_'+(Math.floor(now/2200)%5===0?1:0),14.4,-3.75,0)}]:[]),{d:MAIL.x+MAIL.y,f:()=>spr(mailReady()?'h_mail_1':'h_mail_0',MAIL.x,MAIL.y,0)},...LOTS_D.map(L=>({d:L.x+L.y+3,f:()=>drawLot(L)})),...HSCEN.map(o=>({d:o.u+o.v,f:()=>spr(o.k,o.u,o.v,0)}))];
+  const items=[...(mgrOn()?[{d:14.9-3.25,f:()=>spr('mgr_front_'+(Math.floor(now/2200)%5===0?1:0),14.4,-3.75,0)}]:[]),{d:MAIL.x+MAIL.y,f:()=>spr(mailReady()?'h_mail_1':'h_mail_0',MAIL.x,MAIL.y,0)},...LOTS_D.map(L=>({d:L.x+L.y+3+(BUILDS[lotState(L.id).b]?.lm&&!lotState(L.id).part?4:0),f:()=>drawLot(L)})),...HSCEN.map(o=>({d:o.u+o.v,f:()=>spr(o.k,o.u,o.v,0)}))];
   if(home){
     if(!hg)hgReset();
     items.push({d:hg.x+hg.y,f:()=>drawHomeGrower(now)});
@@ -2785,7 +2795,7 @@ function renderCrewPop(){
   if(!w){crewPop=null;el.hidden=true;return;}
   const r=w.rec,av=document.querySelector(`#qC .av[data-w="${w.id}"]`);
   el.hidden=false;
-  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>${r.role==='prize'?'Showcase specialist':`Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''}`} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
+  el.innerHTML=`<div class="cph">${svgIcon(w.role,40)}<div><b>${esc(r.name)} · ${ROLES[w.role].name}</b><span>${r.role==='prize'?'Showcase specialist':`Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''}`} · ${fmt(wageOf(r))}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span></div><button class="xbtn" type="button" id="cpX" aria-label="Close">×</button></div>
     <div class="cpt">Now: <b id="cpTask">${w.task?taskLabel(w.task):'Idle'}</b></div>
     ${w.role==='prize'?`<div class="cpt">Attentiveness ${attStars(r.att||1)} ${ATT_N[r.att||1]} · works the showcase house</div>`:w.role==='load'?'<div class="cpt">Works the dock</div>':S.floors>1?`<div class="fsel">${houseMap(r.home,h=>`data-cpf="${h}"`,'Works in house')}</div>`:''}`;
   const tr=$('tray').getBoundingClientRect(),a=av?av.getBoundingClientRect():tr;
@@ -3093,7 +3103,7 @@ function renderSheet(){
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them. Crew with too little to do in a period get rusty and slow down until they're busy again, and long-serving veterans may retire.</small></h2></div>
       ${growerCardHTML()}${mgrHTML(plan)}${prizeHTML(plan)}
-      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
+      <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(wageOf(r))}/period${bunkOn()?" (bunkhouse)":""}${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
       <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
@@ -3174,7 +3184,7 @@ const loanLeft=()=>S.loans.reduce((a,l)=>a+l.left,0);
 const loanCap=()=>4000+2000*S.floors;
 const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
-const payroll=()=>S.crew.reduce((a,r)=>a+r.wage+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
+const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
 const rushWage=r=>Math.max(r.wage+10,Math.round(r.wage*1.35/5)*5);
 function takeLoan(amt){
   amt=Math.min(amt,loanRoom());if(amt<=0)return false;
@@ -3237,7 +3247,7 @@ function payday(){
   if(!S.crew.length&&!S.mgr)return;
   const due=payroll();
   if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});return;}
-  S.crew.forEach(r=>{r.owed=(r.owed||0)+r.wage;r.missed=(r.missed||0)+1;});
+  S.crew.forEach(r=>{r.owed=(r.owed||0)+wageOf(r);r.missed=(r.missed||0)+1;});
   const warn=S.crew.filter(r=>r.missed===1),risk=S.crew.filter(r=>r.missed>=2),gone=risk.filter(()=>rnd()<QUIT_P),stay=risk.filter(r=>!gone.includes(r));
   gone.forEach(r=>fireCrew(r.id));
   S.ys.missed=(S.ys.missed||0)+1;
