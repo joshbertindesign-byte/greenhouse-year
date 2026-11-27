@@ -1945,7 +1945,7 @@ function hire(role){
   const name=freshName();let hm=role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1);if(role!=='prize'&&role!=='load'&&!homeOK(role,hm))hm=firstHome(role);
   S.crew.push({id:'s'+S.nid++,name,role,home:hm,n:role==='prize'||ROLES[role].spec?VET:0,wage:roleCost(role),att:role==='prize'?1:undefined});syncStaff();
 }
-function fireCrew(id){const r=S.crew.find(x=>x.id===id);if(r)S.pastNames=[...(S.pastNames||[]),r.name].slice(-20);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
+function fireCrew(id){const r=S.crew.find(x=>x.id===id);if(r&&r.owed){S.backPay=(S.backPay||0)+r.owed;r.owed=0;}if(r)S.pastNames=[...(S.pastNames||[]),r.name].slice(-20);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
 function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load'||r.role==='prize'||!homeOK(r.role,f))return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
 const ATT=[0,13,10,7,4,.6],PSLOW=[1,1.5,1.35,1.2,1.08,1],ATT_N=['','Distracted','Steady','Careful','Sharp','Meticulous'];
 function staffPick(w){
@@ -2069,8 +2069,13 @@ function skAsk(){
     <div class="ab2"><button class="btn" type="button" id="skL">Later</button><button class="btn go" type="button" id="skO">Choose a skill</button></div>`);
   $('skL').onclick=closeModal;$('skO').onclick=()=>skillsModal();
 }
+// the first XP_FREE grower levels at each nursery level come at full speed; after that each level halves the XP you earn,
+// so the grower can't race far ahead of the nursery (or grind XP by restarting a year)
+const XP_FREE=2;
+const xpBase=()=>{if(!S.xpAt||S.xpAt.st!==stage())S.xpAt={st:stage(),lv:glv()};return S.xpAt.lv;};
+const xpMult=()=>Math.pow(.5,Math.max(0,glv()-xpBase()-(XP_FREE-1)));
 function gainXP(t){
-  if(glv()>=GLV_MAX)return;S.gxp=(S.gxp||0)+(GXP[t.type]||1);
+  if(glv()>=GLV_MAX)return;S.gxp=(S.gxp||0)+(GXP[t.type]||1)*xpMult();
   while(glv()<GLV_MAX&&S.gxp>=gNeed(glv())){S.gxp-=gNeed(glv());S.glv=glv()+1;if(S.glv>=GLV_MAX&&S.robo==null)roboArrive();
     if(!window.__quiet){floats.push({x:me.x,y:me.y-.5,f:me.f,text:`Level ${S.glv}!`,color:'#c98a00',t0:performance.now()});toast('good',`Your grower reached level ${S.glv}: +1 skill point${S.glv>=GLV_MAX?'. That\u2019s the top level':''}. Spend it between periods`);}}
   if(S.glv>=GLV_MAX)S.gxp=0;
@@ -2108,6 +2113,7 @@ function enqueue(t){
 
 // ---------------- period flow ----------------
 function startPeriod(){
+  try{localStorage.setItem('gy8pk',JSON.stringify(S));}catch(e){}// closing mid-period brings you back to this period's planning
   vegSettle(S.period);
   const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=Math.max(1,regHouses().length)*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;if(S.visit){const n=S.visit;S.visit=null;crmOf(n).visit=S.year;S.busyUntil=PSEC*.25;S.busyWhat=`Visiting ${short1(n)}`;custRep(n,12,'site visit');if(!window.__quiet)setTimeout(()=>toast('good',`Your grower is visiting ${short1(n)} this morning and will be back soon`),400);}S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
@@ -2278,7 +2284,7 @@ function endPeriod(){
   settleBooks();
   if(lostCount()>=CUST.length){failYear('rep');return;}
   S.period++;
-  if(S.period>7){if(S.cash-taxDue()<0){failYear('red');return;}yearEnd();return;}
+  if(S.period>7){if(S.cash-taxDue()-unpaid()<0){failYear('red');return;}yearEnd();return;}
   beginPlan();
 }
 function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the year starts over`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();festAsk();skAsk();}
@@ -2854,7 +2860,7 @@ let homeSel=null,panX=0,panY=0,homeZoom=1;
 let yearCk=null;
 const KEEP=['glv','gxp','sk','robo','roboNew','daily','hats','hatSet','trowel','mailAt','mails','giftAt','gifts','dev','tips','tipsOff','coached','homeSeen','welcomed','pastNames','failLog'];
 const FAIL_STIPEND_AT=3;
-const yearShort=()=>Math.round(-(S.cash-taxDue()));
+const yearShort=()=>Math.round(-(S.cash-taxDue()-unpaid()));
 function failYear(why){
   const ck=yearCk||(()=>{try{return localStorage.getItem('gy8ck');}catch(e){return null;}})();
   let d=null;try{d=ck&&JSON.parse(ck);}catch(e){}
@@ -2869,7 +2875,7 @@ function failYear(why){
   viewF=0;staff=[];syncStaff();syncRobo();me.task=null;me.path=[];
   if(window.__quiet){S.phase='home';return;}
   enterHome();
-  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red.`} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
+  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red${unpaid()?', counting wages you still owe':''}.`} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
     ${stip?`<div class="taxb last">${svgIcon('cash',40)}<span><b>Help for try ${n+1}: ${fmt(stip)}</b> That's about what it takes to get through this year even playing loosely, based on your last ${n} tries. The catch: this year's goal can't be met. It waits for next year.</span></div>`:`<p class="dim">Try ${n+1}. ${n+1>=FAIL_STIPEND_AT+1?'':`If this year fails ${FAIL_STIPEND_AT-n} more time${FAIL_STIPEND_AT-n>1?'s':''}, the next try comes with a cash stipend (but no goal that year).`}</p>`}
     <button class="btn go" type="button" id="fyOk">Back to the homestead</button>`);
   $('fyOk').onclick=closeModal;
@@ -3850,7 +3856,9 @@ const loanLeft=()=>S.loans.reduce((a,l)=>a+l.left,0);
 const loanCap=()=>4000+2000*S.floors;
 const loanRoom=()=>0;
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
-const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
+const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0)+(S.backPay||0);
+// wages you haven't paid, including what people who quit are still owed: it counts against you at year end
+const unpaid=()=>S.crew.reduce((a,r)=>a+(r.owed||0),0)+(S.backPay||0);
 // a rush hire costs 35% over the role's standard wage. It used to be 35% over the quitter's wage, so replacing a rush hire compounded and payroll could spiral.
 const rushWage=r=>Math.round((ROLES[r.role]?roleCost(r.role):r.wage)*1.35/5)*5;
 function takeLoan(amt){
@@ -3914,7 +3922,7 @@ function readyCheck(){
 function payday(){
   if(!S.crew.length&&!S.mgr)return;
   const due=payroll();
-  if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});return;}
+  if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});S.backPay=0;return;}
   S.crew.forEach(r=>{r.owed=(r.owed||0)+wageOf(r);r.missed=(r.missed||0)+1;});
   const warn=S.crew.filter(r=>r.missed===1),risk=S.crew.filter(r=>r.missed>=2),gone=risk.filter(()=>rnd()<QUIT_P),stay=risk.filter(r=>!gone.includes(r));
   gone.forEach(r=>fireCrew(r.id));
@@ -4425,6 +4433,7 @@ function taxBoxHTML(y=S.year){
 }
 function ledgerHTML(){
   const st=stage(),warn=[];
+  if(unpaid()>0)warn.push(`<div class="warnb">${tico('crew',18)}<span><b>You owe ${fmt(unpaid())} in unpaid wages.</b> It's paid at the next payday you can cover, and it counts against your cash at year end.</span></div>`);
   if(S.cash<0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>You're in the red.</b> End this year below zero and it starts over.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
   if(taxOn())warn.unshift(taxBoxHTML());
@@ -4469,7 +4478,7 @@ function growerCardHTML(){
   const l=glv(),mx=l>=GLV_MAX,need=gNeed(l),xp=S.gxp||0,pc=n=>Math.round((n-1)*100);
   return`<div class="gcard"><span class="face" style="width:52px;height:52px;background:#e9c46a"><img src="${personURL(growerId()+'_front_0'+gsk())}" alt=""></span>
     <div class="rn"><b>You · Level ${l}${mx?' (top level)':''}</b>
-    ${mx?'':`<span class="gxpb"><i style="width:${Math.round(xp/need*100)}%"></i></span><span>${xp} of ${need} experience to level ${l+1}. Every job you do yourself counts; tree and showcase jobs count extra.</span>`}
+    ${mx?'':`<span class="gxpb"><i style="width:${Math.round(xp/need*100)}%"></i></span><span>${Math.floor(xp)} of ${need} experience to level ${l+1}. Every job you do yourself counts; tree and showcase jobs count extra.${xpMult()<1?` <b>Experience is at ${Math.round(xpMult()*100)}%</b> until your nursery reaches its next level.`:''}</span>`}
     <span>Each level gives a skill point. Skills can make you faster, help your plants, win over customers and crew, or bring luck.</span>
     <span class="skrow"><button class="btn sm${skPts()?' sun':''}" type="button" id="skB">Skills${skPts()?` <span class="skn">${skPts()}</span>`:''}</button><small>${skSpent()} point${skSpent()===1?'':'s'} spent</small></span></div></div>`;
 }
@@ -4752,7 +4761,7 @@ function closeModal(){$('modal').hidden=true;}
 function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
 function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
   // closed mid-year: go back to the homestead checkpoint taken when this year started
-  try{const ck=JSON.parse(localStorage.getItem('gy8ck')||'null');if(d&&ck&&ck.year===d.year&&ck.phase==='home'&&!['home','done','over'].includes(d.phase)&&!d.lost){d=ck;window.__rewound=d.year;}}catch(e){}
+  try{if(d&&d.phase==='run'){const pk=JSON.parse(localStorage.getItem('gy8pk')||'null');if(pk&&pk.year===d.year&&pk.period===d.period&&pk.phase==='plan'){d=pk;window.__rewoundP=PN[d.period];}else{const ck=JSON.parse(localStorage.getItem('gy8ck')||'null');if(ck&&ck.year===d.year&&ck.phase==='home'){d=ck;window.__rewound=d.year;}}}}catch(e){}
   if(d)decoFix(d);if(d&&d.up&&d.up.bays==null){const f=d.floors||1;d.up.bays=f>=7?3:f>=4?2:f>=2?1:0;}if(d&&d.glv>=30&&d.robo==null){d.robo=1;d.roboNew=1;}if(d&&!d.fwin){d.fwin={};for(const f in FESTS){const n=(d.deco||{})[FESTS[f].deco]||0;if(n)d.fwin[f]=n;}}if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
   if(d.glv==null){let xp=(d.hist||[]).length*60,l=1;while(l<30&&xp>=10+3*l){xp-=10+3*l;l++;}d.glv=l;d.gxp=l>=30?0:xp;}
   if(!d.lvV){d.lvV=2;d.stage=Math.max(1,(d.stage||1)*2-1);(d.hist||[]).forEach(h=>{if(h.stage)h.stage=h.stage*2-1;});}
@@ -4806,7 +4815,7 @@ function boot(){
   else if(!S.welcomed)welcome();
   else if(!S.name)nameModal(true,()=>S.phase==='home'?enterHome():openSheet());
   else if(S.phase==='home'){enterHome();if(window.__rewound)setTimeout(()=>toast('good',`You left partway through year ${window.__rewound}, so you\u2019re back at the homestead from the start of it`),900);}
-  else openSheet();
+  else{openSheet();if(window.__rewoundP)setTimeout(()=>toast('good',`You left partway through ${window.__rewoundP.toLowerCase()}, so you’re back at its planning with your orders as you left them`),900);}
   try{const gm=location.hash.match(/[#&]g=(.+)$/);if(gm){history.replaceState(null,'',location.pathname+location.search);const code=gm[1];if(S.welcomed&&S.name)setTimeout(()=>redeemGift(code),800);else{S.pendingGift=code;save();}}}catch(e){}
   requestAnimationFrame(frame);
   setTimeout(layout,300);

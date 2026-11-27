@@ -4,12 +4,12 @@
 
 | Speed | Planner | Restarts / run | Level at yr 40 | Lvl 10 (yr · time) | Lvl 15 (yr · time) | Lvl 20 (yr · runs) | Profit yrs 5–10 | Profit yrs 20–40 | Bench use | Planning % |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Lightning | expert | 0.0 | 20 | 9 · 1h 39m | 17.5 · 4h 06m | 32 · 5/6 | $14k | $131k | 88% | 100.0 |
-| Lightning | average | 0.0 | 19 | 10.5 · 2h 02m | 17.5 · 4h 16m | 33 · 3/6 | $7k | $118k | 87% | 96.0 |
-| Lightning | novice | 0.2 | 18 | 10.5 · 1h 55m | 20 · 4h 37m | 33 · 1/6 | $9k | $108k | 85% | 93.0 |
-| Steady | expert | 0.0 | 19.5 | 9 · 2h 19m | 17.5 · 6h 18m | 32 · 3/6 | $17k | $150k | 88% | 100.0 |
-| Steady | average | 0.0 | 18 | 10 · 2h 36m | 17.5 · 5h 57m | 33.5 · 2/6 | $8k | $115k | 87% | 97.0 |
-| Steady | novice | 0.0 | 19.5 | 10 · 2h 29m | 20 · 6h 42m | 36 · 3/6 | $6k | $102k | 85% | 91.0 |
-| Distracted | expert | 0.0 | 20 | 10.5 · 3h 38m | 20 · 9h 13m | 35 · 4/6 | $9k | $116k | 86% | 100.0 |
-| Distracted | average | 0.2 | 18 | 10.5 · 3h 45m | 24.5 · 12h 00m | 38 · 1/6 | $8k | $103k | 85% | 97.0 |
-| Distracted | novice | 5.3 | 18 | 18.5 · 6h 42m | 30.5 · 15h 03m | — | $1k | $75k | 81% | 90.5 |
+| Lightning | expert | 0.5 | 20 | 9.5 · 1h 45m | 17 · 4h 21m | 33 · 6/6 | $13k | $145k | 87% | 100.0 |
+| Lightning | average | 2.2 | 18 | 11 · 2h 28m | 19 · 4h 57m | — | $8k | $115k | 87% | 96.0 |
+| Lightning | novice | 2.2 | 20 | 10.5 · 2h 33m | 21 · 5h 31m | 37.5 · 4/6 | $7k | $112k | 85% | 92.0 |
+| Steady | expert | 0.2 | 20 | 9 · 2h 21m | 16.5 · 5h 43m | 34 · 5/6 | $17k | $142k | 88% | 100.0 |
+| Steady | average | 1.5 | 19 | 10 · 3h 07m | 18 · 6h 48m | 36.5 · 2/6 | $8k | $122k | 86% | 97.0 |
+| Steady | novice | 2.2 | 19 | 11 · 3h 25m | 20.5 · 7h 23m | 39 · 3/6 | $6k | $111k | 85% | 92.0 |
+| Distracted | expert | 0.8 | 20 | 10 · 3h 33m | 18.5 · 10h 07m | 36 · 4/6 | $12k | $120k | 86% | 100.0 |
+| Distracted | average | 5.5 | 18 | 12.5 · 5h 38m | 23.5 · 12h 19m | — | $4k | $102k | 85% | 96.0 |
+| Distracted | novice | 14.8 | 17 | 22.5 · 11h 46m | 32 · 16h 59m (5/6) | — | $-0k | $61k | 80% | 90.0 |
