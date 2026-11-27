@@ -4,12 +4,12 @@
 
 | Speed | Planner | Restarts / run | Level at yr 40 | Lvl 10 (yr · time) | Lvl 15 (yr · time) | Lvl 20 (yr · runs) | Profit yrs 5–10 | Profit yrs 20–40 | Bench use | Planning % |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Lightning | expert | 0.0 | 20 | 9 · 1h 36m | 18 · 4h 17m | 33 · 6/6 | $9k | $98k | 87% | 100.0 |
-| Lightning | average | 0.0 | 20 | 9 · 1h 31m | 18 · 4h 08m | 32 · 6/6 | $6k | $106k | 84% | 100.0 |
-| Lightning | novice | 0.0 | 20 | 10 · 1h 39m | 20 · 4h 46m | 36 · 6/6 | $4k | $83k | 83% | 96.0 |
-| Steady | expert | 0.0 | 20 | 9 · 2h 12m | 18.5 · 6h 06m | 34 · 6/6 | $7k | $100k | 86% | 100.0 |
-| Steady | average | 0.0 | 20 | 9.5 · 2h 13m | 18.5 · 6h 00m | 34 · 5/6 | $5k | $98k | 84% | 100.0 |
-| Steady | novice | 0.0 | 20 | 9 · 2h 09m | 19 · 6h 08m | 35 · 6/6 | $5k | $94k | 83% | 96.0 |
-| Distracted | expert | 0.5 | 20 | 10 · 3h 17m | 20 · 9h 20m | 36 · 6/6 | $4k | $92k | 85% | 100.0 |
-| Distracted | average | 0.0 | 20 | 9.5 · 3h 07m | 19 · 8h 51m | 38.5 · 4/6 | $6k | $81k | 84% | 99.0 |
-| Distracted | novice | 7.8 | 17.5 | 18 · 7h 14m (5/6) | 31 · 13h 57m (5/6) | — | $1k | $40k | 76% | 93.0 |
+| Lightning | expert | 0.0 | 20 | 9 · 1h 34m | 18 · 4h 18m | 30 · 5/6 | $9k | $113k | 89% | 98.0 |
+| Lightning | average | 0.0 | 20 | 9 · 1h 37m | 18 · 4h 20m | 33.5 · 6/6 | $9k | $109k | 88% | 97.0 |
+| Lightning | novice | 0.0 | 20 | 9 · 1h 33m | 18 · 4h 15m | 32 · 5/6 | $7k | $83k | 86% | 92.0 |
+| Steady | expert | 0.0 | 20 | 9 · 2h 20m | 16 · 5h 32m | 29.5 · 6/6 | $11k | $113k | 89% | 97.0 |
+| Steady | average | 0.0 | 20 | 9 · 2h 17m | 18 · 5h 58m | 34 · 6/6 | $9k | $111k | 87% | 95.5 |
+| Steady | novice | 0.0 | 20 | 9 · 2h 13m | 19.5 · 6h 43m | 34 · 5/6 | $8k | $91k | 86% | 91.0 |
+| Distracted | expert | 0.5 | 20 | 9 · 3h 15m | 17.5 · 9h 00m | 35 · 6/6 | $14k | $105k | 88% | 97.0 |
+| Distracted | average | 0.0 | 20 | 9 · 3h 05m | 19 · 8h 59m | 36 · 5/6 | $7k | $95k | 86% | 93.0 |
+| Distracted | novice | 1.0 | 18.5 | 16 · 4h 52m (5/6) | 25 · 10h 58m (4/6) | 36 · 1/6 | $1k | $48k | 80% | 89.0 |
