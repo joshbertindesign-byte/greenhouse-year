@@ -51,7 +51,7 @@ window.AG = (() => {
   function buyYear() {   // the big shop at the start of the year
     let acts = 0;
     // a new house when the nursery allows it
-    tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 3 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
+    tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 1 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
     // specialty houses: a vegetable house once there are 3 houses, a propagation house once there are 5; each gets its specialist
     tryDo('spec', () => {
       const conv = (k, minH) => { if (!specOpen(k) || specHouses(k).length || S.floors < minH) return; const h = [...regHouses()].reverse().find(h => h > 0 && !S.plots.some(pl => !pl.done && plotF(pl) === h)); if (h == null) return; const c = k === 'veg' && S.veg && S.veg.cert && !S.veg.conv ? 0 : SPEC_COST[k]; if (!afford(c)) return; convertHouse(h, k); if (specOf(h) === k) { use('spec'); acts++; } };
@@ -155,6 +155,7 @@ window.AG = (() => {
   // ---- planning skill: expert picks ship date and shape for the most value per bench-period and keeps an eye on crowded markets;
   //      average takes the customer's date, default shape, first free spot (the game's own auto-accept); novice takes offers in any
   //      order and drops them on any free spot it finds ----
+  function fillAt(p) { const rh = regHouses(), cap = Math.max(1, rh.length * 8); let n = 0; for (const pl of S.plots) if (!pl.done && pl.s <= p && pl.e >= p && rh.includes(plotF(pl))) n += pl.rows.length; return n / cap; }
   function bestPlan(o) {
     if (o.contract || o.veg || o.fest || !flexible(o)) { const F = formOf(o); return { d: dueOf(o), fm: o.fm || 0, v: valAt(o, dueOf(o)), dens: valAt(o, dueOf(o)) / Math.max(1, F.h * F.g) }; }
     let best = null; const fs = forms(o);
@@ -164,6 +165,11 @@ window.AG = (() => {
   function placeOne(o) {
     if (!offerOwned(o)) return false;
     if (P.planner === 'expert' && !o.contract && !o.veg && !o.fest && flexible(o)) {
+      // hold benches: turn down a low-value order when the periods it would tie up are already filling
+      const b = bestPlan(o), seen = (R.densSeen = R.densSeen || []); seen.push(b.dens); if (seen.length > 200) seen.shift();
+      const sorted = seen.slice().sort((x, y) => x - y), cut = sorted[Math.floor(sorted.length * .35)] || 0;
+      const F = forms(o)[b.fm] || formOf(o), span = []; for (let p = b.d - F.g + 1; p <= b.d; p++) if (p > S.period) span.push(p);
+      if (seen.length >= 20 && b.dens < cut && span.some(p => fillAt(p) > .6)) { use('heldBack'); return false; }
       const fs = forms(o), tries = [];
       for (let fm = 0; fm < fs.length; fm++) for (let d = Math.max(dMin({ ...o, fm }), 0); d <= o.p; d++) tries.push({ d, fm, v: valAt(o, d) / (fs[fm].h * fs[fm].g) });
       tries.sort((a, b) => b.v - a.v);
