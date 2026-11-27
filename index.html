@@ -2676,12 +2676,12 @@ function giftScan(){
     const v=$('gsV');if(!v){stopScan();return;}v.srcObject=scanStream;await v.play();$('gsMsg').textContent='Looking for a gift card…';
     const c=document.createElement('canvas'),g=c.getContext('2d',{willReadFrequently:true});let last=0;
     const tick=t=>{if(!$('gsV')){stopScan();return;}scanRAF=requestAnimationFrame(tick);if(t-last<180||!v.videoWidth)return;last=t;const k=Math.min(1,640/v.videoWidth);c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);g.drawImage(v,0,0,c.width,c.height);
-      const r=jsQR(g.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:'dontInvert'});if(r&&r.data&&r.data.includes('G1')){stopScan();redeemGift(r.data);}};
+      const r=jsQR(g.getImageData(0,0,c.width,c.height).data,c.width,c.height,{inversionAttempts:'dontInvert'});if(r&&r.data&&(r.data.includes('G1')||devCode(r.data)/*dev*/)){stopScan();redeemGift(r.data);}};
     scanRAF=requestAnimationFrame(tick);
   }).catch(()=>{const m=$('gsMsg');if(m){m.textContent='The camera isn’t available here. Take a photo of the card instead.';}const v=$('gsV');if(v)v.hidden=true;});
 }
 function redeemGift(text){
-  stopScan();const d=parseGift(text),now=Date.now(),msg=(t,b)=>{modal(`<h2>${t}</h2><p>${b}</p><button class="btn go" type="button" id="gmOk">OK</button>`);$('gmOk').onclick=closeModal;};
+  stopScan();if(devCode(text)){devTry(devCode(text));return;}/*dev*/const d=parseGift(text),now=Date.now(),msg=(t,b)=>{modal(`<h2>${t}</h2><p>${b}</p><button class="btn go" type="button" id="gmOk">OK</button>`);$('gmOk').onclick=closeModal;};
   if(!d)return msg('Hmm, that’s not a gift card','That code isn’t a Greenhouse Year gift card. Make sure the whole card is in view.');
   if(d.uid===myUid())return msg('That’s your own card','Show it to a friend instead. They get 2 stars and you already got yours.');
   S.gotIds=S.gotIds||[];if(S.gotIds.includes(d.gid))return msg('Already opened','You’ve already opened this gift card from '+esc(d.n)+'.');
@@ -2990,7 +2990,20 @@ function renderRail(){
   $('railL').querySelectorAll('[data-rk]').forEach(b=>{const it=railIt.find(x=>x.key===b.dataset.rk);if(!it)return;const g=b.firstElementChild,c=it.left<=.25?'#ff6a5a':it.left<=.5?'#f2c230':'#7fe0a0';g.style.setProperty('--p',it.left.toFixed(3));g.style.setProperty('--rc',c);b.classList.toggle('hot',it.left<=.25&&!it.q);});
 }
 // ---------------- HUD, floors, tray, toasts ----------------
+// ===== DEV CHEAT (start) =====
+// Josh's tester key: unlimited cash and stars. Only the SHA-256 hash of the key lives here; the key itself is not in this repo.
+// To remove: delete this block and every line tagged /*dev*/.
+const DEV_HASH='91284e93e3f25f7924078458441c602418fa21b5351d13f76c9534625bddd026';
+async function devTry(code){
+  try{if(!code||!crypto.subtle)return false;const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(code));const h=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+    if(h!==DEV_HASH)return false;S.dev=1;devTop();save();hud();if(S.phase==='home')renderHome();else renderSheet();toast('good','Developer mode on: unlimited cash and stars. Turn it off in Settings');return true;}catch(e){return false;}
+}
+function devTop(){if(!S||!S.dev)return;if(S.cash<5e6)S.cash=1e7;if((S.stars||0)<5000)S.stars=9999;}
+const devCode=t=>{const m=String(t||'').match(/#gydev=([0-9a-f]{32})/);return m&&m[1];};
+function devBoot(){const c=devCode(location.hash);if(!c)return;try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}devTry(c);}
+// ===== DEV CHEAT (end) =====
 function hud(){
+  devTop();/*dev*/
   const c=Math.min(S.period,7);
   $('tray').hidden=S.phase==='home';
   $('hWhen').textContent=S.phase==='home'?`Year ${S.year} · Homestead`:S.phase==='done'?`Year ${S.year} done`:`Year ${S.year} · ${PN[c]}${S.phase==='plan'?' plan':S.t>=PSEC?' · wrap-up':''}`;
@@ -3666,6 +3679,7 @@ function settingsModal(){
     ${row('stName','Nursery and grower',`${esc(nurseryName())} · ${(S.gender||'m')==='f'?'woman':'man'} grower`,'Change')}
     ${row('stTips','Tips',S.tipsOff?'Off. Turn them on to get pointers the first time you meet something new.':'On. A short pointer the first time you meet something new.',S.tipsOff?'Turn on':'Turn off')}
     ${row('stReplay','Replay tips','Shows every tip again as it comes up, including the ones you’ve seen.','Replay')}
+    ${S.dev?row('stDev','Developer mode','On: unlimited cash and stars.','Turn off'):''}${''/*dev*/}
     ${row('stReset','Start over','Wipes this nursery, the homestead, your cats and stars. It can’t be undone.','Start over','bad')}
     </div><p class="setabout">Greenhouse Year. QR gift cards use jsQR (Apache 2.0) and qrcode-generator (MIT).</p>
     <div class="ab2"><button class="btn go" type="button" id="stX">Done</button></div>`);
@@ -3674,6 +3688,7 @@ function settingsModal(){
   $('stTips').onclick=()=>{S.tipsOff=S.tipsOff?0:1;if(S.tipsOff){tipCur=null;}save();settingsModal();};
   $('stReplay').onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();closeModal();toast('good','Tips will show again as you play');};
   $('stReset').onclick=resetModal;
+  {const d=$('stDev');if(d)d.onclick=()=>{S.dev=0;save();settingsModal();toast('good','Developer mode off');};}/*dev*/
 }
 $('bSet').onclick=()=>{if(placing)cancelPlacing(true);settingsModal();};
 function resetModal(){
@@ -4393,6 +4408,7 @@ function boot(){
   festGen();
   if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
   prepArt();syncStaff();layout();hud();
+  devBoot();addEventListener('hashchange',devBoot);/*dev*/
   if(S.phase==='over'||S.lost)gameOver();
   else if(S.phase==='done')yearEnd();
   else if(!S.welcomed)welcome();
