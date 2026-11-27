@@ -4275,7 +4275,8 @@ function boardMetrics(){
 }
 const fURL={};
 function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
-  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
+  const vb=d[1]===80?'viewBox="7 10 50 50" width="92" height="92"':'viewBox="9 1 46 46" width="92" height="92"'; // painted crops use a taller frame
+  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace(/viewBox="[^"]*" width="\d+" height="\d+"/,vb));}
 function personURL(id){const k='p_'+id;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';
   return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
 const crewFace=(r,px)=>`<span class="face" style="width:${px}px;height:${px}px;background:${IC[r.role].c}"><img src="${personURL('crew_'+r.role+'_front_0|'+lookOf(r))}" alt=""></span>`;
