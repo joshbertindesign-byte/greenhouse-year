@@ -9,8 +9,5 @@ for m in re.finditer(r'<symbol id="([^"]+)" viewBox="0 0 (\d+) (\d+)">(.*?)</sym
     d = ''.join(defs[r] for r in refs if r in defs)
     a = vj[i]['anchor']
     vec[i] = [w, h, a[0], a[1], f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w*4}" height="{h*4}"><defs>{d}</defs>{body}</svg>']
-import glob
-for f in sorted(glob.glob('/home/claude/sprites/painted/*.json')):  # painted art replaces the drawn sprite of the same name
-    p = json.load(open(f)); vec[p['id']] = [p['w'], p['h'], p['ax'], p['ay'], p['svg']]
 open('/home/claude/gy8/art.js', 'w').write('const ART=' + json.dumps({'vector': vec}, separators=(',', ':')) + ';\n')
 print(len(vec))
