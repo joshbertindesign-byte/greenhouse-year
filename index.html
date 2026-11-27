@@ -999,7 +999,9 @@ const ROLES={
   fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:125},
   load:{name:'Loader',does:'Loads trucks at the dock',cost:180},
   prize:{name:'Prize grower',does:'Runs the showcase house',cost:760}};
-const WAGE_CUT=.95;// wages came down 5%; older saves get the cut once on load
+const WAGE_CUT=.95;
+// wages rise with the cost of living each new year; crop prices don't, so a nursery has to keep getting better to stay ahead
+const WAGE_INFL=.03,inflF=(y=S.year)=>Math.pow(1+WAGE_INFL,Math.max(0,y-1)),roleCost=k=>Math.round(ROLES[k].cost*inflF()/5)*5;// wages came down 5%; older saves get the cut once on load
 const SLOW0=1.6,SLOW_STEP=.06,VET=10;
 const NAMES=['Ana','Luis','Mara','Dev','Rosa','Jun','Tess','Omar','Kira','Ben','Lupe','Nate','Ivy','Raj','Sol','Wren','Cruz','Tam','Abby','Adel','Aiden','Alma','Amir','Andre','Anya','Archie','Ari','Ava','Beau','Bea','Bianca','Billie','Bo','Brooke','Caleb','Cam','Carmen','Cass','Cece','Chen','Cleo','Cody','Cora','Dale','Dana','Dante','Darius','Dee','Della','Dom','Eddie','Eli','Ella','Elena','Emeka','Emmy','Enzo','Esme','Faith','Farah','Felipe','Fern','Finn','Flo','Frankie','Gabe','Gemma','Gil','Gina','Grace','Gus','Hana','Hank','Harper','Hector','Hollis','Hugo','Ines','Ira','Isla','Jada','Jake','Jamal','Jay','Jess','Jo','Joel','Josie','June','Kai','Kat','Keisha','Kenji','Kit','Lars','Leah','Lena','Leo','Lia','Lila','Lou','Lucy','Mack','Mae','Malik','Manny','Marisol','Mateo','Maya','Mei','Milo','Mina','Moe','Nadia','Nell','Nico','Nina','Noor','Ola','Olive','Oscar','Pablo','Paz','Pearl','Pete','Pia','Quinn','Rafa','Ray','Reba','Remy','Rhea','Rico','Rita','Roo','Ruth','Sage','Sam','Sana','Santi','Sela','Shay','Sid','Sky','Sofia','Stan','Suki','Tariq','Tate','Teo','Theo','Tia','Tilly','Toby','Toni','Uma','Val','Vera','Vic','Vince','Wade','Willa','Xavi','Yara','Yusuf','Zane','Zara','Zeke','Zoe'];
 // a name nobody on the crew has; recent leavers are skipped too so a familiar name doesn't come straight back
@@ -1108,7 +1110,12 @@ const EARLY=[1,.75,.5,.3,.15,.05];
 const earlyF=k=>EARLY[clamp(k,0,EARLY.length-1)];
 const flexible=x=>!!x&&x.base!=null&&x.cid==null&&!x.popup;
 const dueOf=x=>x.d??x.p;
-const unitAt=(x,d)=>flexible(x)?x.base*seasF(x.crop,d)*earlyF(x.p-d):x.price;
+// the market for one crop in one period is only so big: flats past GLUT_M sell for less, down to GLUT_MIN of the price
+const GLUT_M=45,GLUT_MIN=.55;
+const glutQ=(crop,d,skip)=>S.orders.filter(o=>o.crop===crop&&o.p===d&&o.status!=='failed'&&!o.fest&&!o.showcase&&!o.show&&o!==skip).reduce((a,o)=>a+o.qty,0);
+function glutF(x,d){if(!x||x.fest||x.showcase||x.show||!x.qty)return 1;const Q=glutQ(x.crop,d);let t=0;for(let k=1;k<=x.qty;k++){const n=Q+k;t+=n<=GLUT_M?1:Math.max(GLUT_MIN,1-.45*(n-GLUT_M)/GLUT_M);}return t/x.qty;}
+const unitAt0=(x,d)=>flexible(x)?x.base*seasF(x.crop,d)*earlyF(x.p-d):x.price;
+const unitAt=(x,d)=>unitAt0(x,d)*glutF(x,d);
 const valAt=(x,d)=>Math.round(x.qty*unitAt(x,d)*(1+.1*upLv('pots')));
 const dMin=x=>minStart()+formOf(x).g-1;
 const kfmt=v=>v>=1000?'$'+(v/1000).toFixed(1)+'k':'$'+v;
@@ -1135,8 +1142,14 @@ const SHOW_COST=15000,SHOW_OH=250;
 // startup tax break: upkeep is half price for your first TAX_Y years, then full price. The end date is fixed and shown everywhere upkeep is.
 const TAX_Y=3,TAX_CUT=.5;
 const taxOn=(y=S.year)=>y<=TAX_Y,taxLeft=()=>Math.max(0,TAX_Y-S.year+1);
-const upkeepFull=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
+// each extra house costs a bit more upkeep than the one before it (bigger sites cost more to run)
+const FLOOR_STEP=70,houseOH=f=>f<=1?0:FLOOR_OH*(f-1)+FLOOR_STEP*(f-1)*(f-2)/2,nextHouseOH=()=>houseOH(S.floors+1)-houseOH(S.floors);
+const upkeepFull=()=>Math.round((OVERHEAD+houseOH(S.floors)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
 const upkeep=()=>Math.round(upkeepFull()*(taxOn()?1-TAX_CUT:1));
+// income tax on operating profit, paid at year end once the startup break is over. Graduated: each slice of profit is taxed at its own rate.
+const ITAX=[[10000,0],[50000,.15],[150000,.25],[Infinity,.35]];
+const incomeTax=p=>{let t=0,lo=0;for(const [hi,r] of ITAX){if(p>lo)t+=(Math.min(p,hi)-lo)*r;lo=hi;}return Math.round(t);};
+const taxDue=()=>S.year>TAX_Y?incomeTax(Math.max(0,opProfit())):0;
 const taxLine=()=>taxOn()?`Startup tax break: upkeep is half price through year ${TAX_Y}${taxLeft()===1?' (this is the last year)':` (${taxLeft()} years left)`}`:'';
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
 
@@ -1810,7 +1823,7 @@ function syncStaff(){
 }
 function hire(role){
   const name=freshName();
-  S.crew.push({id:'s'+S.nid++,name,role,home:role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1),n:role==='prize'?VET:0,wage:ROLES[role].cost,att:role==='prize'?1:undefined});syncStaff();
+  S.crew.push({id:'s'+S.nid++,name,role,home:role==='prize'?SH:role==='load'?0:clamp(viewF*4,0,S.floors-1),n:role==='prize'?VET:0,wage:roleCost(role),att:role==='prize'?1:undefined});syncStaff();
 }
 function fireCrew(id){const r=S.crew.find(x=>x.id===id);if(r)S.pastNames=[...(S.pastNames||[]),r.name].slice(-20);S.crew=S.crew.filter(x=>x.id!==id);const w=staff.find(x=>x.id===id);if(w&&w.task)w.task=null;syncStaff();return r;}
 function setHome(id,f){const r=S.crew.find(x=>x.id===id),w=staff.find(x=>x.id===id);if(!r||r.role==='load'||r.role==='prize')return;r.home=clamp(f,0,S.floors-1);if(w&&w.task&&!(w.work>0)){w.task=null;w.path=[];w.leg=null;}}
@@ -1866,8 +1879,8 @@ const homeSpot=w=>{const hh=w.rec&&w.role!=='load'?w.rec.home:0,H=HOUSES[hh];if(
 function moveAlong(w,dt,slow){const n=w.path[0],dx=n.x-w.x,dy=n.y-w.y,d=Math.hypot(dx,dy),sp=4/slow*dt;if(d>.01)w.face=dx+dy>=0?'front':'back';if(d<=sp){w.x=n.x;w.y=n.y;w.path.shift();}else{w.x+=dx/d*sp;w.y+=dy/d*sp;}}
 function assign(w,t){w.task=t;w.work=0;w.ride=0;plan(w);}
 // ---- grower experience: every job you do yourself counts toward the next level ----
-const GLV_MAX=30,GXP={tree:3,care:2,fix:2};
-const glv=()=>clamp(S&&S.glv||1,1,GLV_MAX),gNeed=l=>10+3*l,gf=()=>(glv()-1)/(GLV_MAX-1);
+const GLV_MAX=30,GXP={tree:3,care:2,fix:2},XP_RATE=.85;// grower XP runs 15% slower than it did
+const glv=()=>clamp(S&&S.glv||1,1,GLV_MAX),gNeed=l=>Math.round((10+3*l)/XP_RATE),gf=()=>(glv()-1)/(GLV_MAX-1);
 // the grower moves 5% slower than before, to sit with the slower clock (BASE_PACE)
 const G_PACE=.95,gWalk=()=>G_PACE*.88*(1+.05*sk('quick'))*(windOn()?1.3:1),gWork=()=>G_PACE*.85*(1+.05*sk('steady'))*(windOn()?1.3:1);
 // ---- grower skill tree: one point per level after the first ----
@@ -2174,7 +2187,7 @@ function askRaises(){
   $('mbox').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>done(+b.dataset.ok,true));
   $('mbox').querySelectorAll('[data-no]').forEach(b=>b.onclick=()=>done(+b.dataset.no,false));
 }
-function nextYear(){S.entered=[];if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];if(sucOn())S.lastSuc={rev:S.ys.sucRev||0,sold:(S.ys.sucN||0)-(S.ys.sucLost||0),lost:S.ys.sucLost||0};S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};almGen();festGen();}
+function nextYear(){S.entered=[];S.crew.forEach(r=>{r.wage=Math.round(r.wage*(1+WAGE_INFL)/5)*5;});if(S.mgr)S.mgr.wage=Math.round(S.mgr.wage*(1+WAGE_INFL)/5)*5;if(S.cust){for(const n in S.cust)S.cust[n].r+=(50-S.cust[n].r)*.3;S.rep=avgRep();}S.year++;S.period=0;S.plots=[];S.orders=[];S.offers=[];S.contracts=[];S.trucks=[];if(sucOn())S.lastSuc={rev:S.ys.sucRev||0,sold:(S.ys.sucN||0)-(S.ys.sucLost||0),lost:S.ys.sucLost||0};S.ys={rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0};almGen();festGen();}
 
 // ---------------- drawing ----------------
 const cv=$('cv'),cx=cv.getContext('2d');
@@ -3509,6 +3522,7 @@ function dockRO(){
   if(flexible(x)){if(ke)bits.push(`<span class="dn">${ke} early ×${earlyF(ke)}</span>`);if(sf>1.1)bits.push('<span class="up">peak ×1.15</span>');else if(sf<1)bits.push('<span class="dn">off season ×0.85</span>');}
   if(ev.gone.length)bits.push(`<span class="dn">bumps ${ev.gone.length} (−${fmt(ev.loss)})</span>`);
   ev.rep.forEach(r=>bits.push(`<span class="dn">${r.d} ${esc(short1(r.cust))}</span>`));
+  {const gf=glutF(x,dd);if(gf<.995)bits.push(`<span class="dn">crowded ×${gf.toFixed(2)}</span>`);}
   {const dk=dockAfter(dd);if(dk)bits.push(`<span class="dn">bays full: ${dockFix(dk)}</span>`);}
   return`<b>+${fmt(ev.gain)}</b><br>${bits.join(' · ')}`;
 }
@@ -3521,6 +3535,7 @@ function readoutHTML(){
   const net=ev.gain-ev.loss,x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd);
   const chips=[`<span>Ships ${PN[dd].toLowerCase()}</span>`];
   if(flexible(x)){chips.push(ke?`<span class="dn">${ke} period${ke>1?'s':''} early ×${earlyF(ke)}</span>`:'<span>On the customer’s date ×1.0</span>');chips.push(sf>1.1?'<span class="up">Peak season ×1.15</span>':sf<1?'<span class="dn">Off season ×0.85</span>':'<span>Near peak season</span>');}
+  {const gf=glutF(x,dd);if(gf<.995)chips.push(`<span class="dn">Crowded market ×${gf.toFixed(2)}: ${glutQ(x.crop,dd)} ${esc(crop(x.crop).name.toLowerCase())} flats already ship ${PN[dd].toLowerCase()}</span>`);}
   {const dk=dockAfter(dd);if(dk)chips.push(`<span class="dn">${esc(dockMsg(dk,dd))}</span>`);}
   ev.rep.forEach(r=>{const dr=tierDrops([r])[0];chips.push(`<span class="dn">${r.d} with ${esc(short1(r.cust))}${dr?` · to ${dr.to.n}`:''}</span>`);});
   return`<div class="rd ok"><div class="big"><b>+${fmt(ev.gain)}</b><span>on benches <b style="font-size:inherit;color:inherit">${span(pv.top,sel.h)}</b>${S.floors>1||hasShow()?' in '+hName(Math.floor(pv.top/8)).toLowerCase():''}</span>${ev.gone.length?`<span class="neg">−${fmt(ev.loss)}</span><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''} · net ${net>=0?'+':''}${fmt(net)}</span>`:''}</div><div class="chips">${chips.join('')}</div></div>`;
@@ -3598,7 +3613,7 @@ function renderSheet(){
       <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(wageOf(r))}/period${bunkOn()?" (bunkhouse)":""}${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
-      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(R.cost)}/period</small></span></button>`).join('')}</div>
+      <div class="hires">${Object.entries(ROLES).filter(([k])=>k!=='prize').map(([k,R])=>`<button class="hire" type="button" data-hire="${k}"${plan&&crewRoom()?'':' disabled'}><span class="face" style="width:38px;height:38px;background:${IC[k].c}"><img src="${personURL('crew_'+k+'_front_0')}" alt=""></span><span><b>${R.name}</b><small>${R.does} · ${fmt(roleCost(k))}/period</small></span></button>`).join('')}</div>
       <p class="hint" style="margin:12px 2px 0;color:var(--mute)">Crew costs ${fmt(crewCost())} a period.${payroll()>crewCost()?` Next payday, with back pay: ${fmt(payroll())}.`:''}</p>`;
   }else{
     const next=S.floors<MAXF?FLOOR_COST[S.floors]:0;
@@ -3608,7 +3623,7 @@ function renderSheet(){
       ${upSub==='bank'?bankHTML(plan):upSub==='decor'?decoHTML(plan):upSub==='veg'?vegHTML(plan):upSub==='gen'?`<h3 style="margin:4px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
       <div class="gens">${Object.entries(CROPS).filter(([k])=>!notFlower(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
-      ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(FLOOR_OH)} more upkeep each period. Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
+      ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(nextHouseOH())} more upkeep each period (each house costs a little more to run than the last). Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
@@ -3679,7 +3694,7 @@ const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
 const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
 // a rush hire costs 35% over the role's standard wage. It used to be 35% over the quitter's wage, so replacing a rush hire compounded and payroll could spiral.
-const rushWage=r=>Math.round((ROLES[r.role]?ROLES[r.role].cost:r.wage)*1.35/5)*5;
+const rushWage=r=>Math.round((ROLES[r.role]?roleCost(r.role):r.wage)*1.35/5)*5;
 function takeLoan(amt){
   amt=Math.min(amt,loanRoom());if(amt<=0)return false;
   S.loans.push({id:'L'+S.nid++,orig:amt,left:amt});S.cash+=amt;S.ys.loanIn=(S.ys.loanIn||0)+amt;
@@ -3793,7 +3808,7 @@ const CALLS=[
  {id:'rush',lv:2,max:2,when:()=>ownedCand(S.period+1,S.period+2).length>0,make(){const n=pick(custAt(1).length?custAt(1):CUST),cd=wpick(ownedCand(S.period+1,S.period+2)),of=mkOffer(cd,1.4,true);of.cust=n;of.qty=ri(6,10);
    return{who:n,av:custAv(n,48),say:`"We're in a bind. Can you get us ${of.qty} ${crop(cd.k).name.toLowerCase()} by ${PN[cd.p].toLowerCase()}? We'll pay 40% over."`,opts:[{t:'Let me check the board',fx:`Opens the board with the order: ${fmt(of.qty*of.price)}`,go(){return popOffer(of);}},{t:'Can\'t fit it',fx:'No change',go(){}}]};}},
  {id:'early',lv:2,when:()=>!!moveCand(),make(){const pl=moveCand();if(!pl)return null;const o=orderOf(pl);return{who:o.cust,av:custAv(o.cust,48),say:`"Any chance our ${o.qty} ${crop(pl.crop).name.toLowerCase()} could come a period early, ${PN[pl.e-1].toLowerCase()} instead of ${PN[pl.e].toLowerCase()}?"`,opts:[{t:'We can do that',fx:`Moves it one period earlier on the board · +5 reputation with ${short1(o.cust)}`,go(){pl.s--;pl.e--;o.p--;custRep(o.cust,5,'shipped early for them');}},{t:'It has to stay',fx:'No change',go(){}}]};}},
- {id:'applicant',lv:2,when:()=>crewRoom()>0,make(){const role=pick(['water','pot','pest','fix','load']),wage=Math.round(ROLES[role].cost*1.2/5)*5;return{who:'Job seeker',av:svgIcon(role,48),say:`"I ran the ${ROLES[role].name.toLowerCase()} crew at a big nursery in Lubbock for six years. Looking for something closer to home."`,opts:[{t:'You\'re hired',fx:`${ROLES[role].name} at full speed from day one · ${fmt(wage)}/period`,go(){hire(role);const r=S.crew[S.crew.length-1];r.n=VET;r.wage=wage;traySig='';}},{t:'We\'re full up',fx:'No change',go(){}}]};}},
+ {id:'applicant',lv:2,when:()=>crewRoom()>0,make(){const role=pick(['water','pot','pest','fix','load']),wage=Math.round(roleCost(role)*1.2/5)*5;return{who:'Job seeker',av:svgIcon(role,48),say:`"I ran the ${ROLES[role].name.toLowerCase()} crew at a big nursery in Lubbock for six years. Looking for something closer to home."`,opts:[{t:'You\'re hired',fx:`${ROLES[role].name} at full speed from day one · ${fmt(wage)}/period`,go(){hire(role);const r=S.crew[S.crew.length-1];r.n=VET;r.wage=wage;traySig='';}},{t:'We\'re full up',fx:'No change',go(){}}]};}},
  {id:'bank',lv:2,when:()=>loanRoom()>=2000,make(){const a=Math.min(5000,Math.floor(loanRoom()/1000)*1000);return{who:'First Prairie Bank',av:svgIcon('cash',48),say:'"We\'re running a growers\' special this month: 3% a period instead of 6%."',opts:[{t:`Borrow ${fmt(a)} at 3%`,fx:'Paid back over 4 periods like any loan',go(){if(takeLoan(a))S.loans[S.loans.length-1].rate=.03;}},{t:'Not right now',fx:'No change',go(){}}]};}},
  {id:'complain',lv:3,when:()=>(S.ys.shorted||[]).length>0,make(){const x=pick(S.ys.shorted),cr=Math.round(x.value*.15);return{who:x.cust,av:custAv(x.cust,48),say:'"That last truck came up short and our shelves were empty all weekend. What are you going to do about it?"',opts:[{t:'Credit them',fx:`−${fmt(cr)} · +8 reputation with ${short1(x.cust)}`,go(){S.cash-=cr;S.ys.buy+=cr;custRep(x.cust,8,'made good on a short truck');S.ys.shorted=S.ys.shorted.filter(y=>y!==x);}},{t:'Stand firm',fx:`−4 reputation with ${short1(x.cust)}`,go(){custRep(x.cust,-4,'refused a credit');S.ys.shorted=S.ys.shorted.filter(y=>y!==x);}}]};}},
  {id:'club',lv:3,make(){return{who:'Big Country Garden Club',av:svgIcon('pop',48),say:'"Twenty of our members would love a tour of your greenhouses. Could you show us around?"',opts:[{t:'Give the tour',fx:'You\'re busy for a little while · +2 reputation with every customer',go(){S.busyUntil=S.t+12;S.busyWhat='Giving a tour';repAll(2,'garden club tour');}},{t:'Too busy',fx:'No change',go(){}}]};}},
@@ -3824,7 +3839,7 @@ const CALLS=[
  {id:'cover',lv:10,once:1,make(){const pickH=t=>({t,fx:'+3 reputation with every customer · a cover feature in your ledger',go(){repAll(3,'magazine cover');S.ys.cover=t;}});return{who:'Best Homes and Gardens',av:ribbonSVG('rosette',48),say:`"We want ${nurseryName()} on our cover. Which house should we shoot?"`,opts:[pickH(S.show?'The showcase house':'House 1'),pickH('House 1, where it all began'),pickH(`House ${S.floors}, the newest`)]};}}
 ];
 const upLv0=k=>(S.up&&S.up[k])||0;
-const upkeep0=()=>OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0);
+const upkeep0=()=>OVERHEAD+houseOH(S.floors)+(hasShow()?SHOW_OH:0);
 function callAvail(c){const r=(S.calls||{})[c.id];if(c.lv*2-1>stage())return false;if(r){if(c.once&&r.ever)return false;if(c.cd&&r.y!=null&&S.year-r.y<c.cd)return false;if(r.y===S.year&&r.n>=(c.max||1))return false;}try{return !c.when||c.when();}catch(e){return false;}}
 function ringPhone(){
   if(S.tasks.some(t=>t.type==='phone')||!CALLS.some(callAvail))return;
@@ -3908,17 +3923,18 @@ const STAGES=[
   {n:'Regional grower',c:'#2a78d0',goal:{k:'full',n:30}},
   {n:'Specialty nursery',c:'#3a64d6',goal:{k:'stars',n:3}},
   {n:'Wholesale nursery',c:'#5b5bd6',goal:{k:'rev',n:35000}},
-  {n:'Commercial nursery',c:'#7652d0',goal:{k:'profit',n:8000}},
-  {n:'Contract grower',c:'#8a4fc8',goal:{k:'full',n:50}},
-  {n:'Major supplier',c:'#a84aa8',goal:{k:'rep',n:70}},
-  {n:'Premier nursery',c:'#c0407a',goal:{k:'rev',n:60000}},
-  {n:'Award winner',c:'#c8402f',goal:{k:'stars',n:4}},
-  {n:'Industry leader',c:'#d0582a',goal:{k:'profit',n:20000}},
-  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'full',n:80}},
-  {n:'State champion',c:'#c98a00',goal:{k:'rev',n:100000}},
-  {n:'National name',c:'#b8860b',goal:{k:'rank',n:3}},
-  {n:'Legend',c:'#9a7206',goal:{k:'stars',n:5}},
-  {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1}}];
+  // from level 10 the goals get much bigger, and some must be hit two or three years running
+  {n:'Commercial nursery',c:'#7652d0',goal:{k:'profit',n:25000}},
+  {n:'Contract grower',c:'#8a4fc8',goal:{k:'full',n:90}},
+  {n:'Major supplier',c:'#a84aa8',goal:{k:'rep',n:72,yrs:2}},
+  {n:'Premier nursery',c:'#c0407a',goal:{k:'rev',n:180000}},
+  {n:'Award winner',c:'#c8402f',goal:{k:'stars',n:5,yrs:2}},
+  {n:'Industry leader',c:'#d0582a',goal:{k:'profit',n:60000}},
+  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'full',n:160}},
+  {n:'State champion',c:'#c98a00',goal:{k:'rev',n:300000,yrs:2}},
+  {n:'National name',c:'#b8860b',goal:{k:'rank',n:2,yrs:2}},
+  {n:'Legend',c:'#9a7206',goal:{k:'stars',n:7,yrs:2}},
+  {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1,yrs:3}}];
 const GATE_UP={bays:[3,6,10],pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
 const GATE_GEN={vinca:1,begonia:3,geranium:4,fern:5,kale:6,hydrangea:8,poinsettia:11};
 const HOUSE_CAP=[1,1,1,2,2,2,3,3,4,4,5,6,7,8,9,10,11,12,12,12,12];
@@ -4078,15 +4094,17 @@ function magScore(y,rep,e){
   const score=Math.min(100,Math.round(parts.fill+parts.rep+parts.profit+parts.variety+(y.press||0)));
   return{score,parts,fill,prof,nv,stars:starsOf(score,e),ed:e==null?edIx():e};
 }
+const RIV_LATE=.6;// rivals keep getting better after year 14
 function rivalTable(year,me){
   const h=i=>{const n=Math.sin((year*7.13+i*3.71)*12.9898)*43758.5453;return n-Math.floor(n);};
   const e=me.ed==null?edIx():me.ed,E=ED(e);
-  const L=(EDR[e]||RIVALS).map((name,i)=>{const base=38+i*5.6+E.riv,sc=Math.round(clamp(base+Math.min(year,14)*1.1+(h(i+e*11)-.5)*14,20,98));return{name,score:sc,stars:starsOf(sc,e)};});
+  const L=(EDR[e]||RIVALS).map((name,i)=>{const base=38+i*5.6+E.riv,sc=Math.round(clamp(base+Math.min(year,14)*1.1+Math.max(0,year-14)*RIV_LATE+(h(i+e*11)-.5)*14,20,98));return{name,score:sc,stars:starsOf(sc,e)};});
   L.push({name:nurseryName(),score:me.score,stars:me.stars,me:true});
   L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
   return L;
 }
-function goalText(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 in your magazine':`Make the top ${n} in your magazine`}[g.k];}
+function goalText(g){return goalText0(g)+(g.yrs>1?`, ${['','','two','three','four'][g.yrs]} years in a row`:'');}
+function goalText0(g){const n=g.n;return{full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 in your magazine':`Make the top ${n} in your magazine`}[g.k];}
 const kk=n=>{const a=Math.abs(n);return a>=1000?(a/1000).toFixed(a>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(a));};
 const kk2=(a,b)=>`${a<0?'−':''}$${kk(a)}/${kk(b)}`;
 function goalProg(){
@@ -4113,14 +4131,17 @@ function ribbonSVG(k,sz){
 }
 function closeYear(){
   if(S.yres&&S.yres.year===S.year)return S.yres;
-  const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,met=goalMet(g,y,m,rk,rep);
-  const rec={taxSaved:y.taxSaved||0,year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
+  const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,met1=goalMet(g,y,m,rk,rep);
+  // goals marked yrs:n must be met n years running at the same level
+  const run=met1?((S.gRun&&S.gRun.st===st?S.gRun.n:0)+1):0;S.gRun={st,n:run};const met=met1&&run>=(g.yrs||1);
+  const rec={gRun:g.yrs>1?{n:run,of:g.yrs}:null,taxSaved:y.taxSaved||0,year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
   if(hasShow()||(S.ys.show&&S.ys.show.length)){const ri=judgeRibbon(S.ys.show);rec.ribbon=ri;rec.entries=(S.ys.show||[]).slice();if(ri>=0){S.cash+=RIBBONS[ri].prize;S.ys.prize=RIBBONS[ri].prize;rec.cash=Math.round(S.cash);}}
   let showNew=false;if(m.stars>=5&&!S.showOpen){S.showOpen=true;showNew=true;}
   S.hist.push(rec);
   let unlocked=[];
   if(met){S.stage=st+1;unlocked=rewardsOf(st+1);const cashR=unlocked.find(r=>r.t==='cash');if(cashR){S.cash+=cashR.n;rec.cash=Math.round(S.cash);}}
   if(S.investor&&S.year<=S.investor.until&&m.prof>0){const sh=Math.round(m.prof*S.investor.share);S.cash-=sh;rec.investor=sh;}
+  if(S.year>TAX_Y&&m.prof>0){const tx=incomeTax(m.prof);if(tx){S.cash-=tx;rec.tax=tx;rec.cash=Math.round(S.cash);}}
   if(S.ys.cover)rec.cover=S.ys.cover;
   {const bd=planBound(S.ys),act=planActual();if(bd>=1500&&S.ys.ologFrom===0){const pct=Math.min(1,act/bd),T=PLAN_TIERS.find(t=>pct>=t.min);rec.plan={pct:Math.round(pct*100),act,bd};
     if(T){rec.plan.tier=T.n;rec.plan.st=T.st;rec.plan.cash=Math.round(act*T.cash/50)*50;S.cash+=rec.plan.cash;rec.cash=Math.round(S.cash);}}}
@@ -4152,7 +4173,7 @@ function magazineHTML(R0){
 function goalCardHTML(st,big,noProg){
   const S0=stg(st),g=S0.goal,pr=st===stage()&&!noProg?goalProg():null,rw=rewardsOf(st+1);
   return`<div class="gcard" style="--sc:${S0.c}"><div class="gtop">${stageBadge(st,big?54:44)}<div><small>LEVEL ${st} · ${S0.n.toUpperCase()}</small><b>${goalText(g)}</b></div></div>
-    ${pr?`<div class="gbar"><i style="width:${Math.round(clamp(pr.pct,0,1)*100)}%"></i></div><div class="gnum">${pr.txt}${g.k==='stars'||g.k==='rank'?' · judged at year end':''}</div>`:''}
+    ${pr?`<div class="gbar"><i style="width:${Math.round(clamp(pr.pct,0,1)*100)}%"></i></div><div class="gnum">${pr.txt}${g.k==='stars'||g.k==='rank'?' · judged at year end':''}${g.yrs>1?` · ${S.gRun&&S.gRun.st===st?S.gRun.n:0} of ${g.yrs} years so far`:''}</div>`:''}
     <div class="gun"><small>${rw.length?'UNLOCKS':''}</small><div class="rws">${rw.map(rewardTile).join('')}</div></div></div>`;
 }
 const stageBadge=(st,sz)=>`<span class="sbadge" style="--sc:${stg(st).c};width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.42)}px">${st>=9?trophySVG(Math.round(sz*.7)):st}</span>`;
@@ -4203,12 +4224,14 @@ function yearGoalModal(R0){
   if(S.lost){gameOver();return;}
   const r=R0.rec,st=stage(),red=S.redYears>0;
   modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
-    :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.</p>`}</div>
+    :r.gRun&&r.gRun.n>0?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal hit: ${r.gRun.n} of ${r.gRun.of} years</h2><p>${esc(r.goal)}. Hit it again next year to move up. Miss a year and the count starts over.</p>`
+    :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.${stg(st).goal.yrs>1?' Years in a row start counting again.':''}</p>`}</div>
     ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from ${ED(r.ed||0).n}${r.edBonus?`, ${r.edBonus} for your place on the ladder${r.promo!=null?' and the promotion':''}`:''}${r.met?', 3 for hitting your goal':''}${r.plan&&r.plan.st?`, ${r.plan.st} for planning`:''}.</span></div>`:''}
     ${r.plan?`<div class="gplan${r.plan.tier?' on':''}">${svgIcon('bench',40)}<span><b>${r.plan.tier||'Planning'}: ${r.plan.pct}%</b> Your orders were worth ${fmt(r.plan.act)}. Looking back at every offer you had this year, the best plan your benches could hold was worth about ${fmt(r.plan.bd)}.${r.plan.tier?` Bonus: <b>+${r.plan.st} ★</b>${r.plan.cash?` and <b>${fmt(r.plan.cash)}</b>`:''}.`:` Reach ${Math.round(PLAN_TIERS[PLAN_TIERS.length-1].min*100)}% for a planning bonus.`}</span></div>`:''}
     ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
     ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
-    ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all.</span></div>`:''}
+    ${r.tax?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: −${fmt(r.tax)}</b> On ${fmt(r.op)} operating profit. Next year crew wages rise ${Math.round(WAGE_INFL*100)}% with the cost of living.</span></div>`:''}
+    ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all. From now on you also pay income tax on each year's operating profit, and crew wages rise ${Math.round(WAGE_INFL*100)}% a year.</span></div>`:''}
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
     <button class="btn go" id="nyBtn" type="button">Go to the homestead</button>`);
   $('mbox').scrollTop=0;
@@ -4243,6 +4266,7 @@ function ledgerHTML(){
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
   if(taxOn())warn.unshift(taxBoxHTML());
+  else warn.unshift(`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: about ${fmt(taxDue())} so far this year</b> Paid at year end on operating profit: nothing on the first ${fmt(ITAX[0][0])}, then ${ITAX.slice(1).map(([hi,r],i)=>`${Math.round(r*100)}%${hi<Infinity?` up to ${fmt(hi)}`:' above that'}`).join(', ')}. Crew wages rise ${Math.round(WAGE_INFL*100)}% each new year.</span></div>`);
   return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
@@ -4294,7 +4318,7 @@ const mgrOn=()=>!!(S&&S.mgr);
 const holdable=of=>!!of&&!of.contract&&!of.veg&&!of.fest&&!of.showcase&&!of.popup&&offerOwned(of)&&forms(of).some(F=>(flexible(of)?of.p:dueOf(of))-F.g+1>=minStart()+1);
 function hireMgr(){
   if(mgrOn()||S.phase!=='plan'||stage()<MGR_LV||(S.office||1)<2)return;
-  S.mgr={name:pick(MGR_NAMES),wage:MGR_WAGE,y:S.year};save();toast('crew',`${S.mgr.name} runs the office now`);renderSheet();hud();
+  S.mgr={name:pick(MGR_NAMES),wage:Math.round(MGR_WAGE*inflF()/5)*5,y:S.year};save();toast('crew',`${S.mgr.name} runs the office now`);renderSheet();hud();
 }
 function letMgrGo(){if(!mgrOn())return;toast('crew',`${S.mgr.name} cleared out the desk`);S.mgr=null;S.held=[];save();renderSheet();hud();}
 function holdHand(){
@@ -4324,7 +4348,7 @@ function crmButtons(n,plan){
 }
 function mgrHTML(plan){
   if(stage()<MGR_LV)return'';
-  if(!mgrOn())return`<div class="prizec">${svgIcon('crew',44)}<div class="rn"><b>Office manager</b><span>Works out of the homestead office. Holds up to ${HOLD_MAX} offers you can’t fit for the next planning step, and can make amends with customers who’ve turned on you. ${fmt(MGR_WAGE)} a period.</span>
+  if(!mgrOn())return`<div class="prizec">${svgIcon('crew',44)}<div class="rn"><b>Office manager</b><span>Works out of the homestead office. Holds up to ${HOLD_MAX} offers you can’t fit for the next planning step, and can make amends with customers who’ve turned on you. ${fmt(Math.round(MGR_WAGE*inflF()/5)*5)} a period.</span>
     ${(S.office||1)<2?`<span class="pgate"><span>○ Needs the bigger office at the homestead</span></span>`:`<button class="btn sun" type="button" id="mgrB"${plan?'':' disabled'}>Hire</button>`}</div></div>`;
   return`<div class="prizec on"><span class="face" style="width:44px;height:44px;background:#9fb4d0"><img src="${personURL('mgr_front_0')}" alt=""></span><div class="rn"><b>${esc(S.mgr.name)} · Office manager</b><span>${fmt(S.mgr.wage)}/period · holding ${(S.held||[]).length}/${HOLD_MAX} offers</span><span>Use Hold on an offer to keep it for next period. Make amends from the Customers tab.</span>
     <button class="btn sm" type="button" id="mgrX"${plan?'':' disabled'}>Let go</button></div></div>`;
@@ -4333,7 +4357,7 @@ function prizeHTML(plan){
   const r=prizeR();
   if(!hasShow())return'';
   if(!r){const ok=prizeOpen(),ys=showYears(),rib=S.hist.some(h=>h.ribbon!=null&&h.ribbon>=0&&h.ribbon<=2);
-    return`<div class="prizec">${svgIcon('prize',44)}<div class="rn"><b>Prize grower</b><span>Runs the showcase house for you: misting, staking, deadheading, watering, pests and the heater. ${fmt(ROLES.prize.cost)} a period plus a ${fmt(5000)} hiring fee. Starts out distracted; horticulture classes make them sharper.</span>
+    return`<div class="prizec">${svgIcon('prize',44)}<div class="rn"><b>Prize grower</b><span>Runs the showcase house for you: misting, staking, deadheading, watering, pests and the heater. ${fmt(roleCost('prize'))} a period plus a ${fmt(5000)} hiring fee. Starts out distracted; horticulture classes make them sharper.</span>
       ${ok?`<button class="btn sun" type="button" id="prizeB"${plan?'':' disabled'}>Hire for ${fmt(5000)}</button>`:`<div class="pgate"><span class="${ys>=3?'gok':''}">${ys>=3?'✓':'○'} Three years of showcase judging (${Math.min(ys,3)}/3)</span><span class="${rib?'gok':''}">${rib?'✓':'○'} A Silver ribbon or better</span></div>`}</div></div>`;}
   const a=r.att||1,C=CLASSES[a-1];
   return`<div class="prizec on">${svgIcon('prize',44)}<div class="rn"><b>${esc(r.name)} · Prize grower</b><span>Attentiveness ${attStars(a)} ${ATT_N[a]} · ${fmt(r.wage)}/period${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}</b>`:''}</span>
@@ -4580,7 +4604,7 @@ function welcome(){
   <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
-  <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full price, so use the head start to grow.</span></div>
+  <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full upkeep and income tax on your profit, so use the head start to grow.</span></div>
   <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
   <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
