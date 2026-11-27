@@ -10,7 +10,6 @@ reps = [
   ("if(!window.__quiet){const nc=", f"if(!{A}){{const nc="),                                   # phone calls
   ("if(!window.__quiet&&rnd()<Math.min(.95,", f"if(!{A}&&rnd()<Math.min(.95,"),               # stars
   ("function stepCup(dt){\n  if(window.__quiet||S.phase!=='run')return;", f"function stepCup(dt){{\n  if({A}||S.phase!=='run')return;"),  # coffee cup
-  ("if(checkRepLoss()&&!window.__quiet){gameOver();return;}", f"if(checkRepLoss()&&!{A}){{gameOver();return;}}"),   # losing every customer ends the game
   ("function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}", f"function beginPlan(){{if(S.lost&&!{A}){{gameOver();return;}}"),
   ("if(window.__quiet){const res=ctx.opts[ctx.opts.length-1].go();return;}", "if(window.__quiet){const ok=ctx.opts.filter(o=>!o.dis),o=window.__agentCall?window.__agentCall(ctx,ok):ctx.opts[ctx.opts.length-1];o.go();return;}"),  # the agent answers calls
   ("const R0=closeYear();save();hud();", "const R0=closeYear();hud();"),                         # no saving to localStorage every year

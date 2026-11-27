@@ -2268,12 +2268,12 @@ function endPeriod(){
     S.crew.forEach(r=>r.jobs=0);
     if(rusted.length&&!window.__quiet)S.rustNote=rusted.map(r=>r.name);}
   settleBooks();
-  if(checkRepLoss()&&!window.__quiet){gameOver();return;}
+  if(lostCount()>=CUST.length){failYear('rep');return;}
   S.period++;
-  if(S.period>7){yearEnd();return;}
+  if(S.period>7){if(S.cash-taxDue()<0){failYear('red');return;}yearEnd();return;}
   beginPlan();
 }
-function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the nursery closes`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();festAsk();skAsk();}
+function beginPlan(){if(S.lost&&!window.__quiet){gameOver();return;}S.phase='plan';S.t=0;vegPay();genOffers();if(lostCount()>=CUST.length-2&&lostCount()<CUST.length)setTimeout(()=>toast('bad',`Only ${CUST.length-lostCount()} customers still buy from you. Lose them all and the year starts over`),800);S.snap={...S.ys,cash:S.cash};save();hud();openSheet();crewNews();askRaises();vegAsk();festAsk();skAsk();}
 // Seasoned hands sometimes retire without warning; idle crew get rusty.
 function crewNews(){
   if(S.rustNote&&S.rustNote.length){const n=S.rustNote;S.rustNote=null;setTimeout(()=>toast('crew',`${n.length>2?`${n.length} of your crew`:n.join(' and ')} got rusty: not enough to do last period. They’re a little slower until they’re busy again`),700);}
@@ -2839,6 +2839,33 @@ const lotState=id=>(S.home&&S.home[id])||{};
 const hasBuild=k=>LOTS.some(l=>lotState(l.id).b===k);
 const catCap=()=>CATHOUSE[S.catHouse||1];
 let homeSel=null,panX=0,panY=0,homeZoom=1;
+// ---------------- a failed year starts over ----------------
+// Ending a year below zero, or losing every customer, rewinds to the start of that year (as you left the homestead).
+// You keep your grower's XP and skills and anything earned in real time. After three failed tries the fourth comes with
+// a cash stipend sized from how far short your tries fell, but that year's goal can't be met.
+let yearCk=null;
+const KEEP=['glv','gxp','sk','robo','roboNew','daily','hats','hatSet','trowel','mailAt','mails','giftAt','gifts','dev','tips','tipsOff','coached','homeSeen','welcomed','pastNames','failLog'];
+const FAIL_STIPEND_AT=3;
+const yearShort=()=>Math.round(-(S.cash-taxDue()));
+function failYear(why){
+  const ck=yearCk||(()=>{try{return localStorage.getItem('gy8ck');}catch(e){return null;}})();
+  let d=null;try{d=ck&&JSON.parse(ck);}catch(e){}
+  if(!d||d.year!==S.year){S.lost=why==='rep'?'rep':'bank';gameOver();return;}
+  const y=S.year,prev=S.fail&&S.fail.year===y?S.fail:{n:0,worst:0},n=prev.n+1,short=Math.max(0,yearShort()),worst=Math.max(prev.worst,short,why==='rep'?Math.round(payroll()*4):0);
+  S.failLog=(S.failLog||[]).concat([{year:y,why,period:S.period,cash:Math.round(S.cash)}]);
+  const keep={};KEEP.forEach(k=>{if(S[k]!==undefined)keep[k]=S[k];});
+  if(d.assist&&d.assist.year===y){d.cash-=d.assist.amt;delete d.assist;}// take back the last stipend so they don't stack
+  decoFix(d);S=d;Object.assign(S,keep);S.fail={year:y,n,worst};
+  let stip=0;if(n>=FAIL_STIPEND_AT){stip=Math.round((worst*1.3+payroll()+upkeep()*2)/500)*500;S.cash+=stip;S.assist={year:y,amt:stip};}
+  yearCk=JSON.stringify(S);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}
+  viewF=0;staff=[];syncStaff();syncRobo();me.task=null;me.path=[];
+  if(window.__quiet){S.phase='home';return;}
+  enterHome();
+  modal(`<h2>Year ${y} starts over</h2><p>${why==='rep'?'Every customer wrote you off.':`You ended the year ${fmt(short)} in the red.`} The year starts again from the homestead, the way you left it. Your grower keeps the experience and skills from this try.</p>
+    ${stip?`<div class="taxb last">${svgIcon('cash',40)}<span><b>Help for try ${n+1}: ${fmt(stip)}</b> That's about what it takes to get through this year even playing loosely, based on your last ${n} tries. The catch: this year's goal can't be met. It waits for next year.</span></div>`:`<p class="dim">Try ${n+1}. ${n+1>=FAIL_STIPEND_AT+1?'':`If this year fails ${FAIL_STIPEND_AT-n} more time${FAIL_STIPEND_AT-n>1?'s':''}, the next try comes with a cash stipend (but no goal that year).`}</p>`}
+    <button class="btn go" type="button" id="fyOk">Back to the homestead</button>`);
+  $('fyOk').onclick=closeModal;
+}
 function enterHome(){
   if(S.pendingGift){const c=S.pendingGift;S.pendingGift=null;setTimeout(()=>redeemGift(c),900);}
   $('toasts').innerHTML='';hgReset();S.phase='home';homeSel=null;panX=null;panY=0;viewF=0;focusH=-1;closeSheet();closeModal();save();layout();hud();renderHome();
@@ -2848,7 +2875,7 @@ function enterHome(){
     <div>${catURL?`<img src="${catURL('anna')}" width="40" height="40" alt="">`:''}<span><b>Cats:</b> tap the cat house to adopt more. Each cat helps in her own way.</span></div></div>
     <button class="btn go" id="hmOk" type="button">Let's go</button>`);$('hmOk').onclick=closeModal;}
 }
-function leaveHome(){if(S.phase!=='home')return;setTimeout(()=>dailyModal(),1200);flushHJobs();save();try{localStorage.setItem('gy8ck',JSON.stringify(S));}catch(e){}$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
+function leaveHome(){if(S.phase!=='home')return;setTimeout(()=>dailyModal(),1200);flushHJobs();save();yearCk=JSON.stringify(S);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
 function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);return false;}S.stars-=n;return true;}
 function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
   const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});save();renderHome();}
@@ -3317,7 +3344,7 @@ function hud(){
   $('hCash').textContent=innerWidth<=600&&Math.abs(S.cash)>=100000?fmtK(S.cash):fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
-  {const gp=goalProg();$('hGoal').textContent=gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=goalText(stg(stage()).goal)+' · '+gp.txt;$('hGoalB').classList.toggle('met',gp.pct>=1);}
+  {const gp=goalProg(),hold=!!(S.assist&&S.assist.year===S.year);$('hGoal').textContent=hold?'On hold':gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=goalText(stg(stage()).goal)+' · '+gp.txt;$('hGoalB').classList.toggle('met',gp.pct>=1);}
   $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').innerHTML=`Start<span class="lng"> ${PN[c].toLowerCase()}</span>`;
   $('bBoard').hidden=(S.phase==='plan'&&!sheetOpen())||S.phase==='home';$('bBoard').classList.toggle('open',sheetOpen());$('bRing').hidden=!(S.phase==='run'&&S.tasks.some(t=>t.type==='phone'))||railOn();$('bRing').style.top=($('hud').offsetHeight+(focusMode()?66:10))+'px';
   const n=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;$('bN').textContent=n||'';
@@ -3739,7 +3766,7 @@ function renderSheet(){
     const subs=upSubs();if(!subs.some(x=>x[0]===upSub))upSub='equip';
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work in every greenhouse, last for good and show up in the houses. You can buy them any time.</small></h2></div>
       <div class="usub" role="tablist">${subs.map(([k,n,b])=>`<button type="button" data-sub="${k}" class="${upSub===k?'on':''}">${n}${b?`<span class="n">${b}</span>`:''}</button>`).join('')}</div>
-      ${upSub==='bank'?bankHTML(plan):upSub==='decor'?decoHTML(plan):upSub==='veg'?vegHTML(plan):upSub==='gen'?`<h3 style="margin:4px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
+      ${upSub==='bank'&&false?bankHTML(plan):upSub==='decor'?decoHTML(plan):upSub==='veg'?vegHTML(plan):upSub==='gen'?`<h3 style="margin:4px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
       <div class="gens">${Object.entries(CROPS).filter(([k])=>!notFlower(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(nextHouseOH())} more upkeep each period (each house costs a little more to run than the last). Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
@@ -3806,14 +3833,14 @@ function renderSheet(){
 }
 function spend(cost,what){
   if(S.cash>=cost){S.cash-=cost;return true;}
-  if(S.phase==='plan'&&loanRoom()>0){loanModal('short',cost-S.cash,what);return false;}
-  toast('bad',`Not enough cash for ${what}. ${S.phase==='plan'?'You are at your loan limit.':'Loans are only taken between periods.'}`);return false;
+  toast('bad',`Not enough cash for ${what}`);return false;
 }
 // ---------------- money: loans and payday ----------------
-const LOAN_RATE=.06,LOAN_N=4,OVERDRAFT_RATE=.05,QUIT_P=.5;
+// there is no bank any more: no new loans and no overdraft (old saves pay off loans they already have)
+const LOAN_RATE=.06,LOAN_N=4,OVERDRAFT_RATE=0,QUIT_P=.5;
 const loanLeft=()=>S.loans.reduce((a,l)=>a+l.left,0);
 const loanCap=()=>4000+2000*S.floors;
-const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
+const loanRoom=()=>0;
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
 const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
 // a rush hire costs 35% over the role's standard wage. It used to be 35% over the quitter's wage, so replacing a rush hire compounded and payroll could spiral.
@@ -3833,6 +3860,7 @@ function bankHTML(plan){
 }
 let loanCb=null;
 function loanModal(why,need,what,after){
+  if(!loanRoom()){if(why==='pay'&&!window.__quiet)toast('bad',`Payroll is ${fmt(payroll())} and you have ${fmt(S.cash)}: some crew will go unpaid`);if(after)after();return;}
   const opts=loanOpts(need||0);loanCb=after||null;
   if(window.__quiet){if(window.__autoLoan&&opts.length)takeLoan(opts.find(a=>a>=(need||0))||opts[opts.length-1]);const f=loanCb;loanCb=null;if(f)f();return;}
   const head=why==='neg'?'You’re in the red':why==='pay'?'Payroll is short':`Not enough cash${what?' for '+esc(what):''}`;
@@ -3908,8 +3936,7 @@ function missedModal(warn,stay,gone,due){
 function checkRed(){
   if(S.phase!=='run'||S.cash>=0||!$('modal').hidden||ask)return;
   const key=S.year+'-'+S.period;if(S.loanAsk===key)return;S.loanAsk=key;
-  if(loanRoom()<500)return;
-  loanModal('neg',-S.cash);
+  if(!window.__quiet)toast('bad',`Cash is ${fmt(S.cash)}. End the year below zero and the year starts over`);
 }
 // ---------------- phone calls ----------------
 const PHONE={x:2,y:0};
@@ -4052,9 +4079,9 @@ const STAGES=[
   {n:'Major supplier',c:'#a84aa8',goal:{k:'rep',n:72,yrs:2}},
   {n:'Premier nursery',c:'#c0407a',goal:{k:'rev',n:180000}},
   {n:'Award winner',c:'#c8402f',goal:{k:'stars',n:5,yrs:2}},
-  {n:'Industry leader',c:'#d0582a',goal:{k:'profit',n:60000}},
-  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'full',n:160}},
-  {n:'State champion',c:'#c98a00',goal:{k:'rev',n:300000,yrs:2}},
+  {n:'Industry leader',c:'#d0582a',goal:{k:'profit',n:100000}},
+  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'full',n:170,yrs:2}},
+  {n:'State champion',c:'#c98a00',goal:{k:'rev',n:240000,yrs:2}},
   {n:'National name',c:'#b8860b',goal:{k:'rank',n:2,yrs:2}},
   {n:'Legend',c:'#9a7206',goal:{k:'stars',n:7,yrs:2}},
   {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1,yrs:3}}];
@@ -4094,7 +4121,7 @@ function spriteURL(id,vb){const k='s_'+id+vb;if(fURL[k])return fURL[k];const d=a
 let upSub='equip';
 function upSubs(){
   const gens=Object.keys(CROPS).filter(k=>!notFlower(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0)+(stage()>=SUC_LV&&!sucOn()?1:0);
-  return[['equip','Equipment',0],['gen','Varieties',gens],['houses','Houses',house],['veg','Veg',stage()>=VEG_LV&&!vegOn()?1:0],...(decorOpen()?[['decor','Decor',Object.keys(S.deco||{}).reduce((a,k)=>a+Math.max(0,decOwned(k)-decUsed(k)),0)]]:[]),['bank','Bank',0]];
+  return[['equip','Equipment',0],['gen','Varieties',gens],['houses','Houses',house],['veg','Veg',stage()>=VEG_LV&&!vegOn()?1:0],...(decorOpen()?[['decor','Decor',Object.keys(S.deco||{}).reduce((a,k)=>a+Math.max(0,decOwned(k)-decUsed(k)),0)]]:[])];
 }
 const PNS=ps=>ps.map(p=>PN[p].toLowerCase()).join(', ').replace(/, ([^,]*)$/,' and $1');
 // ---- the almanac: good-to-know data for the year ahead ----
@@ -4257,10 +4284,10 @@ function ribbonSVG(k,sz){
 }
 function closeYear(){
   if(S.yres&&S.yres.year===S.year)return S.yres;
-  const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,met1=goalMet(g,y,m,rk,rep);
+  const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,assisted=!!(S.assist&&S.assist.year===S.year),met1=!assisted&&goalMet(g,y,m,rk,rep);
   // goals marked yrs:n must be met n years running at the same level
   const run=met1?((S.gRun&&S.gRun.st===st?S.gRun.n:0)+1):0;S.gRun={st,n:run};const met=met1&&run>=(g.yrs||1);
-  const rec={gRun:g.yrs>1?{n:run,of:g.yrs}:null,taxSaved:y.taxSaved||0,year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
+  const rec={assisted:assisted?S.assist.amt:0,tries:S.fail&&S.fail.year===S.year?S.fail.n+1:1,gRun:g.yrs>1?{n:run,of:g.yrs}:null,taxSaved:y.taxSaved||0,year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
   if(hasShow()||(S.ys.show&&S.ys.show.length)){const ri=judgeRibbon(S.ys.show);rec.ribbon=ri;rec.entries=(S.ys.show||[]).slice();if(ri>=0){S.cash+=RIBBONS[ri].prize;S.ys.prize=RIBBONS[ri].prize;rec.cash=Math.round(S.cash);}}
   let showNew=false;if(m.stars>=5&&!S.showOpen){S.showOpen=true;showNew=true;}
   S.hist.push(rec);
@@ -4277,13 +4304,12 @@ function closeYear(){
     else if(m.ed>0&&m.stars<=2&&prev&&prev.ed===m.ed&&prev.stars<=2){S.ed=m.ed-1;rec.demo=S.ed;}
     if(m.stars>=5&&m.ed===EDS.length-1){S.topWins=(S.topWins||0)+1;rec.topWin=S.topWins;}}
   rec.starsEarned=m.stars+rec.edBonus+(met?3:0)+(rec.plan&&rec.plan.st||0);S.stars=(S.stars||0)+rec.starsEarned;
-  S.redYears=S.cash<0?(S.redYears||0)+1:0;
-  if(S.redYears>=2)S.lost='bank';
+  S.redYears=0;
   S.yres={year:S.year,rec,table:tab2,unlocked,met,from:st,showNew};
   return S.yres;
 }
 const lostCount=()=>CUST.filter(n=>custR(n)<TIERS[1].min).length;
-function checkRepLoss(){if(!S.lost&&lostCount()>=CUST.length)S.lost='rep';return !!S.lost;}
+function checkRepLoss(){return false;}
 function magazineHTML(R0){
   const r=R0.rec,t=R0.table,P=r.parts,bar=(lab,v,mx,ico)=>`<div class="jb"><span>${lab}</span><i><b style="width:${Math.round(v/mx*100)}%"></b></i><em>${Math.round(v)}/${mx}</em></div>`;
   const pics=(r.crops.length?r.crops:['petunia','mum','pothos']).slice(0,7).map(k=>`<img src="${flowerURL(k,3)}" alt="">`).join('');
@@ -4351,11 +4377,12 @@ function yearGoalModal(R0){
   const r=R0.rec,st=stage(),red=S.redYears>0;
   modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
     :r.gRun&&r.gRun.n>0?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal hit: ${r.gRun.n} of ${r.gRun.of} years</h2><p>${esc(r.goal)}. Hit it again next year to move up. Miss a year and the count starts over.</p>`
+    :r.assisted?`<div class="burst">${stageBadge(st,72)}</div><h2>Year ${r.year} done, with help</h2><p>You got through on a ${fmt(r.assisted)} stipend after ${r.tries-1} tries, so the goal waits for next year: ${esc(r.goal)}.</p>`
     :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.${stg(st).goal.yrs>1?' Years in a row start counting again.':''}</p>`}</div>
     ${r.starsEarned!=null?`<div class="ghome">${svgIcon('star',40)}<span><b>+${r.starsEarned} ★</b> to spend at the homestead: ${r.stars} from ${ED(r.ed||0).n}${r.edBonus?`, ${r.edBonus} for your place on the ladder${r.promo!=null?' and the promotion':''}`:''}${r.met?', 3 for hitting your goal':''}${r.plan&&r.plan.st?`, ${r.plan.st} for planning`:''}.</span></div>`:''}
     ${r.plan?`<div class="gplan${r.plan.tier?' on':''}">${svgIcon('bench',40)}<span><b>${r.plan.tier||'Planning'}: ${r.plan.pct}%</b> Your orders were worth ${fmt(r.plan.act)}. Looking back at every offer you had this year, the best plan your benches could hold was worth about ${fmt(r.plan.bd)}.${r.plan.tier?` Bonus: <b>+${r.plan.st} ★</b>${r.plan.cash?` and <b>${fmt(r.plan.cash)}</b>`:''}.`:` Reach ${Math.round(PLAN_TIERS[PLAN_TIERS.length-1].min*100)}% for a planning bonus.`}</span></div>`:''}
-    ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
-    ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
+    
+    ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and the year starts over.</span></div>`:''}
     ${r.tax?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: −${fmt(r.tax)}</b> On ${fmt(r.op)} operating profit. Next year crew wages rise ${Math.round(WAGE_INFL*100)}% with the cost of living.</span></div>`:''}
     ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all. From now on you also pay income tax on each year's operating profit, and crew wages rise ${Math.round(WAGE_INFL*100)}% a year.</span></div>`:''}
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
@@ -4389,11 +4416,11 @@ function taxBoxHTML(y=S.year){
 }
 function ledgerHTML(){
   const st=stage(),warn=[];
-  if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
+  if(S.cash<0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>You're in the red.</b> End this year below zero and it starts over.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
   if(taxOn())warn.unshift(taxBoxHTML());
   else warn.unshift(`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: about ${fmt(taxDue())} so far this year</b> Paid at year end on operating profit: nothing on the first ${fmt(ITAX[0][0])}, then ${ITAX.slice(1).map(([hi,r],i)=>`${Math.round(r*100)}%${hi<Infinity?` up to ${fmt(hi)}`:' above that'}`).join(', ')}. Crew wages rise ${Math.round(WAGE_INFL*100)}% each new year.</span></div>`);
-  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
+  return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. If every customer writes you off, or you end a year below zero, that year starts over (you keep your grower's experience). Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='spec'?svgIcon(r.k==='veg'?'olr':'prop',22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>

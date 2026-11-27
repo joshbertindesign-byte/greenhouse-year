@@ -224,7 +224,7 @@ window.AG = (() => {
   function year() {
     const y = S.year;
     let guard = 0;
-    while (S.phase !== 'done' && S.phase !== 'over' && guard++ < 400000) {
+    while (S.phase !== 'done' && S.phase !== 'over' && guard++ < 3000000) {
       if (S.phase === 'plan') { planPeriod(); checkMS(); continue; }
       if (S.phase === 'run') { const p = S.period; runStep(P.dt); if (S.phase !== 'run' || S.period !== p) checkMS(); continue; }
       if (S.phase === 'home') { tryDo('leave', () => leaveHome()); continue; }
@@ -233,7 +233,8 @@ window.AG = (() => {
     if (S.phase === 'over') { R.over = { year: S.year, min: +(clock / 60).toFixed(1), why: S.lost || '?' }; return false; }
     const h = S.hist[S.hist.length - 1];
     const ys = S.ys || {};
-    R.years.push({ spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
+    R.restarts = (S.failLog || []).length; R.failLog = (S.failLog || []).slice();
+    R.years.push({ tries: h.tries || 1, assisted: h.assisted || 0, spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
     think(P.yearEnd); skills(); checkMS();
     tryDo('nextYear', () => { nextYear(); enterHome(); }); home(); checkMS(); tryDo('leaveHome', () => leaveHome()); closeModal(); checkMS();
     return true;
