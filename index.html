@@ -55,7 +55,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pips3{display:flex;gap:4px;margin-top:4px}.pips3 i{width:22px;height:8px;border-radius:4px;background:#e4e0d3}.pips3 i.on{background:var(--go)}
 .uprow .btn{padding:10px 14px;font-size:15px;white-space:nowrap}
 .toasts.low{left:8px;transform:none;width:calc(100vw - 96px);align-items:flex-start}
-.toasts.low .toast{font-size:15px;padding:6px 12px 6px 6px}
+.toasts.low .toast{font-size:15px;padding:6px 12px 6px 6px}.toasts.side{left:12px;transform:none;width:min(440px,42vw);align-items:flex-start}.toasts.side .toast{font-size:16px}
 .toast.out{opacity:0;transform:translateY(-8px);transition:.3s}
 @keyframes tin{from{opacity:0;transform:translateY(-10px)}}
 .ic{display:inline-grid;place-items:center;border-radius:50%;flex:none}
@@ -3117,8 +3117,10 @@ function toast(k,text,onTap){
   if(window.__quiet)return;
   if(onTap&&k!=='pop'&&railOn())return;
   const box=$('toasts'),tall=innerHeight>innerWidth*1.2&&!(S&&S.phase==='home');
-  if(tall){box.classList.add('low');box.style.top='auto';box.style.bottom=($('tray').offsetHeight+8)+'px';}
-  else{box.classList.remove('low');box.style.bottom='auto';box.style.top=($('hud').offsetHeight+8)+'px';}
+  // phones: low and full width; wide screens: bottom-left corner, clear of the loading dock behind the houses; homestead: top
+  const home=S&&S.phase==='home';box.classList.toggle('low',tall);box.classList.toggle('side',!tall&&!home);
+  if(!home){box.style.top='auto';box.style.bottom=(($('tray').hidden?0:$('tray').offsetHeight)+8)+'px';}
+  else{box.style.bottom='auto';box.style.top=($('hud').offsetHeight+8)+'px';}
   const el=document.createElement('div');el.className='toast'+(onTap?' tap':'');el.innerHTML=svgIcon(k,34)+`<span>${text}</span>`+(onTap?'<b class="go">Open ›</b>':'');box.prepend(el);
   if(onTap)el.addEventListener('click',()=>{el.remove();onTap();});
   while(box.children.length>(tall?2:3))box.lastChild.remove();
