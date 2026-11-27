@@ -991,12 +991,13 @@ const levels=()=>Math.ceil(S.floors/4);
 const benchName=i=>(Math.floor(i/8)===SH?'★':S&&S.floors>1?(Math.floor(i/8)+1):'')+LETTERS[i];
 const WORK={pot:1.8,water:1,pest:2,fix:3.2,care:1.3,phone:.4,star:.25};
 const ROLES={
-  pot:{name:'Planter',does:'Pots new orders',cost:190},
-  water:{name:'Waterer',does:'Waters thirsty benches',cost:145},
-  pest:{name:'Applicator',does:'Sprays for pests',cost:170},
-  fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:130},
-  load:{name:'Loader',does:'Loads trucks at the dock',cost:190},
-  prize:{name:'Prize grower',does:'Runs the showcase house',cost:800}};
+  pot:{name:'Planter',does:'Pots new orders',cost:180},
+  water:{name:'Waterer',does:'Waters thirsty benches',cost:140},
+  pest:{name:'Applicator',does:'Sprays for pests',cost:160},
+  fix:{name:'Mechanic',does:'Fixes heaters and fans',cost:125},
+  load:{name:'Loader',does:'Loads trucks at the dock',cost:180},
+  prize:{name:'Prize grower',does:'Runs the showcase house',cost:760}};
+const WAGE_CUT=.95;// wages came down 5%; older saves get the cut once on load
 const SLOW0=1.6,SLOW_STEP=.06,VET=10;
 const NAMES=['Ana','Luis','Mara','Dev','Rosa','Jun','Tess','Omar','Kira','Ben','Lupe','Nate','Ivy','Raj','Sol','Wren','Cruz','Tam','Abby','Adel','Aiden','Alma','Amir','Andre','Anya','Archie','Ari','Ava','Beau','Bea','Bianca','Billie','Bo','Brooke','Caleb','Cam','Carmen','Cass','Cece','Chen','Cleo','Cody','Cora','Dale','Dana','Dante','Darius','Dee','Della','Dom','Eddie','Eli','Ella','Elena','Emeka','Emmy','Enzo','Esme','Faith','Farah','Felipe','Fern','Finn','Flo','Frankie','Gabe','Gemma','Gil','Gina','Grace','Gus','Hana','Hank','Harper','Hector','Hollis','Hugo','Ines','Ira','Isla','Jada','Jake','Jamal','Jay','Jess','Jo','Joel','Josie','June','Kai','Kat','Keisha','Kenji','Kit','Lars','Leah','Lena','Leo','Lia','Lila','Lou','Lucy','Mack','Mae','Malik','Manny','Marisol','Mateo','Maya','Mei','Milo','Mina','Moe','Nadia','Nell','Nico','Nina','Noor','Ola','Olive','Oscar','Pablo','Paz','Pearl','Pete','Pia','Quinn','Rafa','Ray','Reba','Remy','Rhea','Rico','Rita','Roo','Ruth','Sage','Sam','Sana','Santi','Sela','Shay','Sid','Sky','Sofia','Stan','Suki','Tariq','Tate','Teo','Theo','Tia','Tilly','Toby','Toni','Uma','Val','Vera','Vic','Vince','Wade','Willa','Xavi','Yara','Yusuf','Zane','Zara','Zeke','Zoe'];
 // a name nobody on the crew has; recent leavers are skipped too so a familiar name doesn't come straight back
@@ -1067,7 +1068,7 @@ function glyph(k,size){const I=IC[k];return`<svg viewBox="0 0 24 24" width="${si
 let S=null;
 function fresh(){
   S={v:3,year:1,period:0,t:0,phase:'plan',cash:2500,rep:50,buf:.1,floors:1,crew:[],
-    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna'],stars:2,home:{},catHouse:1,office:1,homeV:1,placeV:2,field:{trees:{},sold:0},glv:1,gxp:0,tips:{},coached:1,name:'',stage:1,hist:[],redYears:0,lost:null,yres:null,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(13).fill(false),dmgT:Array(13).fill(0),nid:1,
+    up:{},owned:STARTERS.slice(),contracts:[],loans:[],loanAsk:'',cats:['anna'],stars:2,home:{},catHouse:1,office:1,homeV:1,placeV:2,wage95:1,lvV:2,wageV:2,field:{trees:{},sold:0},glv:1,gxp:0,tips:{},coached:1,name:'',stage:1,hist:[],redYears:0,lost:null,yres:null,stmt:null,plots:[],orders:[],offers:[],tasks:[],queue:[],events:[],trucks:[],broken:Array(13).fill(false),dmgT:Array(13).fill(0),nid:1,
     ys:{rev:0,plugs:0,overhead:0,crew:0,buy:0,interest:0,loanIn:0,loanP:0,full:0,short:0,failed:0},welcomed:false,cust:Object.fromEntries(CUST.map(n=>[n,{r:50}]))};
   S.snap={...S.ys,cash:S.cash};
 }
@@ -3912,7 +3913,8 @@ const STAGES=[
 const GATE_UP={bays:[3,6,10],pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
 const GATE_GEN={vinca:1,begonia:3,geranium:4,fern:5,kale:6,hydrangea:8,poinsettia:11};
 const HOUSE_CAP=[1,1,1,2,2,2,3,3,4,4,5,6,7,8,9,10,11,12,12,12,12];
-const CREW_CAP=[2,2,3,4,4,5,6,7,8,9,10,11,13,15,17,19,21,23,25,27,28];
+// one more crew slot at every other nursery level (2, 4, 6...) on top of the base curve
+const CREW_CAP=[2,2,3,4,4,5,6,7,8,9,10,11,13,15,17,19,21,23,25,27,28].map((n,g)=>n+Math.floor(g/2));
 const FIELD_LV=5,FIELD_CAP=[[5,6],[10,12],[15,18]];
 const crewCap=()=>CREW_CAP[Math.min(stage(),CREW_CAP.length-1)];
 const crewN=()=>S.crew.filter(r=>r.role!=='prize').length;
@@ -4271,7 +4273,7 @@ function growerCardHTML(){
     <span class="skrow"><button class="btn sm${skPts()?' sun':''}" type="button" id="skB">Skills${skPts()?` <span class="skn">${skPts()}</span>`:''}</button><small>${skSpent()} point${skSpent()===1?'':'s'} spent</small></span></div></div>`;
 }
 // ---- the office manager: holds offers for later and handles costly make-amends ----
-const MGR_LV=8,MGR_WAGE=260,HOLD_MAX=2,GIFT_COST=150,AMENDS_COST=2000;
+const MGR_LV=8,MGR_WAGE=245,HOLD_MAX=2,GIFT_COST=150,AMENDS_COST=2000;
 const MGR_NAMES=['Dolores','Walt','Renee','Marcus','Joanne','Felix'];
 const mgrOn=()=>!!(S&&S.mgr);
 const holdable=of=>!!of&&!of.contract&&!of.veg&&!of.fest&&!of.showcase&&!of.popup&&offerOwned(of)&&forms(of).some(F=>(flexible(of)?of.p:dueOf(of))-F.g+1>=minStart()+1);
@@ -4553,6 +4555,7 @@ function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
   if(d.glv==null){let xp=(d.hist||[]).length*60,l=1;while(l<30&&xp>=10+3*l){xp-=10+3*l;l++;}d.glv=l;d.gxp=l>=30?0:xp;}
   if(!d.lvV){d.lvV=2;d.stage=Math.max(1,(d.stage||1)*2-1);(d.hist||[]).forEach(h=>{if(h.stage)h.stage=h.stage*2-1;});}
   if(!d.wageV){d.wageV=2;const NW={pot:190,water:145,pest:170,fix:130,load:190,prize:800},OW={pot:120,water:90,pest:105,fix:80,load:120,prize:600};(d.crew||[]).forEach(r=>{if(NW[r.role])r.wage=Math.round((r.wage||OW[r.role])*NW[r.role]/OW[r.role]/5)*5;});}
+  if(!d.wage95){(d.crew||[]).forEach(r=>{r.wage=Math.round(r.wage*WAGE_CUT/5)*5;});if(d.mgr)d.mgr.wage=Math.round(d.mgr.wage*WAGE_CUT/5)*5;d.wage95=1;}
   if(!d.tips){d.tips={};const vet=d.hist.length>0||d.year>1;const m=k=>d.tips[k]=1;if(vet)['place','start','pot','queue','water','pest','fix','load','goal','phone'].forEach(m);if((d.crew||[]).length)m('crew');if(Object.values(d.up||{}).some(Boolean))m('up');if(d.floors>1)m('house');if(d.show)m('show');if((d.crew||[]).some(r=>r.role==='prize'))m('prize');if(d.home&&Object.keys(d.home).length)m('home');if((d.owned||[]).length>7)m('gen');}
   if(!d.homeV){d.homeV=1;d.cats=['anna'];d.stars=d.hist.reduce((a,r)=>a+(r.stars||0)+(r.met?3:0),0);d.home={};d.catHouse=1;d.office=1;}if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:13},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:13},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
