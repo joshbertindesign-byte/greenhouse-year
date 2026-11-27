@@ -316,3 +316,51 @@ def hat(k):
     return b
 for _k in ('valentine', 'lunar', 'easter', 'mother', 'arbor', 'july', 'fair', 'halloween', 'dia', 'christmas', 'tour'):
     add(f'hat_{_k}', g(hat(_k), 14, 18), 28, 24, (14, 18))
+
+# ---------------------------------------------------------------- Robo-Cat (64x64, same frame as the cats)
+lin('gSteel', [(0, '#eef3f7', None), (.55, '#c3ccd4', None), (1, '#8d99a5', None)])
+def robocat(pose):
+    o, sw, st = '#3e4852', .9, 'url(#gSteel)'
+    b = ell(32, 53, 11, 2.8, '#1d3a24', 'opacity=".18"')
+    def head(x, y, blink=False, lit=True):
+        h = poly([(x - 5.8, y - 1.6), (x - 5, y - 9), (x - 1.2, y - 4.6)], st, o, sw) + poly([(x + 5.8, y - 1.6), (x + 5, y - 9), (x + 1.2, y - 4.6)], st, o, sw)
+        h += poly([(x - 4.6, y - 3), (x - 4.3, y - 7.2), (x - 2.4, y - 4.6)], '#5a6670') + poly([(x + 4.6, y - 3), (x + 4.3, y - 7.2), (x + 2.4, y - 4.6)], '#5a6670')
+        h += f'<rect x="{f2(x-6.6)}" y="{f2(y-5.4)}" width="13.2" height="11" rx="4.2" fill="{st}" stroke="{o}" stroke-width="{sw}"/>'
+        h += line((x + .4, y - 5.4), (x + .4, y - 10.6), o, .8) + circ(x + .4, y - 11.4, 1.5, '#ff4a4a' if lit else '#7a2a2a', o, .5)
+        h += f'<rect x="{f2(x-5)}" y="{f2(y-2)}" width="10.6" height="4.2" rx="2" fill="#1c2630"/>'
+        if blink: h += line((x - 3.6, y), (x - 1, y), '#3ff0ff', .9) + line((x + 1.6, y), (x + 4.2, y), '#3ff0ff', .9)
+        else: h += ell(x - 2.2, y, 1.4, 1.1, '#3ff0ff') + ell(x + 2.9, y, 1.4, 1.1, '#3ff0ff') + circ(x - 2.6, y - .4, .4, '#ffffff') + circ(x + 2.5, y - .4, .4, '#ffffff')
+        h += f'<rect x="{f2(x-1.4)}" y="{f2(y+3)}" width="3.6" height="1.2" rx=".6" fill="#7a8794"/>' + circ(x - 5.2, y + 3.2, .5, '#5a6670') + circ(x + 5.8, y + 3.2, .5, '#5a6670')
+        for sx in (-1, 1): h += line((x + sx * 6.6, y + 1.6), (x + sx * 9, y + 1), '#7a8794', .5) + line((x + sx * 6.6, y + 2.6), (x + sx * 9, y + 3), '#7a8794', .5)
+        return h
+    def tail(d):
+        return f'<path d="{d}" fill="none" stroke="{o}" stroke-width="3.6" stroke-linecap="round"/><path d="{d}" fill="none" stroke="#c3ccd4" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="2.2 .8"/>'
+    if pose in ('walk0', 'walk1'):
+        f = 1 if pose == 'walk1' else -1
+        b += tail('M21,43 q-8,-2 -6,-12') + circ(15, 30.4, 1.8, '#3ff0ff', o, .5)
+        for lx, ph in ((24, f), (28, -f), (36, -f), (40, f)):
+            b += f'<rect x="{lx-1.6+ph*.9}" y="44" width="3.4" height="8.5" rx="1.2" fill="#9aa6b2" stroke="{o}" stroke-width="{sw}"/>' + line((lx - 1.2 + ph * .9, 48.5), (lx + 1.4 + ph * .9, 48.5), o, .5)
+        b += f'<rect x="20" y="36.6" width="24" height="13" rx="6.5" fill="{st}" stroke="{o}" stroke-width="{sw}"/>'
+        b += line((28, 37), (28, 49.4), '#8d99a5', .5) + line((36, 37), (36, 49.4), '#8d99a5', .5) + ''.join(circ(x, 39, .45, '#5a6670') for x in (23, 31, 39))
+        b += f'<rect x="29.4" y="41" width="5.6" height="4" rx="1" fill="#1c2630"/>' + circ(31, 43, .8, '#6fe08a') + circ(33.4, 43, .8, '#ffd23a')
+        b += head(43, 35)
+    elif pose in ('sit', 'work0', 'work1'):
+        b += tail('M26,51 q-9,1 -8,-6') + circ(18, 44.6, 1.8, '#3ff0ff', o, .5)
+        b += f'<path d="M24,52 q-1,-16 9,-17 q9,1 8,17 Z" fill="{st}" stroke="{o}" stroke-width="{sw}"/>'
+        b += f'<rect x="29.6" y="40" width="7.6" height="6.4" rx="1.4" fill="#1c2630"/>' + circ(31.6, 43.2, 1, '#6fe08a') + circ(35.2, 43.2, 1, '#ff6a8a' if pose == 'work1' else '#ffd23a')
+        b += line((25, 47.5), (41.6, 47.5), '#8d99a5', .5) + circ(26.6, 39.6, .5, '#5a6670') + circ(40, 39.6, .5, '#5a6670')
+        b += f'<rect x="28.2" y="49.4" width="4.6" height="3.4" rx="1.4" fill="#9aa6b2" stroke="{o}" stroke-width=".7"/><rect x="34.2" y="49.4" width="4.6" height="3.4" rx="1.4" fill="#9aa6b2" stroke="{o}" stroke-width=".7"/>'
+        if pose != 'sit':
+            up = pose == 'work1'
+            b += f'<path d="M39,42 L{46 if up else 45},{36 if up else 39}" stroke="{o}" stroke-width="3.6" stroke-linecap="round"/><path d="M39,42 L{46 if up else 45},{36 if up else 39}" stroke="#c3ccd4" stroke-width="2.2" stroke-linecap="round"/>'
+            wx, wy = (47, 34) if up else (46.4, 37.6)
+            b += f'<g transform="rotate({-35 if up else -10} {wx} {wy})"><rect x="{wx-.8}" y="{wy-6}" width="1.6" height="7" fill="#d8a82a" stroke="#8a6a12" stroke-width=".4"/><path d="M{wx-2.4},{wy-6} a2.4,2.4 0 1 1 4.8,0 l-1.2,0 l0,-1.4 l-2.4,0 l0,1.4 Z" fill="#d8a82a" stroke="#8a6a12" stroke-width=".4"/></g>'
+            if up: b += ''.join(line((wx + 3, wy - 8), (wx + 3 + math.cos(a) * 3, wy - 8 + math.sin(a) * 3), '#ffe27a', .7) for a in (-2.4, -1.2, 0, 1))
+        b += head(33.5, 30, lit=pose != 'work0')
+    else:  # sleep: powered down
+        b += f'<rect x="19" y="41" width="24" height="12" rx="6" fill="{st}" stroke="{o}" stroke-width="{sw}"/>' + tail('M19,49 q8,6 22,2')
+        b += head(39, 45, True, False)
+        b += f'<text x="44" y="32" font-family="Arial" font-weight="bold" font-size="5" fill="#3ff0ff">z</text><text x="48" y="27" font-family="Arial" font-weight="bold" font-size="4" fill="#3ff0ff">z</text>'
+    return f'<g transform="translate(32 52) scale(1.16) translate(-32 -52)">{b}</g>'
+for _p in ('walk0', 'walk1', 'sit', 'work0', 'work1', 'sleep'):
+    add(f'robo_{_p}', robocat(_p))
