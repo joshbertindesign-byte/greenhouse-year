@@ -22,7 +22,8 @@ PROFILES = {
 
 def run_one(args):
     name, runs, years = args
-    prof = dict(BASE, **PROFILES[name], name=name)
+    sp, _, pl = name.partition(':')  # 'Steady:expert' = reaction profile + planner tier (expert / average / novice)
+    prof = dict(BASE, **PROFILES[sp], planner=pl or 'average', name=name)
     out = []
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])

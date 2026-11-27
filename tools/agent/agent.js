@@ -141,20 +141,47 @@ window.AG = (() => {
   function placeOffers() {
     let n = 0;
     tryDo('placing', () => {
-      const offers = S.offers.slice().sort((a, b) => ((b.veg ? 2 : 0) + (b.fest ? 1 : 0)) - ((a.veg ? 2 : 0) + (a.fest ? 1 : 0)) || (b.contract - a.contract) || (b.qty * b.price - a.qty * a.price));
-      for (const o of offers) { if (P.skipChance && rand() < P.skipChance && !o.veg && !o.contract) continue; if (autoAccept(o)) n++; }
+      const pri = o => (o.veg ? 2 : 0) + (o.fest ? 1 : 0);
+      let offers = S.offers.slice();
+      if (P.planner === 'novice') offers.sort((a, b) => pri(b) - pri(a) || rand() - .5);
+      else if (P.planner === 'expert') offers.sort((a, b) => pri(b) - pri(a) || (b.contract - a.contract) || bestPlan(b).dens - bestPlan(a).dens);
+      else offers.sort((a, b) => pri(b) - pri(a) || (b.contract - a.contract) || (b.qty * b.price - a.qty * a.price));
+      for (const o of offers) { if (P.skipChance && rand() < P.skipChance && !o.veg && !o.contract) continue; if (placeOne(o)) n++; }
       // the office manager holds a good order that didn't fit
       if (mgrOn()) for (let k = 0; k < HOLD_MAX; k++) { const q = queue(); if (q.length && holdable(q[0]) && (S.held || []).length < HOLD_MAX) { holdHand(); use('hold'); } else break; }
     });
     use('ordersPlaced', n); return n;
   }
+  // ---- planning skill: expert picks ship date and shape for the most value per bench-period and keeps an eye on crowded markets;
+  //      average takes the customer's date, default shape, first free spot (the game's own auto-accept); novice takes offers in any
+  //      order and drops them on any free spot it finds ----
+  function bestPlan(o) {
+    if (o.contract || o.veg || o.fest || !flexible(o)) { const F = formOf(o); return { d: dueOf(o), fm: o.fm || 0, v: valAt(o, dueOf(o)), dens: valAt(o, dueOf(o)) / Math.max(1, F.h * F.g) }; }
+    let best = null; const fs = forms(o);
+    for (let fm = 0; fm < fs.length; fm++) for (let d = Math.max(dMin({ ...o, fm }), 0); d <= o.p; d++) { const v = valAt(o, d), dens = v / (fs[fm].h * fs[fm].g); if (!best || dens > best.dens) best = { d, fm, v, dens }; }
+    return best || { d: o.p, fm: 0, v: valAt(o, o.p), dens: 0 };
+  }
+  function placeOne(o) {
+    if (!offerOwned(o)) return false;
+    if (P.planner === 'expert' && !o.contract && !o.veg && !o.fest && flexible(o)) {
+      const fs = forms(o), tries = [];
+      for (let fm = 0; fm < fs.length; fm++) for (let d = Math.max(dMin({ ...o, fm }), 0); d <= o.p; d++) tries.push({ d, fm, v: valAt(o, d) / (fs[fm].h * fs[fm].g) });
+      tries.sort((a, b) => b.v - a.v);
+      for (const t of tries) { o.d = t.d; o.fm = t.fm; const r = firstFit(o); if (r >= 0 && place(o, r)) return true; }
+      delete o.d; o.fm = 0; return false;
+    }
+    if (P.planner === 'novice' && !o.contract) {
+      const rows = benchIds().filter(r => fits(o, r)); if (!rows.length) return false; return place(o, rows[Math.floor(rand() * rows.length)]);
+    }
+    return autoAccept(o);
+  }
   function planPeriod() {
     const y0 = S.period === 0; let acts = 0;
-    if (y0) { acts += buyYear(); acts += decorate(); }
+    if (y0) { if (P.planner !== 'novice' || rand() < .6) acts += buyYear(); acts += decorate(); }
     acts += festivals(); acts += trees(); acts += succulents(); acts += skills();
     const n = placeOffers();
     // heed the pickups row: hire a loader or build a bay when it turns amber or red
-    tryDo('dock', () => { for (let k = 0; k < 3; k++) { let fix = ''; for (let p = S.period; p < 8 && !fix; p++) { const d = dockLoad(p); if (d.m >= .25) fix = d.fix; }
+    if (P.planner !== 'novice') tryDo('dock', () => { for (let k = 0; k < 3; k++) { let fix = ''; for (let p = S.period; p < 8 && !fix; p++) { const d = dockLoad(p); if (d.m >= .25) fix = d.fix; }
       if ((fix === 'open' || fix === 'loader') && crewRoom() > 0 && S.cash > 2000) { hire('load'); use('hire'); acts++; }
       else if (fix === 'bay' && afford(UPS.bays.cost[upLv('bays')])) { buyUp('bays'); use('upgrades'); acts++; } else break; } });
     { R.dock = R.dock || { periods: 0, warn: 0, pred: 0, empty: 0 }; const d = dockLoad(S.period); R.dock.periods++; if (d.m >= .25) R.dock.warn++; R.dock.pred += d.m; }
@@ -234,7 +261,8 @@ window.AG = (() => {
     const h = S.hist[S.hist.length - 1];
     const ys = S.ys || {};
     R.restarts = (S.failLog || []).length; R.failLog = (S.failLog || []).slice();
-    R.years.push({ tries: h.tries || 1, assisted: h.assisted || 0, spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
+    const used = S.plots.filter(pl => plotF(pl) !== SH && !specOf(plotF(pl))).reduce((a, pl) => a + pl.rows.length * (Math.min(7, pl.e) - Math.max(0, pl.s) + 1), 0), capT = (S.ys.cap || []).reduce((a, c) => a + (c || 0), 0);
+    R.years.push({ util: capT ? +(used / capT).toFixed(2) : null, tries: h.tries || 1, assisted: h.assisted || 0, spec: Object.values(S.spec || {}).join(','), propSaved: S.ys.propSaved || 0, propSold: S.ys.propSold || 0, roy: S.ys.roy || 0, propProb: S.ys.propProb || 0, vegRev: S.ys.vegRev || 0, plugs: S.ys.plugs, crewCost: S.ys.crew, overhead: S.ys.overhead, full: h.full, rep: h.rep, op: h.op, tax: h.tax || 0, gRun: h.gRun ? h.gRun.n : null, y, min: +(clock / 60).toFixed(1), stage: stage(), glv: glv(), stars: h.stars, ed: S.ed || 0, rank: h.rank, profit: Math.round(h.profit), rev: Math.round(h.rev), houses: S.floors, crew: S.crew.length, cash: Math.round(S.cash), starBank: S.stars || 0, cats: S.cats.length, plan: h.plan ? h.plan.pct : null, build: Math.round(ys.build || 0), loans: (S.loans || []).reduce((a, l) => a + l.left, 0) });
     think(P.yearEnd); skills(); checkMS();
     tryDo('nextYear', () => { nextYear(); enterHome(); }); home(); checkMS(); tryDo('leaveHome', () => leaveHome()); closeModal(); checkMS();
     return true;
