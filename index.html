@@ -240,6 +240,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .gres{text-align:center}.gres .burst{display:grid;place-items:center;margin:4px auto 8px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,#fff6c8 0 45%,transparent 46%),repeating-conic-gradient(#f2c230 0 10deg,#fff3b0 10deg 20deg)}
 .gres.no .burst{background:radial-gradient(circle,#f1ede2 0 45%,transparent 46%),repeating-conic-gradient(#ddd6c4 0 10deg,#eee8da 10deg 20deg);filter:grayscale(.4)}
 .gres .rws{justify-content:center}
+.taxb{display:flex;gap:12px;align-items:center;background:#eef6ea;border:2px solid #b9dfc0;color:#244a30;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.4;text-align:left}.taxb b{display:block;color:#1d3326;font-size:15px}.taxb.last{background:#fff6e0;border-color:#ecd48e;color:#5a4300}.taxb.over{background:#f4f1e8;border-color:#ddd6c4;color:#4a4a40}.taxb .ic{flex:none}.taxb>span{flex:1;text-align:left}
+.taxpips{display:flex;gap:5px;margin-top:6px}.taxpips em{width:26px;height:7px;border-radius:4px;background:#2f8a4e}.taxpips em.used{background:#cfd8cc}.taxpips em.now{background:#2f8a4e;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #2f8a4e}.taxb.last .taxpips em.now{background:#e0a020;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #e0a020}
 .warnb{display:flex;gap:10px;align-items:flex-start;background:#fdecea;border:2px solid #f0b6ad;color:#7a1f14;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.35}
 .mag{background:#fffdf6;border:1px solid #e8e0c8;border-radius:12px;padding:16px;font-family:Georgia,'Times New Roman',serif;color:#1d2a22}
 .mast{text-align:center;border-bottom:3px double #1d2a22;padding-bottom:8px}.mast small{font-family:inherit;font-size:11px;letter-spacing:.18em;color:#8a7a52}.mast b{display:block;font-size:30px;line-height:1.05;letter-spacing:-.01em;color:#2d5a3a}.mast b span{font-style:italic;font-weight:400;font-size:22px;color:#a2463a}
@@ -1130,7 +1132,12 @@ const roundKey=()=>S.year*100+S.period*2+(S.phase==='plan'?0:1);
 const wageOf=r=>Math.round(r.wage*(bunkOn()?BUNK_WAGE:1));
 const crewCost=()=>S.crew.reduce((a,r)=>a+wageOf(r),0)+(S.mgr?S.mgr.wage:0);
 const SHOW_COST=15000,SHOW_OH=250;
-const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
+// startup tax break: upkeep is half price for your first TAX_Y years, then full price. The end date is fixed and shown everywhere upkeep is.
+const TAX_Y=3,TAX_CUT=.5;
+const taxOn=(y=S.year)=>y<=TAX_Y,taxLeft=()=>Math.max(0,TAX_Y-S.year+1);
+const upkeepFull=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
+const upkeep=()=>Math.round(upkeepFull()*(taxOn()?1-TAX_CUT:1));
+const taxLine=()=>taxOn()?`Startup tax break: upkeep is half price through year ${TAX_Y}${taxLeft()===1?' (this is the last year)':` (${taxLeft()} years left)`}`:'';
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
 
 // ---------------- placement ----------------
@@ -1973,7 +1980,7 @@ function startPeriod(){
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});syncRobo();if(robo){robo.task=null;robo.path=[];robo.work=0;robo.leg=null;}
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
-  payday();const up=upkeep();S.cash-=up;S.ys.overhead+=up;
+  payday();const up=upkeep();S.cash-=up;S.ys.overhead+=up;if(taxOn())S.ys.taxSaved=(S.ys.taxSaved||0)+upkeepFull()-up;
   S.plots.filter(pl=>pl.s===c&&!pl.done).forEach(pl=>addTask({type:'pot',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),born:0,due:PSEC*POT_BY}));
   const tw=Math.min(.6,.36+.022*(S.floors-1));S.plots.filter(pl=>pl.e===c&&!pl.done).forEach(pl=>{const at=PSEC*(.14+rnd()*tw);S.trucks.push({id:S.nid++,plot:pl.id,at,state:'coming'});S.events.push({at,k:'truck',plot:pl.id});});
   const thirst=[.5,.55,.75,.85,1,1,.75,.55][c]*(1-.15*sk('deepw'));
@@ -2101,7 +2108,7 @@ function settleBooks(){
   if(lp+li){S.cash-=lp+li;S.ys.interest+=li;S.ys.loanP=(S.ys.loanP||0)+lp;}
   if(S.cash<0){od=Math.round(-S.cash*OVERDRAFT_RATE);S.cash-=od;S.ys.interest+=od;}
   const a=S.snap||S.ys,y=S.ys;
-  S.stmt={sales:y.rev-a.rev,plugs:y.plugs-a.plugs,upkeep:y.overhead-a.overhead,crew:y.crew-a.crew,buyin:y.buy-a.buy,build:(y.build||0)-(a.build||0),loanIn:(y.loanIn||0)-(a.loanIn||0),loanP:lp,interest:li,overdraft:od,cash:S.cash,start:a.cash??S.cash};
+  S.stmt={sales:y.rev-a.rev,plugs:y.plugs-a.plugs,upkeep:y.overhead-a.overhead,tax:(y.taxSaved||0)>(a.taxSaved||0),crew:y.crew-a.crew,buyin:y.buy-a.buy,build:(y.build||0)-(a.build||0),loanIn:(y.loanIn||0)-(a.loanIn||0),loanP:lp,interest:li,overdraft:od,cash:S.cash,start:a.cash??S.cash};
   if(lp)toast('cash',`Loan payment: ${fmt(lp)} plus ${fmt(li)} interest`);
 }
 function endPeriod(){
@@ -3557,7 +3564,7 @@ function renderSheet(){
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
     const st=S.stmt,stHTML=plan&&st?`<details class="stmt"><summary><b>Last period</b> <span class="${st.cash-st.start<0?'neg':'pos'}">${st.cash-st.start<0?'':'+'}${fmt(st.cash-st.start)}</span> · cash now ${fmt(st.cash)}${S.crew.some(r=>r.missed)?' · <span class="neg">payroll missed</span>':''}</summary><div class="kv">
-        <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Building and upgrades</span><b>${fmt(-st.build)}</b>`:''}${st.loanIn?`<span>Loans taken</span><b>${fmt(st.loanIn)}</b>`:''}${st.loanP?`<span>Loan payments</span><b>${fmt(-st.loanP)}</b>`:''}${st.interest?`<span>Loan interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
+        <span>Sales</span><b>${fmt(st.sales)}</b><span>Plugs and pots</span><b>${fmt(-st.plugs)}</b><span>Upkeep${st.tax?' (half: tax break)':''}</span><b>${fmt(-st.upkeep)}</b>${st.crew?`<span>Crew</span><b>${fmt(-st.crew)}</b>`:''}${st.buyin?`<span>Bought in</span><b>${fmt(-st.buyin)}</b>`:''}${st.build>0?`<span>Building and upgrades</span><b>${fmt(-st.build)}</b>`:''}${st.loanIn?`<span>Loans taken</span><b>${fmt(st.loanIn)}</b>`:''}${st.loanP?`<span>Loan payments</span><b>${fmt(-st.loanP)}</b>`:''}${st.interest?`<span>Loan interest</span><b>${fmt(-st.interest)}</b>`:''}${st.overdraft?`<span>Overdraft interest</span><b>${fmt(-st.overdraft)}</b>`:''}</div></details>`:'';
     const q=queue(),hof=placing?placing.of:q[0],inQ=placing&&placing.of.contract,peek=(inQ?q:q.slice(1)).slice(0,2),left=q.length+(inQ?1:0);
     const okNow=placing&&pv&&evalPv(pv.top).ok;
     const nxt=`<div class="nx"><div class="h"><span>NEXT UP</span><span>${left} offer${left===1?'':'s'} left</span></div><div class="g">${peek.length?peek.map(nxHTML).join(''):'<div class="m"><span><small>Nothing after this one</small></span></div>'}</div></div>`;
@@ -3612,7 +3619,7 @@ function renderSheet(){
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Cats are adopted at the homestead between years, with stars. Each one helps in her own way.</p>
       <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>`:`${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span>${k==='bays'?`<span class="bst${bayUse()<bayCount()?' warn':''}">${bayCount()} built · ${bayUse()} open · ${loaders()} loader${loaders()===1?'':'s'}</span>`:''}<span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}`}`;
   }
-  const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):tab==='trees'?'Tree sales count toward this year\u2019s revenue.':`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
+  const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):tab==='trees'?'Tree sales count toward this year\u2019s revenue.':`Upkeep ${fmt(upkeep())}${taxOn()?` (half price until the end of year ${TAX_Y}, then ${fmt(upkeepFull())})`:''} + crew ${fmt(crewCost())} each period.`;
   const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
   el.innerHTML=`<div class="tscr">${tabs}<div class="scr" id="scr">${body}${dock?'':`<div class="bfoot"><span class="hint">${hint}</span></div>`}</div>${dock}</div><div class="bzl">${esc(nurseryName()).toUpperCase()}</div>`;
   if(keep)$('scr').scrollTop=keep;
@@ -4106,7 +4113,7 @@ function ribbonSVG(k,sz){
 function closeYear(){
   if(S.yres&&S.yres.year===S.year)return S.yres;
   const y=S.ys,rep=avgRep(),m=magScore(y,rep),tab2=rivalTable(S.year,m),rk=tab2.findIndex(x=>x.me)+1,st=stage(),g=stg(st).goal,met=goalMet(g,y,m,rk,rep);
-  const rec={year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
+  const rec={taxSaved:y.taxSaved||0,year:S.year,stars:m.stars,score:m.score,parts:m.parts,rank:rk,of:tab2.length,rev:y.rev,profit:yearProfit(y),op:m.prof,full:y.full,short:y.short,failed:y.failed,rep:Math.round(rep),crops:(y.cr||[]).slice(),stage:st,goal:goalText(g),met,cash:Math.round(S.cash),houses:S.floors,crew:S.crew.length};
   if(hasShow()||(S.ys.show&&S.ys.show.length)){const ri=judgeRibbon(S.ys.show);rec.ribbon=ri;rec.entries=(S.ys.show||[]).slice();if(ri>=0){S.cash+=RIBBONS[ri].prize;S.ys.prize=RIBBONS[ri].prize;rec.cash=Math.round(S.cash);}}
   let showNew=false;if(m.stars>=5&&!S.showOpen){S.showOpen=true;showNew=true;}
   S.hist.push(rec);
@@ -4200,6 +4207,7 @@ function yearGoalModal(R0){
     ${r.plan?`<div class="gplan${r.plan.tier?' on':''}">${svgIcon('bench',40)}<span><b>${r.plan.tier||'Planning'}: ${r.plan.pct}%</b> Your orders were worth ${fmt(r.plan.act)}. Looking back at every offer you had this year, the best plan your benches could hold was worth about ${fmt(r.plan.bd)}.${r.plan.tier?` Bonus: <b>+${r.plan.st} ★</b>${r.plan.cash?` and <b>${fmt(r.plan.cash)}</b>`:''}.`:` Reach ${Math.round(PLAN_TIERS[PLAN_TIERS.length-1].min*100)}% for a planning bonus.`}</span></div>`:''}
     ${red?`<div class="warnb">${tico('lock',18)}<span><b>You ended the year in the red.</b> End next year below zero too and the bank closes the nursery.</span></div>`:''}
     ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and you're out of business.</span></div>`:''}
+    ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all.</span></div>`:''}
     <small class="cap">YEAR ${S.year+1} GOAL</small>${goalCardHTML(st,false,true)}
     <button class="btn go" id="nyBtn" type="button">Go to the homestead</button>`);
   $('mbox').scrollTop=0;
@@ -4225,10 +4233,15 @@ function profitChart(){
   const H=S.hist.slice(-12),mx=Math.max(1,...H.map(r=>Math.abs(r.profit))),W=Math.max(8,H.length)*34,x0=(W-H.length*34)/2;
   return`<svg class="pch" viewBox="0 0 ${W} 110" width="100%" height="110" preserveAspectRatio="xMidYMid meet" style="max-width:${W*1.6}px;display:block;margin:0 auto" aria-label="Profit by year">${H.map((r,i)=>{const h=Math.abs(r.profit)/mx*42,y=r.profit>=0?55-h:55,x=x0+i*34;return`<rect x="${x+6}" y="${y}" width="22" height="${Math.max(1,h)}" rx="3" fill="${r.profit>=0?'#2e7d4a':'#c8402f'}"/><text x="${x+17}" y="108" text-anchor="middle" font-size="10" fill="#6b7a70">Y${r.year}</text>`;}).join('')}<line x1="${x0}" x2="${x0+H.length*34}" y1="55" y2="55" stroke="#cfc8b4"/></svg>`;
 }
+function taxBoxHTML(y=S.year){
+  const left=TAX_Y-y+1,last=left===1,full=upkeepFull(),half=Math.round(full*(1-TAX_CUT));
+  return`<div class="taxb${last?' last':''}">${svgIcon('cash',40)}<span><b>Startup tax break${last?': last year':''}</b> Upkeep is half price, ${fmt(half)} a period instead of ${fmt(full)}, until the end of year ${TAX_Y}.${last?' From next year you pay full upkeep, so your orders need to cover it.':` ${left} years left, counting year ${y}.`}${(S.ys.taxSaved||0)&&y===S.year?` Saved ${fmt(S.ys.taxSaved)} so far this year.`:''}<i class="taxpips">${Array.from({length:TAX_Y},(_,i)=>`<em class="${i+1<y?'used':i+1===y?'now':''}"></em>`).join('')}</i></span></div>`;
+}
 function ledgerHTML(){
   const st=stage(),warn=[];
   if(S.redYears>0)warn.push(`<div class="warnb">${tico('lock',18)}<span><b>Last year ended in the red.</b> End this year below zero too and the bank closes the nursery.</span></div>`);
   if(lostCount()>=CUST.length-2)warn.push(`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customers still buy from you.</b> Lose them all and you're out of business.</span></div>`);
+  if(taxOn())warn.unshift(taxBoxHTML());
   return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Hit each year's goal to reach the next level and unlock more upgrades, varieties, houses and crew. Miss it and you try again next year. You lose if every customer writes you off, or if you end two years in a row below zero. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
     ${warn.join('')}${goalCardHTML(st,true)}
     <h3 class="lh3">The road ahead</h3>
@@ -4566,6 +4579,7 @@ function welcome(){
   <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
+  <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full price, so use the head start to grow.</span></div>
   <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
   <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
