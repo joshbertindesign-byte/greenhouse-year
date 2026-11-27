@@ -264,3 +264,55 @@ def icon(k):
 
 for _k in ('heart', 'egg', 'swing', 'bunting', 'jack', 'lights', 'lantern', 'papel', 'ribbon', 'birdhouse', 'bench', 'gnome', 'flamingo', 'chimes', 'bath', 'palm', 'neon', 'catstatue', 'scarecrow', 'tiki', 'fan', 'radio'):
     add(f'deco_{_k}', icon(_k))
+
+# ---------------------------------------------------------------- seasonal cat hats (anchor = top of the cat's head)
+def flower(x, y, r, c, mid='#ffe27a'):
+    return ''.join(circ(x + math.cos(a) * r * .7, y + math.sin(a) * r * .7, r * .55, c) for a in (0, 1.26, 2.51, 3.77, 5.03)) + circ(x, y, r * .45, mid)
+def hat(k):
+    if k == 'christmas':
+        b = f'<path d="M-5.4,0 Q-4,-9 3,-10.5 Q8,-11 8.6,-5.6 Q6,-8 3.6,-6.6 Q4.6,-3 5.4,0 Z" fill="#d8202f" stroke="#8a0f1a" stroke-width=".6"/>'
+        b += f'<rect x="-6.6" y="-1.6" width="13.2" height="3.4" rx="1.7" fill="#ffffff" stroke="#c9c2b0" stroke-width=".4"/>' + circ(8.6, -5.2, 2.2, '#ffffff', '#c9c2b0', .4)
+    elif k == 'halloween':
+        b = ell(0, 0, 9.4, 2.4, '#3a2a4a', 'stroke="#1a1028" stroke-width=".6"')
+        b += f'<path d="M-4.4,-.6 L4.4,-.6 Q3,-7 1.6,-10 Q3,-14 6.6,-14.6 Q2.4,-15 -.6,-11 Q-3,-6 -4.4,-.6 Z" fill="#4a3460" stroke="#1a1028" stroke-width=".6"/>'
+        b += f'<path d="M-4.1,-2.4 L4.1,-2.4 L3.8,-.8 L-4.4,-.8 Z" fill="#ff8a1a"/>' + f'<rect x="-1" y="-2.6" width="2" height="2" fill="#ffd23a" stroke="#c99a12" stroke-width=".3"/>'
+    elif k == 'easter':
+        b = qd('M-6,1 Q0,-3.4 6,1', '#ff9ac8', 1.4)
+        for sx, tx in ((-1, -5), (1, 5.4)):
+            b += f'<path d="M{sx*2.6},-1.2 Q{tx-2.2*sx},-8 {tx},-14 Q{tx+2.2*sx},-8 {sx*5.2},-.4 Z" fill="#ffffff" stroke="#c9c2b0" stroke-width=".5"/>'
+            b += f'<path d="M{sx*3.2},-2 Q{tx-1*sx},-8 {tx},-12 Q{tx+1.1*sx},-7.6 {sx*4.6},-1.6 Z" fill="#ffb3c8"/>'
+    elif k == 'mother':
+        b = qd('M-6.4,.6 Q0,-2.8 6.4,.6', '#4fa84a', 1.2)
+        for i, (x, y, c) in enumerate(((-5.6, .2, '#ff8ab0'), (-2.8, -1.4, '#ffffff'), (0, -1.9, '#c86ae8'), (2.8, -1.4, '#ff8ab0'), (5.6, .2, '#ffffff'))):
+            b += ell(x + (1.4 if i % 2 else -1.4), y + .6, 1.4, .7, '#5cb05a') + flower(x, y, 1.9, c)
+    elif k == 'dia':
+        b = qd('M-6.4,.6 Q0,-2.8 6.4,.6', '#3f8a3a', 1.2)
+        for x, y, c in ((-5.4, -.2, '#ff8a1a'), (-1.9, -1.8, '#ffb21a'), (1.9, -1.8, '#ff8a1a'), (5.4, -.2, '#ffb21a')):
+            b += ''.join(circ(x + math.cos(a) * 1.4, y + math.sin(a) * 1.4, 1.3, c, '#c8601a', .25) for a in range(0, 7)) + circ(x, y, 1.2, '#e0602a')
+    elif k == 'july':
+        b = ell(0, 0, 6.6, 1.8, '#1f3a8a', 'stroke="#10204a" stroke-width=".5"')
+        b += f'<path d="M-4,-.4 L-4.4,-10 L4.4,-10 L4,-.4 Z" fill="#ffffff" stroke="#10204a" stroke-width=".5"/>'
+        for x in (-2.6, 0, 2.6): b += f'<rect x="{f2(x-.6)}" y="-10" width="1.2" height="7" fill="#d8202f"/>'
+        b += f'<path d="M-4.2,-3.4 L4.2,-3.4 L4,-.5 L-4,-.5 Z" fill="#1f3a8a"/>' + ell(0, -10, 4.4, 1.2, '#2a4fb0', 'stroke="#10204a" stroke-width=".5"')
+        for x in (-2.2, 0, 2.2): b += circ(x, -1.9, .55, '#ffffff')
+    elif k == 'fair':
+        b = f'<path d="M-10,-1.6 Q-8,1.6 0,1.4 Q8,1.6 10,-1.6 Q7,0 0,-.2 Q-7,0 -10,-1.6 Z" fill="#c9965a" stroke="#7a5a30" stroke-width=".6"/>'
+        b += f'<path d="M-4.8,-.4 Q-5.4,-6 -3,-7.6 Q0,-6 3,-7.6 Q5.4,-6 4.8,-.4 Z" fill="#d8a868" stroke="#7a5a30" stroke-width=".6"/>' + qd('M-4.6,-2 Q0,-1 4.6,-2', '#7a3a1a', 1.1)
+    elif k == 'arbor':
+        b = f'<path d="M-5.6,.4 Q-5.6,-6.4 0,-6.6 Q5.6,-6.4 5.6,.4 Q0,1.8 -5.6,.4 Z" fill="#a8763a" stroke="#6a4a22" stroke-width=".6"/>'
+        b += qd('M-4.4,-1.4 L-1.4,-5.6 M-1.4,-.6 L2,-5.8 M1.6,-.4 L4.6,-3.8 M-4.6,-3.4 L1.4,-.6 M-2,-6 L4.6,-1.6', '#8a5a2a', .4) + qd('M0,-6.6 q.6,-2.4 2.2,-2.8', '#6a4a22', 1.1)
+        b += ell(-4.4, -6.4, 2.4, 1.1, '#5cb05a', 'transform="rotate(-25 -4.4 -6.4)"')
+    elif k == 'valentine':
+        b = qd('M-6,1 Q0,-3.4 6,1', '#d8202f', 1.3)
+        for sx in (-1, 1):
+            b += qd(f'M{sx*2.6},-1.6 q{sx*-1},-2 0,-3.4 q{sx*1},-1.4 {sx*.4},-3.4 q{sx*-.6},-1.2 {sx*.8},-2.6', '#8a8a8a', .5) + heart(sx * 3.6, -11.6, 2.4, '#ff2f5a', '#8a0f2a')
+    elif k == 'lunar':
+        b = f'<path d="M-5.4,.6 Q-5.6,-6.6 0,-6.8 Q5.6,-6.6 5.4,.6 Z" fill="#d8202f" stroke="#7a0f1a" stroke-width=".6"/>'
+        b += f'<path d="M-5.5,-1.4 Q0,-.2 5.5,-1.4 L5.4,.6 Q0,1.6 -5.4,.6 Z" fill="#d8b02a" stroke="#8a6a12" stroke-width=".4"/>' + qd('M0,-6.8 V-1', '#a8101f', .5) + circ(0, -8, 1.6, '#d8202f', '#7a0f1a', .5) + circ(0, -2.8, 1, '#ffd23a')
+    elif k == 'tour':
+        b = ell(0, 0, 9, 2.4, '#e8c878', 'stroke="#a8863a" stroke-width=".6"')
+        b += f'<path d="M-5,-.4 L-5,-4.4 Q0,-5.6 5,-4.4 L5,-.4 Z" fill="#f2d68a" stroke="#a8863a" stroke-width=".6"/>' + ell(0, -4.6, 5, 1.3, '#f8e2a0', 'stroke="#a8863a" stroke-width=".5"')
+        b += f'<path d="M-5,-2.4 Q0,-1.4 5,-2.4 L5,-.8 Q0,.2 -5,-.8 Z" fill="#2a3a5a"/>' + flower(4.2, -2, 1.7, '#ff8ab0')
+    return b
+for _k in ('valentine', 'lunar', 'easter', 'mother', 'arbor', 'july', 'fair', 'halloween', 'dia', 'christmas', 'tour'):
+    add(f'hat_{_k}', g(hat(_k), 14, 18), 28, 24, (14, 18))
