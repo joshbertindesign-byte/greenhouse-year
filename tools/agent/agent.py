@@ -28,7 +28,7 @@ def run_one(args):
         b = p.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--no-sandbox"])
         for r in range(runs):
             pg = b.new_page(); pg.route("**/fonts.googleapis.com/**", lambda x: x.abort())
-            pg.goto("file://" + HERE + "/a.html"); pg.wait_for_timeout(300); pg.add_script_tag(path=HERE + "/agent.js")
+            pg.goto("file://" + HERE + "/" + os.environ.get("GAME", "a.html")); pg.wait_for_timeout(300); pg.add_script_tag(path=HERE + "/agent.js")
             pg.evaluate("p=>AG.start(p)", prof)
             t0 = time.time()
             for y in range(years):
@@ -42,11 +42,27 @@ def run_one(args):
 def hm(m):
     return f"{int(m//60)}h {int(m%60):02d}m" if m >= 60 else f"{int(m)}m"
 
+def run_single(args):
+    name, idx, years, outl = args
+    nm, out = run_one((name, 1, years))
+    r = out[0]; r['run'] = idx
+    with open(outl, 'a') as f: f.write(json.dumps(r) + '\n')
+    return name, idx, (r['over'] or {}).get('why'), len(r['years'])
+
+if __name__ == '__main__' and os.environ.get('LONG'):
+    # LONG=1 python3 agent.py RUNS_PER_PROFILE MAX_YEARS: one task per run, results appended to OUT as JSON lines
+    runs = int(sys.argv[1]); years = int(sys.argv[2]); names = sys.argv[3].split(',') if len(sys.argv) > 3 else list(PROFILES)
+    outl = HERE + '/' + os.environ.get('OUT', 'long.jsonl')
+    jobs = [(n, i, years, outl) for i in range(runs) for n in names]
+    with ProcessPoolExecutor(max_workers=int(os.environ.get('WORKERS', 2))) as ex:
+        for res in ex.map(run_single, jobs): print('DONE', *res, flush=True)
+    sys.exit(0)
+
 if __name__ == '__main__':
     runs = int(sys.argv[1]) if len(sys.argv) > 1 else 2
     years = int(sys.argv[2]) if len(sys.argv) > 2 else 15
     names = sys.argv[3].split(',') if len(sys.argv) > 3 else list(PROFILES)
     with ProcessPoolExecutor(max_workers=int(os.environ.get('WORKERS', 2))) as ex:
         res = dict(ex.map(run_one, [(n, runs, years) for n in names]))
-    json.dump(res, open(HERE + '/results.json', 'w'))
+    json.dump(res, open(HERE + '/' + os.environ.get('OUT', 'results.json'), 'w'))
     print(json.dumps({n: {'over': [r['over'] for r in rs], 'errors': [r['errors'] for r in rs]} for n, rs in res.items()}, indent=1))

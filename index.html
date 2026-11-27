@@ -3678,7 +3678,8 @@ const loanCap=()=>4000+2000*S.floors;
 const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
 const payroll=()=>S.crew.reduce((a,r)=>a+wageOf(r)+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
-const rushWage=r=>Math.max(r.wage+10,Math.round(r.wage*1.35/5)*5);
+// a rush hire costs 35% over the role's standard wage. It used to be 35% over the quitter's wage, so replacing a rush hire compounded and payroll could spiral.
+const rushWage=r=>Math.round((ROLES[r.role]?ROLES[r.role].cost:r.wage)*1.35/5)*5;
 function takeLoan(amt){
   amt=Math.min(amt,loanRoom());if(amt<=0)return false;
   S.loans.push({id:'L'+S.nid++,orig:amt,left:amt});S.cash+=amt;S.ys.loanIn=(S.ys.loanIn||0)+amt;

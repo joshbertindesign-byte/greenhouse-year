@@ -35,6 +35,12 @@ window.AG = (() => {
     ['Office manager hired', () => mgrOn()], ['Bunkhouse built', () => hasBuild('bunk')], ['Solar array fully upgraded', () => solarLv() >= 3],
     ['Masterfully planned year', () => S.hist.some(h => h.plan && h.plan.st === 3)], ['First coffee cup', () => R.used.cup > 0],
     ['$100k in the bank', () => S.cash >= 100000],
+    ['Survived the tax break (year 4)', () => S.year >= 4], ['Year 10 reached', () => S.year >= 10], ['Year 20 reached', () => S.year >= 20], ['Year 30 reached', () => S.year >= 30],
+    ['Nursery level 8', () => stage() >= 8], ['Nursery level 18', () => stage() >= 18],
+    ['10 greenhouses', () => S.floors >= 10], ['3 loading bays', () => bayCount() >= 3], ['4 loading bays', () => bayCount() >= 4],
+    ['10 crew', () => S.crew.length >= 10], ['20 crew', () => S.crew.length >= 20],
+    ['All equipment maxed', () => Object.keys(UPS).every(k => upLv(k) >= UPS[k].lv.length)], ['All varieties owned', () => Object.keys(GEN).every(k => owns(k))],
+    ['$250k in the bank', () => S.cash >= 250000], ['$1M in the bank', () => S.cash >= 1000000],
   ];
   function checkMS() { for (const [n, f] of MS) if (!R.ms[n]) { let ok = false; try { ok = f(); } catch (e) { } if (ok) R.ms[n] = { min: +(clock / 60).toFixed(1), year: S.year, period: S.period }; } }
 
@@ -235,6 +241,10 @@ window.AG = (() => {
     window.__agentCall = (ctx, ok) => { use('call'); ok = ok.filter(o => !/Ends the game/.test(o.fx || '')); return ok.length > 1 && rand() < P.callYes ? ok[0] : ok[ok.length - 1]; };
     try { save = () => { }; } catch (e) { }
     fresh(); S.welcomed = true; S.tipsOff = 1; S.coached = 1; S.homeSeen = 1; genOffers(); beginPlan(); closeModal(); closeSheet();
+    // log missed paydays: cash on hand vs payroll due
+    if (!window.__pdWrap) { const o = payday; window.payday = function () { const c0 = S.cash, d0 = payroll(), m0 = S.ys.missed || 0; const r = o.apply(this, arguments); if ((S.ys.missed || 0) > m0 && R) { R.missed = (R.missed || 0) + 1; if ((R.missLog = R.missLog || []).length < 12) R.missLog.push({ y: S.year, p: S.period, cash: Math.round(c0), due: Math.round(d0), crew: S.crew.length, maxW: Math.max(0, ...S.crew.map(x => x.wage)) }); } return r; }; window.__pdWrap = 1; }
+    // catch any single cash change bigger than $250k (or a non-finite one) with a stack, for chasing runaway costs
+    { let c = S.cash; Object.defineProperty(S, 'cash', { configurable: true, enumerable: true, get: () => c, set: v => { if ((Math.abs(v - c) > 250000 || !isFinite(v)) && (R.big = R.big || []).length < 6) R.big.push({ y: S.year, p: S.period, from: Math.round(c), to: Math.round(v), stack: (new Error().stack || '').split('\n').slice(2, 7).join(' | ') }); c = v; } }); }
   }
   function years(n) { for (let i = 0; i < n; i++) { if (!year()) break; } return R; }
   return { start, years, get R() { return R; } };
