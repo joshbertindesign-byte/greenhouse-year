@@ -2228,7 +2228,7 @@ function enterHome(){
     <div>${catURL?`<img src="${catURL('anna')}" width="40" height="40" alt="">`:''}<span><b>Cats:</b> tap the cat house to adopt more. Each cat helps in her own way.</span></div></div>
     <button class="btn go" id="hmOk" type="button">Let's go</button>`);$('hmOk').onclick=closeModal;}
 }
-function leaveHome(){if(S.phase!=='home')return;flushHJobs();$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
+function leaveHome(){if(S.phase!=='home')return;flushHJobs();save();try{localStorage.setItem('gy8ck',JSON.stringify(S));}catch(e){}$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
 function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);return false;}S.stars-=n;return true;}
 function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
   const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});save();renderHome();}
@@ -3352,7 +3352,7 @@ function resetModal(){
   modal(`<h2>Start over?</h2><p>This wipes ${esc(nurseryName())} completely: every year, the homestead, your cats, your stars and the tips you've seen. You start again from year 1 with the tutorial. It can't be undone.</p>
     <div class="ab2"><button class="btn" type="button" id="rsNo">Keep playing</button><button class="btn" type="button" id="rsYes" style="background:var(--bad);color:#fff">Start over</button></div>`);
   $('rsNo').onclick=closeModal;
-  $('rsYes').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}window.__resetting=true;location.reload();};
+  $('rsYes').onclick=()=>{try{localStorage.removeItem('gy8');localStorage.removeItem('gy8ck');}catch(e){}window.__resetting=true;location.reload();};
 }
 function nameModal(first,after){
   const idea=NAME_IDEAS[Math.floor(Math.random()*NAME_IDEAS.length)];
@@ -3674,7 +3674,7 @@ function gameOver(){
     <h2>${why[0]}</h2><p>${why[1]} You ran ${esc(nurseryName())} for ${S.hist.length} year${S.hist.length===1?'':'s'} and reached ${stg(stage()).n.toLowerCase()} (level ${stage()}).${best?` Best ranking: ${best} star${best>1?'s':''}.`:''}</p></div>
     ${ledgerTable()}
     <button class="btn go" id="ovNew" type="button">Start a new nursery</button>`);
-  $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();hud();nameModal(true,()=>{enterHome();toast('good',`${nurseryName()} is open: year 1`);});};
+  $('ovNew').onclick=()=>{try{localStorage.removeItem('gy8');localStorage.removeItem('gy8ck');}catch(e){}fresh();genOffers();S.welcomed=true;viewF=0;staff=[];syncStaff();layout();closeModal();hud();nameModal(true,()=>{enterHome();toast('good',`${nurseryName()} is open: year 1`);});};
 }
 function ledgerTable(){
   if(!S.hist.length)return'<p class="norail">Your first Best Homes and Gardens ranking comes out at the end of year 1.</p>';
@@ -3992,7 +3992,10 @@ $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b
 function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
 function closeModal(){$('modal').hidden=true;}
 function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
-function load(){try{const d=JSON.parse(localStorage.getItem('gy8')||'null');if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
+function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
+  // closed mid-year: go back to the homestead checkpoint taken when this year started
+  try{const ck=JSON.parse(localStorage.getItem('gy8ck')||'null');if(d&&ck&&ck.year===d.year&&ck.phase==='home'&&!['home','done','over'].includes(d.phase)&&!d.lost){d=ck;window.__rewound=d.year;}}catch(e){}
+  if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
   if(d.glv==null){let xp=(d.hist||[]).length*60,l=1;while(l<30&&xp>=10+3*l){xp-=10+3*l;l++;}d.glv=l;d.gxp=l>=30?0:xp;}
   if(!d.lvV){d.lvV=2;d.stage=Math.max(1,(d.stage||1)*2-1);(d.hist||[]).forEach(h=>{if(h.stage)h.stage=h.stage*2-1;});}
   if(!d.wageV){d.wageV=2;const NW={pot:190,water:145,pest:170,fix:130,load:190,prize:800},OW={pot:120,water:90,pest:105,fix:80,load:120,prize:600};(d.crew||[]).forEach(r=>{if(NW[r.role])r.wage=Math.round((r.wage||OW[r.role])*NW[r.role]/OW[r.role]/5)*5;});}
@@ -4032,13 +4035,13 @@ function boot(){
   S=load();
   if(!S){fresh();genOffers();}
   if(!S.alm||S.alm.year!==S.year)almGen();
-  else if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
+  if(S.phase==='run'){S.phase='plan';S.t=0;S.trucks=[];}
   prepArt();syncStaff();layout();hud();
   if(S.phase==='over'||S.lost)gameOver();
   else if(S.phase==='done')yearEnd();
   else if(!S.welcomed)welcome();
   else if(!S.name)nameModal(true,()=>S.phase==='home'?enterHome():openSheet());
-  else if(S.phase==='home')enterHome();
+  else if(S.phase==='home'){enterHome();if(window.__rewound)setTimeout(()=>toast('good',`You left partway through year ${window.__rewound}, so you\u2019re back at the homestead from the start of it`),900);}
   else openSheet();
   try{const gm=location.hash.match(/[#&]g=(.+)$/);if(gm){history.replaceState(null,'',location.pathname+location.search);const code=gm[1];if(S.welcomed&&S.name)setTimeout(()=>redeemGift(code),800);else{S.pendingGift=code;save();}}}catch(e){}
   requestAnimationFrame(frame);
