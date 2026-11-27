@@ -534,8 +534,7 @@ def deco(k):
         b += f'<rect x="{x-11}" y="{y-16}" width="22" height="13" rx="2" fill="#c0503f" stroke="#7a2a20" stroke-width=".8"/>' + circ(x - 5, y - 9.5, 4, '#e8dcc0', '#7a2a20', .6) + f'<rect x="{x+1}" y="{y-13}" width="8" height="5" rx="1" fill="#f2e6c8"/>' + seg((x + 8, y - 16), (x + 13, y - 26), '#9aa5ad', .8)
         for i in range(3): b += f'<path d="M{x-14-i*3},{y-22+i} q-2,3 0,6" fill="none" stroke="#5a8ad0" stroke-width=".7"/>'
     return f'<g transform="translate({x} {y}) scale(1.22) translate({-x} {-y})">{b}</g>'
-for _k in ('heart', 'egg', 'swing', 'bunting', 'jack', 'lights', 'lantern', 'papel', 'ribbon', 'birdhouse', 'bench', 'gnome', 'flamingo', 'chimes', 'bath', 'palm', 'neon', 'catstatue', 'scarecrow', 'tiki', 'fan', 'radio'):
-    add(f'deco_{_k}', deco(_k))
+exec(open('/home/claude/sprites/deco_art.py').read())
 
 # ------------------------------------------------------------------ people
 SKIN, HAND, SKO = '#ffd8b8', '#ffd3b0', '#c98a63'
