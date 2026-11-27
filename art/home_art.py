@@ -505,6 +505,37 @@ def bunkhouse():
     return b
 rad('gRoofG', [(0, '#6fae7a', None), (1, '#3f7a52', None)], .3, .2, 1)
 add('h_bunk', bunkhouse(), LW, LH, (HAX, HAY))
+lin('gPanel', [(0, '#3a5a9a', None), (1, '#1a2a5a', None)])
+def solar(l):
+    I = Iso(HAX, HAY); b = shadow(I, .5, .4, 6.5, 2.6)
+    b += flat(I, .4, .3, 6.6, 2.7, 0, '#d8cfb4', '#b8ab8c', .6)
+    for k in range(9): b += circ(*I.P(.5 + k * .75, 2.6, 0), 1.2, '#8a8f94')  # fence posts
+    b += seg(I.P(.45, 2.62, 6), I.P(6.6, 2.62, 6), '#a9afb7', .8) + seg(I.P(6.6, .35, 6), I.P(6.6, 2.62, 6), '#a9afb7', .8)
+    rows = [(.9, 2.3), (3.7, 6.2)] if l == 1 else [(.9, 3.3), (3.7, 6.2)]
+    vs = {1: [1.2, 2.2], 2: [.9, 1.65, 2.4], 3: [.9, 1.65, 2.4]}[l]
+    for v in vs:
+        for u0, u1 in ([(.9, 6.2)] if l > 1 else rows):
+            if l == 3: u1 = 4.6
+            for u in (u0 + .2, (u0 + u1) / 2, u1 - .2): b += seg(I.P(u, v, 0), I.P(u, v, 10), '#6a737b', 1.2) + seg(I.P(u, v - .35, 0), I.P(u, v - .35, 16), '#6a737b', 1.2)
+            q = [I.P(u0, v, 10), I.P(u1, v, 10), I.P(u1, v - .5, 20), I.P(u0, v - .5, 20)]
+            b += poly(q, 'url(#gPanel)', '#0f1a3a', .8)
+            n = int((u1 - u0) / .45)
+            for k in range(1, n): uu = u0 + (u1 - u0) * k / n; b += seg(I.P(uu, v, 10), I.P(uu, v - .5, 20), '#8fb4e0', .5)
+            b += seg(I.P(u0, v - .25, 15), I.P(u1, v - .25, 15), '#8fb4e0', .5)
+            b += poly([I.P(u0 + .1, v - .05, 11), I.P(u0 + .5, v - .05, 11), I.P(u0 + .45, v - .25, 15), I.P(u0 + .08, v - .25, 15)], '#ffffff', 'none', 0).replace('/>', ' opacity=".35"/>')
+    # inverter cabinet
+    b += I.box(.45, 2.15, .8, 2.45, 0, 14, '#e2e6ea', '#c8ced4', '#aab2ba', '#6a737b', .6) + circ(*I.P(.62, 2.46, 9), 1, '#4fcf7a')
+    if l == 3:  # battery house
+        b += shadow(I, 5.0, .9, 6.4, 2.2) + I.box(5.0, .9, 6.4, 2.2, 0, 18, '#f2f4f6', '#dde2e7', '#c3cad2', '#6a737b', .7)
+        b += poly([I.P(4.95, .85, 18), I.P(6.45, .85, 18), I.P(6.45, 2.25, 18), I.P(4.95, 2.25, 18)], '#8a9aa8', '#56606b', .6)
+        for k in range(3): b += fv(I, 2.21, 5.2 + k * .38, 5.5 + k * .38, 4, 14, '#4fcf7a', '#2c8a47', .5)
+        b += seg(I.P(5.9, 1.3, 18), I.P(5.9, 1.3, 46), '#9aa5ad', 1.4)
+        for a in (0, 2.1, 4.2):
+            import math as _m
+            x, y = I.P(5.9, 1.3, 46); b += seg((x, y), (x + _m.cos(a) * 12, y + _m.sin(a) * 6), '#ffffff', 2) 
+        b += circ(*I.P(5.9, 1.3, 46), 1.6, '#c3cad2')
+    return b
+for _l in (1, 2, 3): add(f'h_solar_{_l}', solar(_l), LW, LH, (HAX, HAY))
 
 for _id, fn in (('h_farm', farmhouse), ('h_deb_brush', deb_brush), ('h_deb_rocks', deb_rocks), ('h_deb_stump', deb_stump), ('h_deb_junk', deb_junk),
                 ('h_garden', b_garden), ('h_stand', b_stand), ('h_shed', b_shed), ('h_pergola', b_pergola), ('h_pond', b_pond), ('h_orchard', b_orchard),

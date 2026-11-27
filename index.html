@@ -1064,7 +1064,7 @@ const roundKey=()=>S.year*100+S.period*2+(S.phase==='plan'?0:1);
 const wageOf=r=>Math.round(r.wage*(bunkOn()?BUNK_WAGE:1));
 const crewCost=()=>S.crew.reduce((a,r)=>a+wageOf(r),0)+(S.mgr?S.mgr.wage:0);
 const SHOW_COST=15000,SHOW_OH=250;
-const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(S.fixedYear===S.year?.75:1));
+const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(1-.1*solarLv())*(S.fixedYear===S.year?.75:1));
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
 
 // ---------------- placement ----------------
@@ -2222,12 +2222,15 @@ const BUILDS={
   pond:{n:'Pond',cost:5,does:'Frogs, lilies and a bench'},
   orchard:{n:'Fruit trees',cost:12,does:'Shake them every 6 hours for a star or two'},
   beds:{n:'Flower beds',cost:3,does:'Leftover plugs, put to good use'},
+  solar:{n:'Solar array',cost:25,uniq:1,lm:1,lv:12,ups:[25,35],does:'Landmark, two plots wide. Cuts upkeep on every house by 10%; upgrade for 20%, then 30%'},
   bunk:{n:'Bunkhouse',cost:30,uniq:1,lm:1,lv:10,does:'Landmark, two plots wide. Crew live on site: wages 15% lower, no rust in winter, and veterans retire half as often'}};
 // A landmark takes this plot and the empty plot to its right.
 const lmPart=id=>{const L=lotOf(id);return L&&LOTS.find(l=>!l.pre&&l.y===L.y&&l.x===L.x+4);};
 const lmRoom=id=>{const R2=lmPart(id);if(!R2)return false;const st=lotState(R2.id);return!!st.clear&&!st.b&&!jobFor(R2.id);};
 const lmMain=id=>{const st=lotState(id);return st.part||id;};
 const bunkOn=()=>hasBuild('bunk'),BUNK_WAGE=.85;
+const solarLv=()=>{const L=LOTS.find(l=>lotState(l.id).b==='solar'&&!lotState(l.id).part);return L?(lotState(L.id).lv||1):0;};
+function upLandmark(id){const st=lotState(id),B=BUILDS[st.b];if(!B||!B.ups||st.part||jobFor(id))return;const l=st.lv||1;if(l>B.ups.length)return;const c=B.ups[l-1];if(!spendStars(c))return;S.home[id]={...st,lv:l+1};addHJob({lot:id,kind:'up',prev:{...st,lv:l},b:st.b});save();renderHome();}
 const SHAKE_MS=6*3600e3,orchardN=()=>LOTS.filter(l=>lotState(l.id).b==='orchard').length;
 const bcost=k=>k==='orchard'?12+6*orchardN():BUILDS[k].cost;
 const ripe=id=>{const st=lotState(id);return st.b==='orchard'&&Date.now()>=(st.shk||0);};
@@ -2270,7 +2273,7 @@ function renderHome(){
   let body='';
   if(homeSel==='mail'){const rd=mailReady(),go=HJ.some(j=>j.kind==='mail');body=`<div class="hmt"><b>Mailbox</b><span>${go?'Your grower is fetching it':rd?'Mail\u2019s here!':`Next mail in ${mailLeft()}`}</span>${rd&&!go?'<button class="btn sun sm" type="button" id="mlB">Get the mail</button>':''}</div><p class="hmh">New mail arrives every 12 hours, usually with a few stars inside.</p><div class="gfrow"><button class="btn sm" type="button" id="gfSend">${Date.now()>=(S.giftAt||0)?'Send a gift card':'Show my gift card'}</button><button class="btn sm" type="button" id="gfScan">Scan a gift card</button></div>`;}
   else if(!L)body=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`;
-  else if(jobFor(L.id)&&!L.pre&&jobFor(L.id).kind!=='shake'){const j=jobFor(L.id);body=`<div class="hmt"><b>${j.kind==='clear'?'Clearing':'Building '+BUILDS[j.b].n.toLowerCase()}</b><span>${j.working?'Your grower is on it':'Queued for your grower'}</span></div>`;}
+  else if(jobFor(L.id)&&!L.pre&&jobFor(L.id).kind!=='shake'){const j=jobFor(L.id);body=`<div class="hmt"><b>${j.kind==='clear'?'Clearing':(j.kind==='up'?'Upgrading the ':'Building ')+BUILDS[j.b].n.toLowerCase()}</b><span>${j.working?'Your grower is on it':'Queued for your grower'}</span></div>`;}
   else if(L.pre==='cathouse'){const cap=catCap(),l=S.catHouse||1;
     body=`<div class="hmt"><b>Cat house</b><span>${S.cats.length}/${cap} cats</span>${l<4?`<button class="btn sun sm" type="button" id="chGrow"${stars<CATHOUSE_COST[l+1]?' disabled':''}>Room for ${CATHOUSE[l+1]} · ★ ${CATHOUSE_COST[l+1]}</button>`:''}</div>
       <div class="adopt">${CATS.map(c=>{const on=catOn(c.id),full=S.cats.length>=cap,away=c.id==='smokey'&&!on&&!smokeyHere(),cost=catCost(c.id);return`<button type="button" class="ad${on?' on':''}${away?' away':''}" data-adopt="${c.id}"${on||full||away||stars<cost?' disabled':''}><img src="${catURL(c.id)}" alt=""${away?' style="filter:grayscale(1) opacity(.35)"':''}><b>${c.name}</b><small>${away?'Not around this year. She turns up at the homestead some years; the almanac will say.':CAT_INFO[c.id]}</small><em>${CAT_BONUS[c.id]}</em><span class="cs">${on?'Lives here':away?'Away':full?'No room':`Adopt · ★ ${cost}`}</span></button>`;}).join('')}</div>`;}
@@ -2280,14 +2283,14 @@ function renderHome(){
   else if(L.pre==='farm')body=`<div class="hmt"><b>The farmhouse</b><span>${esc(nurseryName())}</span></div><p class="hmh">Home sweet home. The coffee's on.</p>`;
   else if(!st.clear)body=`<div class="hmt"><b>${L.deb==='brush'?'Overgrown brush':L.deb==='rocks'?'A pile of rocks':L.deb==='stump'?'An old stump':'A junk pile'}</b><button class="btn sun sm" type="button" id="clrB"${stars<L.cost?' disabled':''}>Clear · ★ ${L.cost}</button></div><p class="hmh">Clearing it opens a plot to build on. Sometimes there's a star underneath.</p>`;
   else if(st.b==='orchard'){const go=HJ.some(j=>j.kind==='shake'&&j.lot===L.id),rp=ripe(L.id);body=`<div class="hmt"><b>Fruit trees</b><span>${go?'Your grower is shaking them':rp?'Ripe!':`Ripe again in ${ripeLeft(L.id)}`}</span>${rp&&!go?'<button class="btn sun sm" type="button" id="shkB">Shake the trees</button>':''}</div><p class="hmh">Shake them every 6 hours for a star or two.</p>`;}
-  else if(st.b){const B=BUILDS[st.b];body=`<div class="hmt"><b>${B.n}</b></div><p class="hmh">${B.does}.</p>`;}
+  else if(st.b){const B=BUILDS[st.b],l=st.lv||1,cu=B.ups&&l<=B.ups.length?B.ups[l-1]:0;body=`<div class="hmt"><b>${B.n}${B.ups?` <span>level ${l} of ${B.ups.length+1}</span>`:''}</b>${cu?`<button class="btn sun sm" type="button" id="lmUp"${stars<cu?' disabled':''}>Upgrade · ★ ${cu}</button>`:''}</div><p class="hmh">${st.b==='solar'?`Upkeep on every house is ${l*10}% lower.${cu?` Next level: ${l*10+10}%.`:''}`:B.does+'.'}</p>`;}
   else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const lk=B.lm&&stage()<(B.lv||1),nr=B.lm&&!lmRoom(L.id),dis=(B.uniq&&hasBuild(k))||stars<bcost(k)||lk||nr;return`<button type="button" class="bopt${B.lm?' lm':''}" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':lk?`Opens at level ${B.lv}`:nr?'Needs the cleared plot to the right':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
   const hint=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`,sel=!!(homeSel&&(homeSel==='mail'||L));
   P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmSk" style="margin-left:auto">Skills${skPts()?` (${skPts()})`:''}</button><button class="btn sm" type="button" id="hmAlm">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${hint}</div>`;
   const pop=$('hpop');pop.hidden=!sel;pop.innerHTML=sel?`<button type="button" class="hpx" id="hpX" aria-label="Close">×</button>${body}`:'';if(sel){$('hpX').onclick=()=>{homeSel=null;renderHome();};placeHpop();}
   $('hmGo').onclick=()=>S.year>1&&S.almSeen!==S.year?almanacModal(leaveHome):leaveHome();const hab=$('hmAlm');if(hab)hab.onclick=()=>almanacModal();const hsk=$('hmSk');if(hsk)hsk.onclick=()=>skillsModal();
   const q=(id,f)=>{const b=$(id);if(b)b.onclick=f;};
-  q('chGrow',growCatHouse);q('mlB',tapMail);q('shkB',()=>shakeLot(L.id));q('gfSend',giftSend);q('gfScan',giftScan);q('ofGrow',growOffice);q('clrB',()=>clearLot(L.id));
+  q('chGrow',growCatHouse);q('mlB',tapMail);q('shkB',()=>shakeLot(L.id));q('gfSend',giftSend);q('gfScan',giftScan);q('ofGrow',growOffice);q('clrB',()=>clearLot(L.id));q('lmUp',()=>upLandmark(L.id));
   pop.querySelectorAll('[data-adopt]').forEach(b=>b.onclick=()=>adoptCat(b.dataset.adopt));
   pop.querySelectorAll('[data-build]').forEach(b=>b.onclick=()=>buildLot(L.id,b.dataset.build));
   const h=P0.offsetHeight;if(h!==homeH){homeH=h;layout();}
@@ -2304,7 +2307,7 @@ function placeHpop(){
 }
 // ---------------- gift cards: show one on your screen, a friend snaps it ----------------
 const GIFT_MS=12*3600e3,GIFT_MAX=3,GIFT_URL='https://joshbertindesign-byte.github.io/greenhouse-year/';
-const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b',bunk:'k'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
+const BCODE={garden:'g',stand:'s',shed:'h',pergola:'p',pond:'o',orchard:'r',beds:'b',bunk:'k',solar:'y'},BDEC=Object.fromEntries(Object.entries(BCODE).map(([k,v])=>[v,k]));
 const CAT_IDS=['anna','miley','max','gremlin','beatrice','minaou','otis','smokey'];
 const giftHash=str=>{let h=2166136261;for(const c of 'gy-gift-v1|'+str){h^=c.charCodeAt(0);h=Math.imul(h,16777619)>>>0;}return h.toString(36).padStart(5,'0').slice(-5);};
 const myUid=()=>S.uid||(S.uid=Math.random().toString(36).slice(2,8));
@@ -2322,7 +2325,7 @@ function parseGift(str){
   if(!str)return null;str=String(str).replace(/%7C/gi,'|');const i=str.indexOf('G1|');if(i<0)return null;str=str.slice(i).trim();
   const parts=str.split('|');if(parts.length!==17)return null;const h=parts.pop();if(giftHash(parts.join('|'))!==h)return null;
   const [,uid,gid,nm,g,yr,lv,best,fl,sh,home,ch,of,cats,rib,ups]=parts;let n='A nursery';try{n=decodeURIComponent(nm);}catch(e){}
-  const ids=LOTS.filter(l=>!l.pre),hm={};[...home].forEach((c,k)=>{const L=ids[k];if(!L)return;if(c==='1')hm[L.id]={clear:true};else if(c==='q'){const M=LOTS.find(l=>!l.pre&&l.y===L.y&&l.x===L.x-4);hm[L.id]={clear:true,b:'bunk',part:M&&M.id};}else if(BDEC[c])hm[L.id]={clear:true,b:BDEC[c]};});
+  const ids=LOTS.filter(l=>!l.pre),hm={};[...home].forEach((c,k)=>{const L=ids[k];if(!L)return;if(c==='1')hm[L.id]={clear:true};else if(c==='q'){const M=LOTS.find(l=>!l.pre&&l.y===L.y&&l.x===L.x-4);hm[L.id]={clear:true,b:(M&&hm[M.id]&&hm[M.id].b)||'bunk',part:M&&M.id};}else if(BDEC[c])hm[L.id]={clear:true,b:BDEC[c]};});
   return{uid,gid,n,g:g==='f'?'f':'m',yr:+yr||1,lv:clamp(+lv||1,1,10),best:clamp(+best||0,0,5),fl:clamp(parseInt(fl,36)||1,1,12),sh:sh==='1',home:hm,ch:clamp(+ch||1,1,3),of:clamp(+of||1,1,2),
     cats:[...cats].map(k=>CAT_IDS[+k]).filter(Boolean),rib:rib==='-'?[]:[...rib].map(Number).filter(x=>x>=0&&x<5),up:Object.fromEntries(Object.keys(UPS).map((k,i)=>[k,+(ups[i]||0)]))};
 }
@@ -2443,11 +2446,12 @@ const hSpot=L=>({x:L.x+1.5,y:L.y+3.55});
 const jobFor=id=>id&&HJ.find(j=>j.lot===id);
 function hRoute(fx,fy,tx,ty){if(Math.abs(fy-ty)<.05)return[{x:tx,y:ty}];let c=HCOLS[0],bd=1e9;for(const k of HCOLS){const d=Math.abs(k-fx)+Math.abs(k-tx);if(d<bd){bd=d;c=k;}}return[{x:c,y:fy},{x:c,y:ty},{x:tx,y:ty}];}
 function addHJob(j){if(!hg)hgReset();j.dur=j.dur||(j.kind==='clear'?2.2:j.kind==='greet'?1.2:2.8);HJ.push(j);renderHome();}
-const JOBN={clear:'Clearing',build:'Building',grow:'Building',greet:'Settling in'};
+const JOBN={clear:'Clearing',build:'Building',grow:'Building',up:'Upgrading',greet:'Settling in'};
 function finishHJob(j,quiet){
   HJ=HJ.filter(x=>x!==j);if(hJob===j)hJob=null;if(j.kind==='mail'){openMail(quiet);renderHome();return;}const L=lotOf(j.lot),c=hSpot(L),fl=(t,col)=>floats.push({x:L.x+1.5,y:L.y+1.5,f:0,text:t,color:col,t0:performance.now()});
   if(j.kind==='clear'){if(j.find){fl(`+${j.find} ★`,'#c98a00');toast('good',`Found ${j.find===1?'a star':'two stars'} under the ${({brush:'brush',rocks:'rocks',stump:'old stump',junk:'junk'})[L.deb]}!`);}else if(!quiet)toast('good','Cleared. Ready to build');}
   if(j.kind==='build'){fl('✦','#2e7d4a');if(!quiet)toast('good',`${BUILDS[j.b].n} built`);}
+  if(j.kind==='up'){fl('✦','#2e7d4a');if(!quiet)toast('good',j.b==='solar'?`More panels: upkeep is now ${solarLv()*10}% lower`:`${BUILDS[j.b].n} upgraded`);}
   if(j.kind==='grow'){fl('✦','#2e7d4a');if(!quiet)toast('good',L.pre==='office'?'Bigger office: the phone rings longer now':`The cat house now has room for ${catCap()}`);}
   if(j.kind==='shake'){const n=rnd()<.2?2:1;S.stars=(S.stars||0)+n;S.home[j.lot].shk=Date.now()+SHAKE_MS;save();fl(`+${n} ★`,'#c98a00');if(!quiet)toast('good',`Peaches everywhere, and ${n===1?'a star':'two stars'} fell out of the trees!`);}
   if(j.kind==='greet'){const ct=CATS.find(x=>x.id===j.cat);fl('♥','#e2552f');if(!quiet)toast('cat',`${ct.name} moved into the cat house`);}
@@ -2489,7 +2493,8 @@ function drawLot(L){
   if(!v.clear)return spr('h_deb_'+L.deb,L.x,L.y,0);
   if(j&&j.kind==='build'&&j.working)return spr('h_frame',L.x,L.y,0);
   if(v.part)return;
-  if(v.b){const sh=j&&j.kind==='shake'&&j.working?Math.sin(performance.now()/35)*.035:0;spr('h_'+v.b,L.x+sh,L.y-sh,0);}
+  if(j&&j.kind==='up'&&j.working){spr('h_'+v.b+'_'+(v.lv||1),L.x,L.y,0);spr('h_frame',L.x+2,L.y,0);return;}
+  if(v.b){const sh=j&&j.kind==='shake'&&j.working?Math.sin(performance.now()/35)*.035:0;spr('h_'+v.b+(BUILDS[v.b]&&BUILDS[v.b].ups?'_'+(v.lv||1):''),L.x+sh,L.y-sh,0);}
 }
 function drawHomestead(now){
   const home=S.phase==='home';
@@ -2514,7 +2519,7 @@ function drawHomestead(now){
   if(mailReady()&&!HJ.some(j=>j.kind==='mail')){const [X,Y0]=P(MAIL.x,MAIL.y,62),Y=Y0-Math.abs(Math.sin(now/260))*6;cx.save();cx.font=`700 ${Math.round(clamp(13*sc+6,11,16))}px Outfit,sans-serif`;const t='✉ Mail!',w=cx.measureText(t).width+18;cx.fillStyle='#e0402f';rr(X-w/2,Y-13,w,26,13);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(t,X,Y+1);cx.restore();}
   for(const L of LOTS){const st=lotLook(L),j=jobFor(L.id),[X,Y]=P(L.x+1.5,L.y+1.5,L.pre?70:44),sel=homeSel===L.id;
     let lab=null;if(j&&j.kind==='shake')lab=null;else if(j)lab=j===hJob&&j.working?null:'Queued';else if(!L.pre&&!st.clear)lab=`★ ${L.cost}`;else if(!L.pre&&st.clear&&!st.b)lab='+';else if(L.pre==='cathouse')lab=`${S.cats.length}/${catCap()} cats`;
-    if(sel){poly([P(L.x,L.y,1),P(L.x+3,L.y,1),P(L.x+3,L.y+3,1),P(L.x,L.y+3,1)],'rgba(242,194,48,.22)','#c98a00');}
+    if(sel){const wd=BUILDS[lotState(L.id).b]?.lm&&!lotState(L.id).part?7:3;poly([P(L.x,L.y,1),P(L.x+wd,L.y,1),P(L.x+wd,L.y+3,1),P(L.x,L.y+3,1)],'rgba(242,194,48,.22)','#c98a00');}
     if(lab){cx.save();cx.font=`700 ${Math.round(clamp(13*sc+6,11,16))}px Outfit,sans-serif`;const w=cx.measureText(lab).width+16,h=24;cx.fillStyle=sel?'#c98a00':lab==='+'?'#2e7d4a':lab==='Queued'?'#5d6b62':'#173426';rr(X-w/2,Y-h/2,w,h,12);cx.fill();cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(lab,X,Y+1);cx.restore();}
   }
 }
