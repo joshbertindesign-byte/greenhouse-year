@@ -34,7 +34,8 @@ FL = {'petunia': ('#ffd6ef', '#f26bb5', '#c23c8b'), 'vinca': ('#ece3ff', '#9b7ff
       'hydrangea': ('#e2f1ff', '#7fb4f5', '#3d74d6'), 'kale': ('#f3e2fb', '#c48fe0', '#7f4aa8'),
       'orchid': ('#ffffff', '#f6c9ec', '#b8297f'), 'rose': ('#ff8a8a', '#d8202f', '#8a0f1c'), 'peony': ('#fff0f3', '#ffadc4', '#e0567f'), 'calla': ('#fffdf3', '#f6edcf', '#c9b77a')}
 FL.update({'tomato': ('#ffb0a0', '#ef3b2c', '#a8121f'), 'pepper': ('#fff1a0', '#f2a531', '#c2571f'), 'lettuce': ('#eaffc4', '#9be06a', '#4f9a3f'),
-           'cabbage': ('#e2f4ef', '#8fc7b5', '#4f8a7a'), 'cucumber': ('#fff6a8', '#f2d43a', '#b8941f'), 'basil': ('#d8ffb0', '#5fcf4a', '#257a2f')})
+           'cabbage': ('#e2f4ef', '#8fc7b5', '#4f8a7a'), 'cucumber': ('#fff6a8', '#f2d43a', '#b8941f'), 'basil': ('#d8ffb0', '#5fcf4a', '#257a2f'),
+           'dahlia': ('#ffb0d8', '#d8247a', '#8a0f4a'), 'ranunculus': ('#ffe0c4', '#ff8a5a', '#c84a2a'), 'lisianthus': ('#efe0ff', '#9a5ad8', '#5a2a9a')})
 for k, (a, b2, c) in FL.items(): rad(f'gF_{k}', [(0, a, None), (.55, b2, None), (1, c, None)])
 rad('gLettuce', [(0, '#f3ffd0', None), (.5, '#a8e070', None), (1, '#5aa84a', None)])
 rad('gCabbage', [(0, '#e6f6f0', None), (.5, '#94c9b9', None), (1, '#4c8576', None)])
@@ -46,9 +47,10 @@ rad('gKale', [(0, '#e7c6f5', None), (.45, '#a77bc4', None), (1, '#4f8a5a', None)
 TYPE = {'petunia': 'petal', 'vinca': 'petal', 'geranium': 'umbel', 'begonia': 'umbel', 'mum': 'pom', 'poinsettia': 'bract',
         'hydrangea': 'mop', 'pothos': 'vine', 'fern': 'frond', 'kale': 'rosette',
         'orchid': 'orchid', 'rose': 'rose', 'peony': 'peony', 'calla': 'calla',
+        'dahlia': 'pom', 'ranunculus': 'peony', 'lisianthus': 'rose',
         'tomato': 'tom', 'pepper': 'pep', 'lettuce': 'lettuce', 'cabbage': 'cab', 'cucumber': 'cuke', 'basil': 'basil'}
 VEG = ('tomato', 'pepper', 'lettuce', 'cabbage', 'cucumber', 'basil')
-SHOW = ('orchid', 'rose', 'peony', 'calla')
+SHOW = ('orchid', 'rose', 'peony', 'calla', 'dahlia', 'ranunculus', 'lisianthus')
 STROKE = {'petal': None, 'umbel': None}
 lin('gGlass', [(0, '#e6fbff', .85), (1, '#bdeef3', .35)])
 lin('gCream', [(0, '#fff8ea', None), (1, '#f3e3c4', None)])

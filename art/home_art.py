@@ -513,6 +513,9 @@ rad('gJm', [(0, '#ff8a7a', None), (.55, '#c0392b', None), (1, '#7a1f2a', None)],
 rad('gMg', [(0, '#a8e07a', None), (.55, '#4f9a4a', None), (1, '#2a6a3a', None)], .35, .3, .85)
 rad('gRm', [(0, '#ffc27a', None), (.55, '#e0602a', None), (1, '#a83a1a', None)], .35, .3, .85)
 rad('gOk', [(0, '#8fbf6a', None), (.55, '#3f7a3f', None), (1, '#24502c', None)], .35, .3, .85)
+rad('gGk', [(0, '#fff2a0', None), (.55, '#f2c42a', None), (1, '#c98a12', None)], .35, .3, .85)
+rad('gCh', [(0, '#fff0f6', None), (.55, '#f7b8d2', None), (1, '#d97aa6', None)], .35, .3, .85)
+rad('gPc', [(0, '#a8cf7a', None), (.55, '#5a8f3f', None), (1, '#2f5a2a', None)], .35, .3, .85)
 lin('gSp', [(0, '#a8c8d8', None), (1, '#4f7f98', None)], 0, 0, 1, 1)
 def field_tree(sp, st):
     s = [.34, .56, .8, 1.0][st]; x, y = 48, 116; rr = random.Random(hash((sp, st)) & 0xffff)
@@ -540,6 +543,21 @@ def field_tree(sp, st):
         b += trunk(22 * s, 3.6 * s + .6)
         blobs = [(-14, -40, 13), (14, -40, 13), (0, -54, 15), (-8, -66, 11), (8, -66, 11), (0, -32, 12)]
         g = 'url(#gMg)'
+    elif sp == 'ginkgo':
+        b += trunk(30 * s, 3.4 * s + .6)
+        blobs = [(-12, -42, 11), (12, -42, 11), (0, -56, 13), (-8, -70, 10), (8, -70, 10), (0, -82, 9), (0, -36, 10)]
+        g = 'url(#gGk)'
+    elif sp == 'cherry':
+        b += trunk(20 * s, 3.4 * s + .6)
+        blobs = [(-20, -36, 12), (20, -36, 12), (-10, -46, 13), (10, -46, 13), (0, -52, 13), (-28, -26, 9), (28, -26, 9)]
+        g = 'url(#gCh)'
+        for dx in (-30, -20, 20, 30):  # weeping curtains
+            b += f'<path d="M{f2(x+dx*s)},{f2(y-40*s)} q{f2(dx*.15*s)},{f2(14*s)} {f2(dx*.1*s)},{f2(26*s)}" stroke="#e79ac0" stroke-width="{f2(3*s+.4)}" fill="none" stroke-linecap="round"/>'
+    elif sp == 'pecan':
+        b += trunk(40 * s, 6.4 * s + .8)
+        b += f'<path d="M{f2(x)},{f2(y-34*s)} l{f2(-20*s)},{f2(-14*s)} M{f2(x+2*s)},{f2(y-36*s)} l{f2(20*s)},{f2(-12*s)}" stroke="#6a4228" stroke-width="{f2(3.4*s+.6)}" stroke-linecap="round"/>'
+        blobs = [(-29, -50, 15), (29, -50, 15), (-16, -64, 17), (16, -64, 17), (0, -76, 18), (-34, -38, 11), (34, -38, 11), (0, -54, 17)]
+        g = 'url(#gPc)'
     else:  # red maple
         b += trunk(28 * s, 4.2 * s + .6)
         blobs = [(-17, -44, 14), (17, -44, 14), (0, -58, 16), (-10, -70, 11), (10, -70, 11), (0, -40, 13)]
@@ -553,12 +571,16 @@ def field_tree(sp, st):
             a = rr.random() * 6.28; d = rr.random() * 14
             bx, by = x + math.cos(a) * d * s * 1.3, y + (-50 + math.sin(a) * d) * s
             b += f'<path d="M{f2(bx)},{f2(by)} q-2.2,-3.2 0,-5.4 q2.2,2.2 0,5.4 Z" fill="#fbe3ef" stroke="#d07aa0" stroke-width=".5"/>'
+    if sp == 'pecan' and st >= 2:
+        for k in range(6 + st * 2):
+            a = rr.random() * 6.28; d = rr.random() * 26
+            b += ell(x + math.cos(a) * d * s * 1.3, y + (-58 + math.sin(a) * d * .5) * s, 1.6 * s + .3, 1.1 * s + .3, '#8a5a2a')
     if sp == 'jmaple':
         for k in range(6):
             a = rr.random() * 6.28; d = rr.random() * 18
             b += circ(x + math.cos(a) * d * s * 1.2, y + (-32 + math.sin(a) * d * .5) * s, 1.6 * s + .4, '#ffb0a0', 'none', 1, 'opacity=".7"')
     return b
-for _sp in ('jmaple', 'spruce', 'magnolia', 'rmaple', 'oak'):
+for _sp in ('jmaple', 'spruce', 'magnolia', 'rmaple', 'oak', 'ginkgo', 'cherry', 'pecan'):
     for _st in range(4): add(f'tree_{_sp}_{_st}', field_tree(_sp, _st), 96, 128, (48, 116))
 # a dug tree, rootball wrapped in burlap
 def balled():

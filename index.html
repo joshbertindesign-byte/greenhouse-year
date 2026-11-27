@@ -735,10 +735,13 @@ const CROPS={
   hydrangea:{name:'Hydrangea',g:3,sell:[3,4],price:88,loss:.07,q:[6,14],color:'#3d8bd6'}};
 const GEN={vinca:1200,begonia:1500,geranium:1800,fern:2000,kale:2200,hydrangea:3500,poinsettia:4500};
 const STARTERS=['pothos','petunia','mum'];
-const owns=k=>!S.owned||S.owned.includes(k)||(isShowCrop(k)&&hasShow())||(isVeg(k)&&vegOn());
-const SHOWC={orchid:{name:'Orchid',g:3,price:150,color:'#b8297f',care:['mist','mist','stake']},rose:{name:'Rose',g:2,price:120,color:'#c8202f',care:['prune','mist','prune']},peony:{name:'Peony',g:2,price:130,color:'#e0567f',care:['stake','prune','stake']},calla:{name:'Calla lily',g:2,price:110,color:'#a8954a',care:['mist','stake','mist']}};
-for(const k in SHOWC){const C=SHOWC[k];CROPS[k]={name:C.name,g:C.g,sell:[0,1,2,3,4,5,6,7],price:C.price,loss:.05,q:[6,10],color:C.color,show:true};}
-const SHOWS=[{p:1,n:'Winter Orchid Show',c:['orchid']},{p:2,n:'Early Spring Bloom',c:['calla','orchid']},{p:3,n:'Spring Flower Show',c:['peony','calla','rose']},{p:4,n:'Rose and Peony Gala',c:['rose','peony']},{p:5,n:'Summer Garden Party',c:['calla','rose']},{p:6,n:'Harvest Home Show',c:['orchid','calla']},{p:7,n:'Holiday Showcase',c:['orchid','rose']}];
+const owns=k=>!S.owned||S.owned.includes(k)||(isShowCrop(k)&&hasShow()&&!CROPS[k].prem)||(isVeg(k)&&vegOn());
+const SHOWC={orchid:{name:'Orchid',g:3,price:150,color:'#b8297f',care:['mist','mist','stake']},rose:{name:'Rose',g:2,price:120,color:'#c8202f',care:['prune','mist','prune']},peony:{name:'Peony',g:2,price:130,color:'#e0567f',care:['stake','prune','stake']},calla:{name:'Calla lily',g:2,price:110,color:'#a8954a',care:['mist','stake','mist']},
+  dahlia:{name:'Dinnerplate dahlia',g:2,price:230,color:'#c2246e',care:['stake','prune','stake','prune'],prem:9000,lv:10},
+  ranunculus:{name:'Ranunculus',g:2,price:260,color:'#e8683a',care:['mist','prune','mist','mist'],prem:13000,lv:13},
+  lisianthus:{name:'Lisianthus',g:3,price:310,color:'#7a3fc0',care:['mist','stake','prune','mist'],prem:18000,lv:16}};
+for(const k in SHOWC){const C=SHOWC[k];CROPS[k]={name:C.name,g:C.g,sell:[0,1,2,3,4,5,6,7],price:C.price,loss:.05,q:[6,10],color:C.color,show:true,prem:C.prem||0};}
+const SHOWS=[{p:1,n:'Winter Orchid Show',c:['orchid','lisianthus']},{p:2,n:'Early Spring Bloom',c:['calla','orchid','ranunculus']},{p:3,n:'Spring Flower Show',c:['peony','calla','rose','ranunculus']},{p:4,n:'Rose and Peony Gala',c:['rose','peony','lisianthus']},{p:5,n:'Summer Garden Party',c:['calla','rose','dahlia']},{p:6,n:'Harvest Home Show',c:['orchid','calla','dahlia']},{p:7,n:'Holiday Showcase',c:['orchid','rose','lisianthus']}];
 const CARE={mist:'Mist',stake:'Stake',prune:'Deadhead'};
 const plural=k=>CROPS[k].name==='Calla lily'?'Calla lilies':CROPS[k].name+'s';
 const isShowCrop=k=>!!(CROPS[k]&&CROPS[k].show);
@@ -874,7 +877,11 @@ const TREES={
   spruce:{n:'Blue spruce',yrs:3,cash:5000,st:9,c:'#5b8fa8',note:'Sturdy and easy: no pruning',prune:[]},
   magnolia:{n:'Magnolia',yrs:3,cash:6000,st:11,c:'#d0558f',note:'A late frost can hurt it',prune:[1],frost:1},
   rmaple:{n:'Red maple',yrs:4,cash:8500,st:15,c:'#d0582a',note:'Needs staking for its first two years',prune:[1],stake2:1},
-  oak:{n:'Live oak',yrs:5,cash:13000,st:24,c:'#3f6a3a',note:'Slow, steady and valuable',prune:[1]}};
+  oak:{n:'Live oak',yrs:5,cash:13000,st:24,c:'#3f6a3a',note:'Slow, steady and valuable',prune:[1]},
+  cherry:{n:'Weeping cherry',yrs:3,cash:12500,st:23,c:'#d97aa6',note:'Premium sapling. A late frost can hurt it',prune:[1,5],frost:1,cost:3,lv:10},
+  ginkgo:{n:'Ginkgo',yrs:4,cash:16000,st:30,c:'#e0a81a',note:'Premium sapling. Tough, golden in fall',prune:[1],cost:3,lv:12},
+  pecan:{n:'Texas pecan',yrs:6,cash:26000,st:48,c:'#5a8f3f',note:'Premium sapling. Needs staking two years; the big one',prune:[1],stake2:1,cost:4,lv:15}};
+const treeCost=k=>TREES[k].cost||1,treeOpenSp=k=>!TREES[k].lv||stage()>=TREES[k].lv;
 const TJOB={stake:{n:'Stake',w:1.6},prune:{n:'Prune',w:2.2},water:{n:'Water',w:1.2},borer:{n:'Treat',w:1.8},root:{n:'Root-prune',w:2.6},frost:{n:'Cover',w:1.2},storm:{n:'Re-stake',w:1.6},dig:{n:'Dig up',w:3}};
 const TJOBL={stake:'stake and tie',prune:'prune',water:'water through the dry spell',borer:'treat for borers',root:'root-prune before the sale',frost:'cover against the late frost',storm:'re-stake after the storm',dig:'dig and wrap for the buyer'};
 const fieldOpen=()=>!!S&&stage()>=FIELD_LV;
@@ -1206,7 +1213,8 @@ function genOffers(){
 }
 function genShowEntries(c){
   const ent=S.entered||[],out=[];
-  for(const sh of SHOWS)for(const k of sh.c){const g=CROPS[k].g,st=sh.p-g+1,key=`${S.year}:${sh.p}:${k}`;if(st>=c&&st<=c+1&&!ent.includes(key))out.push({sh,k,key});}
+  for(const sh of SHOWS)for(const k of sh.c){if(!owns(k))continue;const g=CROPS[k].g,st=sh.p-g+1,key=`${S.year}:${sh.p}:${k}`;if(st>=c&&st<=c+1&&!ent.includes(key))out.push({sh,k,key});}
+  out.sort((a,b)=>(CROPS[b.k].prem||0)-(CROPS[a.k].prem||0));
   out.slice(0,3).reverse().forEach(({sh,k,key})=>S.offers.unshift({id:S.nid++,crop:k,p:sh.p,qty:ri(6,Math.min(10,capB())),price:CROPS[k].price,cust:'Best Homes and Gardens',showcase:true,show:sh.n,ekey:key}));
 }
 function genContracts(){
@@ -1358,7 +1366,7 @@ function finishShip(pl,bought,truckId){
   if(pl.show){const o=orderOf(pl),C=crop(pl.crop),sent=Math.min(have(pl),o.qty),q=Math.round(pl.q??100),gr=gradeOf(q),rev=Math.round(sent*o.price*GRADE_M[gr]*(1+.1*upLv('pots')));
     S.cash+=rev;S.ys.rev+=rev;o.status='shipped';o.sent=sent;S.ys.full+=sent>=o.qty?1:0;S.ys.short+=sent<o.qty?1:0;
     S.ys.cr=S.ys.cr||[];if(sent>0&&!S.ys.cr.includes(pl.crop))S.ys.cr.push(pl.crop);
-    S.ys.show=S.ys.show||[];const score=Math.round(q*sent/o.qty);S.ys.show.push({crop:pl.crop,show:o.show,q,sent,qty:o.qty,score});
+    S.ys.show=S.ys.show||[];const score=Math.min(100,Math.round(q*sent/o.qty)+(CROPS[pl.crop].prem?5:0));S.ys.show.push({crop:pl.crop,show:o.show,q,sent,qty:o.qty,score});
     toast('good',`${plural(pl.crop)} entered in the ${o.show}: grade ${gr}, score ${score}, +${fmt(rev)}`);
     const k=truckById(truckId);if(k&&k.state!=='gone')truckLeaves(k,false);return;}
   const o=orderOf(pl),C=crop(pl.crop),alive=have(pl)+bought,sent=Math.min(alive,o.qty),extra=alive-sent;
@@ -3102,6 +3110,7 @@ function renderSheet(){
       <h3 style="margin:18px 2px 0;font-size:18px">Showcase house</h3>
       <div class="showb">${ribbonSVG('rosette',54)}<div><p>A grand glass house for prize flowers: orchids, roses, peonies and calla lilies, grown for the Best Homes and Gardens shows. Only you can work in it, and its plants need misting, staking and deadheading on time. They sell for a lot. At year end every entry you shipped is judged together, and a high average wins ribbons and prize money.</p>
       ${S.show?'<b class="ok">Built</b>':S.showOpen?`<p>${fmt(SHOW_COST)}, then ${fmt(SHOW_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="showB"${plan?'':' disabled'}>Build for ${fmt(SHOW_COST)}</button>`:`<span class="lockc" style="--sc:#8a6a12">${tico('lock',14)}Opens the first time you earn 5 stars</span>`}</div></div>
+      ${S.showOpen?premHTML(plan):''}
       <h3 style="margin:18px 2px 0;font-size:18px">Succulent house</h3>
       <div class="showb sucb"><img src="${spriteURL('suc_echeveria_3','12 -4 40 40')}" alt="" style="width:54px;height:54px;flex:none"><div><p>A shop beside the greenhouses. Plant pups on its tables; they need little care, keep growing from year to year, and get more valuable as they grow. Customers walk in to buy them, and only you can serve them.</p>
       ${sucOn()?'<b class="ok">Built</b>':stage()<SUC_LV?lockChip(SUC_LV):`<p>${fmt(SUC_COST)}, then ${fmt(SUC_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="sucB"${plan?'':' disabled'}>Build for ${fmt(SUC_COST)}</button>`}</div></div>
@@ -3137,6 +3146,7 @@ function renderSheet(){
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
   const shb=$('showB');if(shb)shb.onclick=buildShow;
+  el.querySelectorAll('[data-prem]').forEach(b=>b.onclick=()=>buyPrem(b.dataset.prem));
   const mgb=$('mgrB');if(mgb)mgb.onclick=hireMgr;const mgx=$('mgrX');if(mgx)mgx.onclick=letMgrGo;const hdb=$('holdB');if(hdb)hdb.onclick=holdHand;
   el.querySelectorAll('[data-gift]').forEach(b=>b.onclick=()=>crmGift(b.dataset.gift));el.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>crmVisit(b.dataset.visit));el.querySelectorAll('[data-amends]').forEach(b=>b.onclick=()=>crmAmends(b.dataset.amends));
   const skb=$('skB');if(skb)skb.onclick=()=>skillsModal();
@@ -3498,7 +3508,7 @@ function sucPlantModal(i){
 function treesHTML(plan){
   const cap=fieldCap(),win=treeWindow(),stars=S.stars||0,nxt=FIELD_CAP.find(([lv])=>lv>stage());
   const card=i=>{const t=treesOf()[i];
-    if(!t)return`<div class="tcard empty"><div class="tpic"><img src="${spriteURL('tree_ball','16 72 64 64')}" alt="" style="opacity:.35"></div><div class="tinf"><b>Empty spot</b><small>${win?'Planting season':'Plant in spring or fall'}</small></div><button class="btn sun sm" type="button" data-plant="${i}"${win&&treeLive()&&stars>=1?'':' disabled'}>Plant · 1 ★</button></div>`;
+    if(!t)return`<div class="tcard empty"><div class="tpic"><img src="${spriteURL('tree_ball','16 72 64 64')}" alt="" style="opacity:.35"></div><div class="tinf"><b>Empty spot</b><small>${win?'Planting season':'Plant in spring or fall'}</small></div><button class="btn sun sm" type="button" data-plant="${i}"${win&&treeLive()&&stars>=1?'':' disabled'}>Plant</button></div>`;
     const T=TREES[t.sp],tot=treeTot(t),pct=Math.min(1,t.age/tot),rdy=treeReady(t),yl=Math.ceil((tot-t.age)/8*10)/10;
     const job=S.tasks.find(x=>x.type==='tree'&&x.spot===i);
     return`<div class="tcard${rdy?' rdy':''}"><div class="tpic"><img src="${spriteURL(`tree_${t.sp}_${treeSize(t)}`,['28 70 40 54','20 46 56 76','10 20 76 104','0 0 96 128'][treeSize(t)])}" alt=""></div><div class="tinf"><b>${T.n}</b>
@@ -3506,7 +3516,7 @@ function treesHTML(plan){
       <small>${t.sell?`Sold to ${t.sell==='cash'?'a landscaper':'the arboretum'}: dig it this period`:rdy?'Ready to sell':`${yl} year${yl===1?'':'s'} to go`} · grade <b class="tg${gradeL(t.g)}">${gradeL(t.g)}</b>${job?` · <em>${TJOBL[job.job]}</em>`:''}</small>
       <small>Worth ${fmt(treeVal(t,'cash'))} or ${treeVal(t,'stars')} ★</small></div>
       ${rdy&&!t.sell?`<button class="btn sun sm" type="button" data-sell="${i}"${win&&treeLive()?'':' disabled'}>${win?'Sell':'Sell in spring or fall'}</button>`:''}</div>`;};
-  return`<div class="bhead tbh"><h2>Tree field<small>Plant in spring or fall for 1 ★. Trees grow for years and need a few jobs a year that only you can do: tap them on the map when they come up. A missed job lowers the tree’s grade and its price. Sell grown trees any time in spring or fall, for cash or for stars.</small></h2>${focusMode()?'<button class="btn sm" type="button" data-fh-go="1">Show the field</button>':''}</div>
+  return`<div class="bhead tbh"><h2>Tree field<small>Plant in spring or fall for 1 ★ (premium saplings cost more). Trees grow for years and need a few jobs a year that only you can do: tap them on the map when they come up. A missed job lowers the tree’s grade and its price. Sell grown trees any time in spring or fall, for cash or for stars.</small></h2>${focusMode()?'<button class="btn sm" type="button" data-fh-go="1">Show the field</button>':''}</div>
     <div class="tgrid">${Array.from({length:cap},(_,i)=>card(i)).join('')}</div>
     ${nxt?`<p class="tnext">${tico('lock',14)} ${nxt[1]-cap} more spots at ${stg(nxt[0]).n} (level ${nxt[0]}).</p>`:''}
     <div class="tkey">${Object.values(TREES).map(T=>`<span><b style="color:${T.c}">${T.n}</b> ${T.yrs} yrs · ${fmt(T.cash)} or ${T.st} ★</span>`).join('')}</div>`;
@@ -3514,11 +3524,11 @@ function treesHTML(plan){
 const treeLive=()=>S.phase==='plan'||S.phase==='run';
 function plantModal(i){
   if(!treeLive()||!treeWindow()||treesOf()[i])return;
-  modal(`<h2>Plant a tree</h2><p>Saplings cost 1 ★. Prices are for a grade A tree; neglect lowers them.</p>
-    <div class="opts">${Object.entries(TREES).map(([k,T])=>`<button class="opt topt" type="button" data-sp="${k}"${(S.stars||0)<1?' disabled':''}><img src="${spriteURL(`tree_${k}_3`,'0 0 96 128')}" alt=""><span><b>${T.n}</b><span>${T.yrs} years · ${fmt(T.cash)} or ${T.st} ★</span><small>${T.note}</small></span></button>`).join('')}
+  modal(`<h2>Plant a tree</h2><p>Saplings cost 1 \u2605; premium saplings cost more. Prices are for a grade A tree; neglect lowers them.</p>
+    <div class="opts">${Object.entries(TREES).map(([k,T])=>{const c=treeCost(k),op=treeOpenSp(k);return`<button class="opt topt" type="button" data-sp="${k}"${(S.stars||0)<c||!op?' disabled':''}><img src="${spriteURL(`tree_${k}_3`,'0 0 96 128')}" alt=""><span><b>${T.n} \u00b7 ${c} \u2605</b><span>${T.yrs} years · ${fmt(T.cash)} or ${T.st} \u2605</span><small>${op?T.note:`Opens at ${stg(T.lv).n} (level ${T.lv})`}</small></span></button>`;}).join('')}
     <button class="opt" type="button" id="plX"><b>Not now</b><span>Leave the spot empty</span></button></div>`);
   $('plX').onclick=closeModal;
-  $('mbox').querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{if((S.stars||0)<1)return;S.stars-=1;S.field=S.field||{trees:{},sold:0};S.field.trees[i]={sp:b.dataset.sp,age:0,g:100,y:S.year,staked:0,rp:0};save();closeModal();renderSheet();hud();toast('tree',`Planted a ${TREES[b.dataset.sp].n.toLowerCase()}. It needs staking next period`);});
+  $('mbox').querySelectorAll('[data-sp]').forEach(b=>b.onclick=()=>{const c=treeCost(b.dataset.sp);if((S.stars||0)<c||!treeOpenSp(b.dataset.sp))return;S.stars-=c;S.field=S.field||{trees:{},sold:0};S.field.trees[i]={sp:b.dataset.sp,age:0,g:100,y:S.year,staked:0,rp:0};save();closeModal();renderSheet();hud();toast('tree',`Planted a ${TREES[b.dataset.sp].n.toLowerCase()}. It needs staking next period`);});
 }
 function sellModal(i){
   const t=treesOf()[i];if(!t||!treeReady(t)||t.sell||!treeLive()||!treeWindow())return;const T=TREES[t.sp];
@@ -3813,6 +3823,16 @@ function prizeHTML(plan){
   return`<div class="prizec on">${svgIcon('prize',44)}<div class="rn"><b>${esc(r.name)} · Prize grower</b><span>Attentiveness ${attStars(a)} ${ATT_N[a]} · ${fmt(r.wage)}/period${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}</b>`:''}</span>
     <span>${a<5?'Notices a showcase job about '+ATT[a]+'s after it comes up. ':'Notices every job right away. '}Works only in the showcase house.</span>
     ${a<5?`<div class="cls"><span><b>${C.n}</b><small>One class a year. Raises attentiveness to ${ATT_N[a+1].toLowerCase()} and their wage by $100 a period.</small></span><button class="btn sun" type="button" id="classB"${plan&&r.classYear!==S.year?'':' disabled'}>${r.classYear===S.year?'Next year':fmt(C.cost)}</button></div>`:'<b class="ok">Fully trained</b>'}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`;
+}
+function buyPrem(k){
+  const C=SHOWC[k];if(!C||!C.prem||S.owned.includes(k)||!hasShow()||stage()<C.lv)return;
+  if(!spend(C.prem,`${C.name} genetics`))return;S.ys.build=(S.ys.build||0)+C.prem;S.owned.push(k);
+  toast('good',`${C.name} genetics bought. Look for ${C.name.toLowerCase()} entries with your offers`);renderSheet();hud();
+}
+function premHTML(plan){
+  const ks=Object.keys(SHOWC).filter(k=>SHOWC[k].prem);
+  return`<h3 style="margin:14px 2px 2px;font-size:16px">Prize genetics</h3><p style="margin:0 2px 6px;color:var(--mute);font-size:13.5px">Rare showcase varieties. They sell for far more, judges add 5 points for them, and they come up first in show entries. Their care is fussier.</p>
+    <div class="gens">${ks.map(k=>{const C=SHOWC[k],own=S.owned.includes(k);return`<div class="gen${own?' own':''}">${cropPill(k)}<span class="gi">${C.g} periods · ${fmt(C.price)}/flat<br>${C.care.length} care jobs</span>${own?'<b class="ok">Growing</b>':!hasShow()?'<small class="oc">Build the showcase first</small>':stage()<C.lv?lockChip(C.lv):`<button class="btn sun" type="button" data-prem="${k}"${plan?'':' disabled'}>${fmt(C.prem)}${S.cash<C.prem?'<small class="oc">short</small>':''}</button>`}</div>`;}).join('')}</div>`;
 }
 function buildShow(){
   if(S.phase!=='plan'||S.show||!S.showOpen)return;
