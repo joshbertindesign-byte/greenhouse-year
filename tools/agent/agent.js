@@ -46,6 +46,8 @@ window.AG = (() => {
     let acts = 0;
     // a new house when the nursery allows it
     tryDo('houses', () => { while (S.floors < houseCap() && S.floors < MAXF && crewRoom() >= 3 && afford(FLOOR_COST[S.floors] || 0)) { const f = S.floors; buildFloor(); if (S.floors === f) break; use('houses'); acts++; } });
+    // loading bays: one more at two, four and seven houses (the old automatic schedule), each staffed below
+    tryDo('bays', () => { const want = S.floors >= 7 ? 4 : S.floors >= 4 ? 3 : S.floors >= 2 ? 2 : 1; while (bayCount() < want && upOpen('bays', upLv('bays')) && afford(UPS.bays.cost[upLv('bays')])) { const l = upLv('bays'); buyUp('bays'); if (upLv('bays') === l) break; use('upgrades'); acts++; } });
     // crew: water, pot and pest in each house beyond the first, a loader from two houses, a fixer from four
     tryDo('crew', () => {
       while (S.floors >= 2 && crewRoom() > 0 && S.crew.filter(c => c.role === 'load').length < bayCount() - 1 && S.cash > 2000) { hire('load'); use('hire'); acts++; }
@@ -139,6 +141,11 @@ window.AG = (() => {
     if (y0) { acts += buyYear(); acts += decorate(); }
     acts += festivals(); acts += trees(); acts += succulents(); acts += skills();
     const n = placeOffers();
+    // heed the pickups row: hire a loader or build a bay when it turns amber or red
+    tryDo('dock', () => { for (let k = 0; k < 3; k++) { let fix = ''; for (let p = S.period; p < 8 && !fix; p++) { const d = dockLoad(p); if (d.m >= .25) fix = d.fix; }
+      if ((fix === 'open' || fix === 'loader') && crewRoom() > 0 && S.cash > 2000) { hire('load'); use('hire'); acts++; }
+      else if (fix === 'bay' && afford(UPS.bays.cost[upLv('bays')])) { buyUp('bays'); use('upgrades'); acts++; } else break; } });
+    { R.dock = R.dock || { periods: 0, warn: 0, pred: 0, empty: 0 }; const d = dockLoad(S.period); R.dock.periods++; if (d.m >= .25) R.dock.warn++; R.dock.pred += d.m; }
     think(P.planBase + P.perOrder * n + P.perAct * acts + (y0 ? P.yearStart : 0));
     tryDo('start', () => tryStart(true));
     if (S.phase === 'plan') { tryDo('start2', () => { S.offers = []; tryStart(true); }); }
@@ -193,7 +200,7 @@ window.AG = (() => {
         else if (step === 'office') { if ((S.office || 1) < 2 && stage() >= MGR_LV - 1 && (S.stars || 0) >= OFFICE_COST) { growOffice(); use('officeGrow'); acts++; } }
         else if (step === 'solarUp') { const L = LOTS.find(l => lotState(l.id).b === 'solar' && !lotState(l.id).part); if (L && solarLv() < 3 && (S.stars || 0) >= BUILDS.solar.ups[solarLv() - 1]) { upLandmark(L.id); use('solarUp'); acts++; } }
         else if (step === 'reserve') { if ((S.stars || 0) <= P.starReserve) break; }
-        else if (BUILDS[step]) { if (BUILDS[step].lv && stage() < BUILDS[step].lv) continue; build(step); }
+        else if (BUILDS[step]) { if (BUILDS[step].lv && stage() < BUILDS[step].lv) continue; if (!BUILDS[step].uniq && hasBuild(step)) continue; build(step); }
       }
     });
     tryDo('wardrobe', () => { if (Object.keys(S.hats || {}).length) { S.hatSet = S.hatSet || {}; use('hats'); } });
@@ -222,6 +229,7 @@ window.AG = (() => {
 
   function start(prof, seed) {
     P = prof; R = { profile: prof.name, ms: {}, used: {}, errors: {}, years: [], over: null };
+    if (!window.__tlWrap) { const o = truckLeaves; window.truckLeaves = function (k, m) { if (m && R && R.dock) { const pl = S.plots.find(p => p.id === k.plot); if (pl && !pl.done) R.dock.empty++; } return o.apply(this, arguments); }; window.__tlWrap = 1; }
     clock = 0; lastTap = -99; lapseUntil = -1; cupSeenAt = null;
     window.__quiet = true; window.__agent = 1; window.__autoLoan = 1; window.__rushHire = 1;
     window.__agentCall = (ctx, ok) => { use('call'); ok = ok.filter(o => !/Ends the game/.test(o.fx || '')); return ok.length > 1 && rand() < P.callYes ? ok[0] : ok[ok.length - 1]; };

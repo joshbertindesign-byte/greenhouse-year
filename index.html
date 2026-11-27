@@ -52,6 +52,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .paused{display:inline-flex;align-items:center;gap:6px;background:var(--sun);color:#2b2104;border-radius:10px;padding:4px 10px;font-size:14px;font-weight:700}
 .uprow{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 12px;margin-top:10px}
 .uprow .rn{flex:1;min-width:0}.uprow .rn b{display:block;font-size:17px}.uprow .rn span{font-size:14px;color:var(--mute)}
+.uprow .rn .bst{display:block;margin-top:2px;font-weight:700;color:var(--go)}.uprow .rn .bst.warn{color:#b86a00}
+.board .tk,.board .tkl{position:absolute;display:flex;align-items:center;justify-content:center;gap:3px;border-radius:6px;font:700 12px/1 Outfit,sans-serif;color:var(--mute)}.board .tk{background:#f1eee5}.board .tk.past{background:none}.board .tk i,.board .tkl i{display:block;width:13px;height:13px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%238a8577' d='M2.5 6.5h11v10h-11zM14.5 9.5h3.8l3.2 3.4v3.6h-7zM5 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM15.4 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z'/%3E%3C/svg%3E") center/contain no-repeat}.board .tkl i{width:16px;height:16px}.board .tk.warn{background:#f6c56a;color:#5a3a00}.board .tk.warn i{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%235a3a00' d='M2.5 6.5h11v10h-11zM14.5 9.5h3.8l3.2 3.4v3.6h-7zM5 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM15.4 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z'/%3E%3C/svg%3E") center/contain no-repeat}.board .tk.bad{background:var(--bad);color:#fff}.board .tk.bad i{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M2.5 6.5h11v10h-11zM14.5 9.5h3.8l3.2 3.4v3.6h-7zM5 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM15.4 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z'/%3E%3C/svg%3E") center/contain no-repeat}.lgd .lgtk{display:inline-flex;align-items:center;gap:3px;flex:none;background:var(--bad);color:#fff;border-radius:6px;padding:2px 6px;font:700 11px/1 Outfit,sans-serif}.lgd .lgtk i{width:12px;height:12px;border-radius:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23fff' d='M2.5 6.5h11v10h-11zM14.5 9.5h3.8l3.2 3.4v3.6h-7zM5 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0zM15.4 18.2a1.9 1.9 0 1 0 3.8 0a1.9 1.9 0 1 0-3.8 0z'/%3E%3C/svg%3E") center/contain no-repeat}
 .pips3{display:flex;gap:4px;margin-top:4px}.pips3 i{width:22px;height:8px;border-radius:4px;background:#e4e0d3}.pips3 i.on{background:var(--go)}
 .uprow .btn{padding:10px 14px;font-size:15px;white-space:nowrap}
 .toasts.low{left:8px;transform:none;width:calc(100vw - 96px);align-items:flex-start}
@@ -953,8 +955,38 @@ const unitOf=h=>{const H=HOUSES[h];return{x:8+H.ox,y:3+H.oy,ax:7+H.ox,ay:3+H.oy}
 const liftOf=h=>{const H=HOUSES[h];return{x:H.ox,y:6+H.oy};};
 const DOCK={x:4,y:-1,f:0,h:-1};
 const BAYS=[{x:4,tx:3.3},{x:9,tx:8.8},{x:15,tx:14.3},{x:20,tx:19.8}];
-const bayCount=()=>S.floors>=7?4:S.floors>=4?3:S.floors>=2?2:1;
-const bayUse=()=>Math.min(bayCount(),1+S.crew.filter(r=>r.role==='load').length);
+// loading bays are bought in Equipment; bay 1 is yours, every bay past the first needs its own loader to open
+const bayCount=()=>Math.min(BAYS.length,1+upLv('bays'));
+const loaders=()=>S.crew.filter(r=>r.role==='load').length;
+const bayUse=()=>Math.min(bayCount(),1+loaders());
+// how many pickups a period's trucks can take: a small seeded simulation of trucks arriving, waiting in line and loading
+const LOAD_OH=.3,DOCK_MC=40;
+function dockSim(qs,open,nl,seed){
+  if(!qs.length)return 0;const tw=Math.min(.6,.36+.022*(S.floors-1)),fm=[1,.7,.5][upLv('fork')],ls=S.crew.filter(r=>r.role==='load'),sl=ls.length?ls.reduce((a,r)=>a+slowOf(r),0)/ls.length:1.3;
+  let a=seed>>>0||1,miss=0;const r=()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};
+  for(let k=0;k<DOCK_MC;k++){
+    const tr=qs.map(q=>({at:PSEC*(.14+r()*tw),q})).sort((x,y)=>x.at-y.at),free=Array(open).fill(0);
+    for(const t of tr){let b=0;for(let i=1;i<open;i++)if(free[i]<free[b])b=i;
+      // a truck's clock stops once someone takes the job, so it only has to be started in time.
+      // Bays past the loaders are covered by the grower, who has the rest of the nursery to run too.
+      const own=b>=nl,dur=(1.2+t.q*.09)*fm*(own?1.6:sl)+(own?6:LOAD_OH),st=Math.max(t.at,free[b])+(own?8:0);
+      if(st>t.at+TRUCK_WAIT*.95)miss++;else free[b]=st+dur;}}
+  return miss/DOCK_MC;
+}
+const pickups=(p,extra)=>{const qs=S.plots.filter(pl=>pl.e===p&&!pl.done&&!pl.fail&&(!extra||pl!==extra.skip)).map(pl=>orderOf(pl).qty);if(extra&&extra.q)qs.push(extra.q);return qs;};
+// expected empty trucks for period p, and what would fix it
+function dockLoad(p,extra){
+  const qs=pickups(p,extra),sd=p*7919+qs.length*31+qs.reduce((a,b)=>a+b,0),op=bayUse(),nl=Math.min(loaders(),op),m=dockSim(qs,op,nl,sd);
+  const o={n:qs.length,m,open:op,built:bayCount(),fix:''};if(m<.25)return o;
+  const helps=(o2,n2)=>{const m2=dockSim(qs,o2,n2,sd);return m2<.25||m2<m*.6;};
+  if(op<bayCount()&&helps(op+1,nl+1))o.fix='open';
+  else if(nl<op&&helps(op,nl+1))o.fix='loader';
+  else if(bayCount()<BAYS.length&&helps(bayCount()+1,Math.min(loaders(),bayCount())+1))o.fix=upOpen('bays',upLv('bays'))?'bay':'baylock';
+  else o.fix='spread';
+  return o;
+}
+const dockFix=o=>o.fix==='open'?`bay ${o.open+1} is built but has no loader`:o.fix==='loader'?'hire a loader':o.fix==='bay'?'build another bay in Equipment and staff it':o.fix==='baylock'?'more bays open at a later stage':'spread pickups across periods';
+const dockMsg=(o,p)=>`Not enough loading bays for ${o.n} pickups in ${PN[p].toLowerCase()}: ${dockFix(o)}`;
 const levels=()=>Math.ceil(S.floors/4);
 const benchName=i=>(Math.floor(i/8)===SH?'★':S&&S.floors>1?(Math.floor(i/8)+1):'')+LETTERS[i];
 const WORK={pot:1.8,water:1,pest:2,fix:3.2,care:1.3,phone:.4,star:.25};
@@ -978,6 +1010,7 @@ const UPS={
   hose:{name:'Hoses',icon:'water',lv:['Soaker hoses','Drip lines','Timed drip'],does:l=>`Thirsty plants hold out ${l*25}% longer`,cost:[1000,2000,3500]},
   boom:{name:'Watering booms',icon:'boom',lv:['Single booms','Twin booms'],does:l=>`Booms handle ${[0,35,60][l]}% of watering on their own`,cost:[1800,3600]},
   potter:{name:'Potting machine',icon:'potter',lv:['Potting machine','Fast potting line'],does:l=>`Potting takes ${[0,25,45][l]}% less time`,cost:[1500,3000]},
+  bays:{name:'Loading bays',icon:'load',lv:['Second bay','Third bay','Fourth bay'],does:l=>`${l+1} trucks can load at once. Every bay past the first needs a loader`,cost:[2000,4000,7000]},
   fork:{name:'Forklift',icon:'fork',lv:['Propane forklift','Electric forklift'],does:l=>`Loading trucks takes ${[0,30,50][l]}% less time`,cost:[2000,3500]},
   lights:{name:'Grow lights',icon:'light',lv:['Grow lights','LED grow lights'],does:l=>`Natural plant losses drop ${[0,40,70][l]}%`,cost:[2200,4200]},
   vents:{name:'Vents and shade cloth',icon:'vent',lv:['Roof vents','Vents and shade cloth'],does:l=>`Fans break down ${[0,40,65][l]}% less in summer`,cost:[1400,2800]},
@@ -2305,6 +2338,28 @@ function drawTrucks(now){
   for(const k of S.trucks.filter(k=>k.state==='gone'&&k.x!=null&&k.x<22)){k.v=(k.v||0)+dt*14;k.x+=k.v*dt;}
   for(const k of S.trucks){if(k.x==null||k.state==='coming'||(k.state==='gone'&&k.x>=22))continue;const pl=S.plots.find(p=>p.id===k.plot);drawTruck(k.x,pl?crop(pl.crop).color:null);}
 }
+// ---------------- loading bays at the road ----------------
+// built bays get painted lines on the pad, and a barrier when nobody works them; the next bay you can buy is staked out on the grass.
+// Their numbered signs float above the walls in drawBaySigns, so the glass never hides them.
+function drawBays(now){
+  if(S.phase==='home')return;const nb=bayCount(),op=bayUse(),r=sc;
+  BAYS.forEach((B,i)=>{
+    if(i<nb){
+      for(const u of [B.x-.96,B.x+1.96])seg(P(u,-.92,0),P(u,-.08,0),'#f2c230',Math.max(1,2.2*r));
+      const on=i<op;
+      if(!on){const a=B.x-.72,b=B.x+1.72,v=-.88,z=13;
+        for(const u of [a,b]){seg(P(u-.12,v,0),P(u,v,z),'#7a5a3a',Math.max(1,1.6*r));seg(P(u+.12,v,0),P(u,v,z),'#7a5a3a',Math.max(1,1.6*r));}
+        const N=7;for(let k=0;k<N;k++){const u0=a+(b-a)*k/N,u1=a+(b-a)*(k+1)/N;seg(P(u0,v,z),P(u1,v,z),k%2?'#fff':'#d8342a',Math.max(1.5,3.6*r));}
+        const m=P(B.x+.5,v,z+8);cx.fillStyle='#fff';rr(m[0]-14*r,m[1]-5*r,28*r,10*r,2*r);cx.fill();cx.strokeStyle='#d8342a';cx.lineWidth=Math.max(.8,r);cx.stroke();
+        cx.fillStyle='#d8342a';cx.font=`800 ${Math.round(6.5*r)}px Outfit,sans-serif`;cx.fillText('CLOSED',m[0],m[1]+.3*r);}
+    }else if(i===nb&&upOpen('bays',upLv('bays'))){
+      const cs=[[B.x-1,-1],[B.x+2,-1],[B.x+2,0],[B.x-1,0]].map(([u,v])=>P(u,v,0));
+      cx.save();cx.setLineDash([4*r,4*r]);cx.strokeStyle='rgba(240,150,40,.8)';cx.lineWidth=Math.max(1,1.5*r);cx.beginPath();cs.forEach((p,k)=>k?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();cx.stroke();cx.restore();
+      for(const p of cs){seg(p,[p[0],p[1]-11*r],'#a07a4a',Math.max(1,1.6*r));cx.fillStyle='#f0962a';cx.beginPath();cx.moveTo(p[0],p[1]-11*r);cx.lineTo(p[0]+6*r,p[1]-9*r);cx.lineTo(p[0],p[1]-7*r);cx.fill();}
+    }
+  });
+  cx.textAlign='start';cx.textBaseline='alphabetic';
+}
 // ---------------- weather ----------------
 let wx=[];
 function newFlake(s,anywhere){
@@ -2488,6 +2543,26 @@ function drawCounts(){
     cx.fillStyle='#fff';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(txt,p[0],p[1]+1);
   }
 }
+// a numbered sign over each built bay: green when a loader (or you, for bay 1) works it, red when it's closed.
+function drawBaySigns(now){
+  if(S.phase==='home'||viewF!==0)return;const nb=bayCount(),op=bayUse(),busy=new Set(S.tasks.filter(t=>t.type==='load').map(t=>t.bay||0));
+  cx.textAlign='center';cx.textBaseline='middle';
+  BAYS.forEach((B,i)=>{
+    const p=P(B.x+.5,-1.3,52);p[1]=clamp(p[1],viewTop+18,viewBot-18);
+    if(i<nb){if(busy.has(i)&&S.phase==='run')return;const on=i<op,w=30,h=20;
+      cx.fillStyle='rgba(0,0,0,.18)';rr(p[0]-w/2+1,p[1]-h/2+2,w,h,6);cx.fill();
+      cx.fillStyle=on?'#1d3326':'#c8402f';rr(p[0]-w/2,p[1]-h/2,w,h,6);cx.fill();
+      cx.fillStyle='#fff';cx.font='800 12px Outfit,sans-serif';cx.fillText(String(i+1),p[0]-4,p[1]+1);
+      cx.fillStyle=on?'#45d36a':'#fff';cx.beginPath();cx.arc(p[0]+8,p[1],on?3.4:4.4,0,7);cx.fill();if(!on){cx.fillStyle='#c8402f';cx.fillRect(p[0]+5.4,p[1]-.9,5.2,1.8);}
+      if(on&&S.phase==='run'){cx.strokeStyle=`rgba(69,211,106,${.35+.25*Math.sin(now/350+i)})`;cx.lineWidth=2;cx.beginPath();cx.arc(p[0]+8,p[1],5.6,0,7);cx.stroke();}
+      bayHits.push({x:p[0],y:p[1],r:16,i});}
+    else if(i===nb&&S.phase!=='run'&&upOpen('bays',upLv('bays'))){
+      cx.save();cx.setLineDash([3,3]);cx.strokeStyle='#e0861a';cx.lineWidth=2;cx.fillStyle='rgba(255,255,255,.85)';rr(p[0]-13,p[1]-10,26,20,6);cx.fill();cx.stroke();cx.restore();
+      cx.fillStyle='#e0861a';cx.font='800 14px Outfit,sans-serif';cx.fillText('+',p[0],p[1]+1);bayHits.push({x:p[0],y:p[1],r:16,i,lot:1});}
+  });
+  cx.textAlign='start';cx.textBaseline='alphabetic';
+}
+let bayHits=[];
 function drawIcons(){
   iconHits=[];if(S.phase!=='run')return;
   const r=iconR,items=[],load=S.tasks.find(t=>t.type==='load');
@@ -2527,7 +2602,7 @@ function draw(now){
   const dt=Math.min(.1,(now-(camT||now))/1000);camT=now;
   camZ+=(viewF*FH-camZ)*Math.min(1,dt*7);if(Math.abs(viewF*FH-camZ)<.5)camZ=viewF*FH;
   cx.setTransform(DPR,0,0,DPR,0,0);
-  drawGround();drawHomestead(now);drawField();drawSucGround();drawTrucks(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
+  drawGround();drawHomestead(now);drawField();drawSucGround();drawTrucks(now);drawBays(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
   const dockers=[...(noMe()?[]:[me]),...staff,...roboL()].filter(w=>w.y<0).sort((a,b)=>(a.x+a.y)-(b.x+b.y));dockers.forEach(w=>drawPerson(w,SHIRT[w.role],now));
   drawWeather(dt);
   const built=builtH(),dep=H=>H.ox+H.oy+8;
@@ -2541,7 +2616,7 @@ function draw(now){
   }
   items.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   if(viewF===0&&S.phase!=='home')drawSign();
-  drawLabels();drawCounts();drawFloats(now);drawIcons();drawCup(now);
+  drawLabels();drawCounts();drawFloats(now);bayHits=[];drawBaySigns(now);drawIcons();drawCup(now);
 }
 function drawHouse(H,now){
   drawSlab(H);drawBackWalls(H);if(H.h===0)drawPhone(H,now);
@@ -3340,7 +3415,9 @@ function confirmPv(){
     ev.ctr.forEach(cid=>{const c=contractOf(cid);if(!c)return;if(c.round===roundKey()&&!S.plots.some(p=>orderOf(p)?.contract===cid&&!ev.gone.includes(p)))S.contracts=S.contracts.filter(x=>x!==c);else c.broken=true;});
     dropOrders(ev.gone);ev.rep.forEach(x=>custRep(x.cust,x.d,'you swapped out their order'));
     if(ev.gone.length)toast(ev.rep.length?'bad':'good',`Swapped out ${ev.gone.length} order${ev.gone.length>1?'s':''}${ev.rep.length?': '+ev.rep.map(x=>`${x.d} with ${short1(x.cust)}`).join(', '):''}`);
+    const dd=dueOf(placing.cur),b4=dockLoad(dd).m;
     if(!place(placing.cur,top0)){toast('bad','No room there');renderSheet();return;}
+    {const dk=dockLoad(dd);if(dk.m>=.25&&dk.m>b4+.1)toast('load',dockMsg(dk,dd));}
     pv=null;advancePlacing();if(popDone())return;renderSheet();hud();readyCheck();
   });
 }
@@ -3413,6 +3490,8 @@ function pbarHTML(of,peek,left){
   const l2=lc?`<button class="unl" type="button" data-gen="${lc}">Unlock ${crop(lc).name.toLowerCase()} ${fmt(GEN[lc])}</button>${nx}`:x?`${formsHTML(x).btns}${nx}`:nx;
   return`<div class="pbar" style="--c:${col}"><button type="button" class="pb1" id="pbT" aria-expanded="${drawer}">${l1}<span class="chev">▾</span></button><div class="pb2">${l2}</div></div>`;
 }
+// the planned pickup would leave trucks empty in its ship period
+const dockAfter=dd=>{if(!placing)return null;const b=dockLoad(dd),a=dockLoad(dd,{q:placing.cur.qty});return a.m>=.25&&a.m>b.m+.05?a:null;};
 function dockRO(){
   if(!placing){const q=queue(),lc=q[0]&&lockedCrop(q[0]);return lc?`Unlock ${crop(lc).name.toLowerCase()}, or bin this offer.`:'';}
   if(!pv)return firstFit(sel)<0?'No free spot. Tap the board to swap orders out.':'Tap or slide on the board to try a spot.';
@@ -3421,6 +3500,7 @@ function dockRO(){
   if(flexible(x)){if(ke)bits.push(`<span class="dn">${ke} early ×${earlyF(ke)}</span>`);if(sf>1.1)bits.push('<span class="up">peak ×1.15</span>');else if(sf<1)bits.push('<span class="dn">off season ×0.85</span>');}
   if(ev.gone.length)bits.push(`<span class="dn">bumps ${ev.gone.length} (−${fmt(ev.loss)})</span>`);
   ev.rep.forEach(r=>bits.push(`<span class="dn">${r.d} ${esc(short1(r.cust))}</span>`));
+  {const dk=dockAfter(dd);if(dk)bits.push(`<span class="dn">bays full: ${dockFix(dk)}</span>`);}
   return`<b>+${fmt(ev.gain)}</b><br>${bits.join(' · ')}`;
 }
 function readoutHTML(){
@@ -3432,6 +3512,7 @@ function readoutHTML(){
   const net=ev.gain-ev.loss,x=placing.cur,dd=dueOf(x),ke=x.p-dd,sf=seasF(x.crop,dd);
   const chips=[`<span>Ships ${PN[dd].toLowerCase()}</span>`];
   if(flexible(x)){chips.push(ke?`<span class="dn">${ke} period${ke>1?'s':''} early ×${earlyF(ke)}</span>`:'<span>On the customer’s date ×1.0</span>');chips.push(sf>1.1?'<span class="up">Peak season ×1.15</span>':sf<1?'<span class="dn">Off season ×0.85</span>':'<span>Near peak season</span>');}
+  {const dk=dockAfter(dd);if(dk)chips.push(`<span class="dn">${esc(dockMsg(dk,dd))}</span>`);}
   ev.rep.forEach(r=>{const dr=tierDrops([r])[0];chips.push(`<span class="dn">${r.d} with ${esc(short1(r.cust))}${dr?` · to ${dr.to.n}`:''}</span>`);});
   return`<div class="rd ok"><div class="big"><b>+${fmt(ev.gain)}</b><span>on benches <b style="font-size:inherit;color:inherit">${span(pv.top,sel.h)}</b>${S.floors>1||hasShow()?' in '+hName(Math.floor(pv.top/8)).toLowerCase():''}</span>${ev.gone.length?`<span class="neg">−${fmt(ev.loss)}</span><span>bumps ${ev.gone.length} order${ev.gone.length>1?'s':''} · net ${net>=0?'+':''}${fmt(net)}</span>`:''}</div><div class="chips">${chips.join('')}</div></div>`;
 }
@@ -3481,7 +3562,7 @@ function renderSheet(){
     const leftCol=hof?`${handHTML(hof)}<div id="ro">${readoutHTML()}</div><div class="abtn"><button class="bin2" type="button" id="binB">${tico('bin',18)}Bin</button>${mgrOn()&&plan&&holdable(hof)?`<button class="bin2 hold" type="button" id="holdB"${(S.held||[]).length>=HOLD_MAX?' disabled':''}>Hold ${(S.held||[]).length}/${HOLD_MAX}</button>`:''}<button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place order</button></div>${nxt}`
       :`<div class="hc empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`;
     const sw=(st,txt)=>`<span><i style="${st}"></i>${txt}</span>`;
-    const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
+    const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span><b class="lgtk"><i></i>5</b>Trucks that period. Red means not enough loading bays</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
     const ft=S.floors>1||hasShow()?houseMap(boardF,h=>`data-bf="${h}"`,'House',true):'';
     const coach=!S.coached&&placing?`<div class="coach" id="coach"><span>${HOVER?'Move across':'Tap or slide on'} the board to try spots. Each square is one bench for one period.</span><button type="button" id="coachX">Got it</button></div>`:'';
     if(isPhone()){
@@ -3527,7 +3608,7 @@ function renderSheet(){
       <div class="showb sucb"><img src="${spriteURL('suc_echeveria_3','12 -4 40 40')}" alt="" style="width:54px;height:54px;flex:none"><div><p>A shop beside the greenhouses. Plant pups on its tables; they need little care, keep growing from year to year, and get more valuable as they grow. Customers walk in to buy them, and only you can serve them.</p>
       ${sucOn()?'<b class="ok">Built</b>':stage()<SUC_LV?lockChip(SUC_LV):`<p>${fmt(SUC_COST)}, then ${fmt(SUC_OH)} more upkeep each period.</p><button class="btn sun" type="button" id="sucB"${plan?'':' disabled'}>Build for ${fmt(SUC_COST)}</button>`}</div></div>
       <h3 style="margin:18px 2px 0;font-size:18px">Greenhouse cats</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Cats are adopted at the homestead between years, with stars. Each one helps in her own way.</p>
-      <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>`:`${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span><span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}`}`;
+      <div class="catnote">${liveCats().map(c=>`<span><img src="${catURL(c.id)}" alt=""><b>${c.name}</b>&nbsp;${CAT_BONUS[c.id].toLowerCase()}</span>`).join('')}</div>`:`${Object.entries(UPS).map(([k,U])=>{const l=upLv(k),mx=U.lv.length,nx=l<mx?U.cost[l]:0;return`<div class="uprow">${svgIcon(U.icon,44)}<div class="rn"><b>${U.name}${l?': '+U.lv[l-1]:''}</b><span>${l<mx?`Next: ${U.lv[l]}. ${U.does(l+1)}.`:U.does(mx)+'.'}</span>${k==='bays'?`<span class="bst${bayUse()<bayCount()?' warn':''}">${bayCount()} built · ${bayUse()} open · ${loaders()} loader${loaders()===1?'':'s'}</span>`:''}<span class="pips3">${U.lv.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div>${l<mx?(upOpen(k,l)?`<button class="btn sun" type="button" data-up="${k}">${fmt(nx)}${S.cash<nx?'<small class="oc">short</small>':''}</button>`:lockChip(GATE_UP[k][l])):'<b>Maxed</b>'}</div>`;}).join('')}`}`;
   }
   const hint=tab==='cust'?'Your reputation in the top bar is the average across customers.':tab==='orders'?(placing?(HOVER?'Each square is one bench for one period. Point at the board to preview, click to place. Press R or ⟳ to rotate.':'Each square is one bench for one period. Tap or slide to preview, then tap it again or press Place. ⟳ rotates.'):(sel?(sel.offer?'Tap a row to drop it. Green cells are free.':`Drag it to another row, or tap × to remove it.<br><span class="grow"><button class="btn" type="button" id="gUp">+ bench (10 more)</button><button class="btn" type="button" id="gDn">− bench</button></span>`):'Hatched blocks are planned, solid ones are growing. The black line is now. Each block shows flats you have over flats ordered, and what the order pays.')):tab==='trees'?'Tree sales count toward this year\u2019s revenue.':`Upkeep ${fmt(upkeep())} + crew ${fmt(crewCost())} each period.`;
   const prevScr=$('scr'),keep=prevScr&&lastTab===tab?prevScr.scrollTop:0;lastTab=tab;
@@ -3711,7 +3792,7 @@ const CALLS=[
  {id:'standing',lv:4,when:()=>custAt(2).length>0,make(){const n=pick(custAt(2)),of=makeContract(Math.min(7,S.period+1));if(!of)return null;of.cust=n;of.dl.forEach(d=>d.price=Math.round(d.price*.95));of.price=of.dl[0].price;
    return{who:n,av:custAv(n,48),say:`"We'd like to set up a standing order: ${of.n} deliveries. Can you do 5% off for the commitment?"`,opts:[{t:'Let me look',fx:`Opens the board with the contract: ${fmt(offerValue(of))}`,go(){return popOffer(of);}},{t:'Not this year',fx:'No change',go(){}}]};}},
  {id:'paper',lv:4,make(){return{who:'Abilene Reporter-Gazette',av:svgIcon('pop',48),say:'"We\'re doing a feature on local growers. Got ten minutes?"',opts:[{t:'Talk to them',fx:'+3 reputation with every customer · +3 points at the Best Homes and Gardens judging',go(){repAll(3,'newspaper feature');S.ys.press=(S.ys.press||0)+3;}},{t:'Decline',fx:'No change',go(){}}]};}},
- {id:'auction',lv:4,when:()=>Object.keys(UPS).some(k=>nextUpOpen(k)>=0),make(){const k=pick(Object.keys(UPS).filter(k=>nextUpOpen(k)>=0)),l=nextUpOpen(k),U=UPS[k],c=Math.round(U.cost[l]/2/50)*50;
+ {id:'auction',lv:4,when:()=>Object.keys(UPS).some(k=>k!=='bays'&&nextUpOpen(k)>=0),make(){const k=pick(Object.keys(UPS).filter(k=>k!=='bays'&&nextUpOpen(k)>=0)),l=nextUpOpen(k),U=UPS[k],c=Math.round(U.cost[l]/2/50)*50;
    return{who:'Sweetwater Equipment Auction',av:svgIcon(U.icon,48),say:`"A nursery up the road is selling out. We've got ${U.lv[l].toLowerCase()} going for half price."`,opts:[{t:`Buy it for ${fmt(c)}`,fx:`${U.lv[l]}: ${U.does(l+1)}`,dis:S.cash<c,go(){S.cash-=c;S.ys.build=(S.ys.build||0)+c;S.up[k]=l+1;}},{t:'Pass',fx:'No change',go(){}}]};}},
  {id:'referral',lv:4,when:()=>custAt(3).length>0&&ownedCand(S.period+1,S.period+3).length>0,make(){const ref=pick(custAt(3)),to=CUST.slice().sort((a,b)=>custR(a)-custR(b)).find(n=>n!==ref),cd=wpick(ownedCand(S.period+1,S.period+3)),of=mkOffer(cd,1.15,true);of.cust=to;of.qty=ri(14,20);
    return{who:ref,av:custAv(ref,48),say:`"I told the folks at ${to} about you. They need ${of.qty} ${crop(cd.k).name.toLowerCase()} by ${PN[cd.p].toLowerCase()}. Want me to give them your number?"`,opts:[{t:'Please do',fx:`Opens the board with the order · +3 reputation with ${short1(to)}`,go(){custRep(to,3,'referred by a friend');return popOffer(of);}},{t:'We\'re booked',fx:'No change',go(){}}]};}},
@@ -3828,7 +3909,7 @@ const STAGES=[
   {n:'National name',c:'#b8860b',goal:{k:'rank',n:3}},
   {n:'Legend',c:'#9a7206',goal:{k:'stars',n:5}},
   {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1}}];
-const GATE_UP={pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
+const GATE_UP={bays:[3,6,10],pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
 const GATE_GEN={vinca:1,begonia:3,geranium:4,fern:5,kale:6,hydrangea:8,poinsettia:11};
 const HOUSE_CAP=[1,1,1,2,2,2,3,3,4,4,5,6,7,8,9,10,11,12,12,12,12];
 const CREW_CAP=[2,2,3,4,4,5,6,7,8,9,10,11,13,15,17,19,21,23,25,27,28];
@@ -4161,7 +4242,7 @@ function buyUp(k){
   const l=upLv(k),U=UPS[k];if(l>=U.lv.length)return;if(!upOpen(k,l)){toast('bad',`${U.lv[l]} opens at ${stg(GATE_UP[k][l]).n}`);return;}
   const cost=U.cost[l];if(!spend(cost,U.lv[l]))return;
   S.ys.build=(S.ys.build||0)+cost;S.up[k]=l+1;
-  toast('good',`${U.lv[l]} in place`);renderSheet();hud();
+  toast('good',k==='bays'?`Bay ${l+2} is built at the road${bayUse()<bayCount()?'. Hire a loader to open it':''}`:`${U.lv[l]} in place`);renderSheet();hud();
 }
 const staffCount=()=>S.crew.length;
 const CLASSES=[{n:'Greenhouse short course',cost:4000},{n:'Advanced plant care',cost:8000},{n:'Master gardener program',cost:15000},{n:'Royal horticulture fellowship',cost:30000}];
@@ -4265,14 +4346,15 @@ function buildFloor(){
   S.ys.build=(S.ys.build||0)+cost;S.floors++;viewF=lvOf(S.floors-1);boardF=S.floors-1;focusH=S.floors-1;
   for(let i=0;i<2;i++){const cand=candidates(S.period,S.period,S.period+2);if(cand.length)S.offers.push(mkOffer(wpick(cand)));}
   toast('floor',`${floorName(S.floors-1)} is open (${levelName(lvOf(S.floors-1))})`);
-  if([2,4,7].includes(S.floors)){const nb=bayCount();setTimeout(()=>toast('load',`A new loading bay opens at the road: ${nb} trucks can load at once`),600);}
+  if([2,4,7].includes(S.floors)&&bayCount()<Math.min(BAYS.length,[2,4,7].indexOf(S.floors)+2)&&upOpen('bays',upLv('bays')))setTimeout(()=>toast('load','More benches mean more trucks. Another loading bay is available in Equipment'),600);
   layout();tab='orders';renderSheet();hud();
 }
+const TKH=24;// the pickups row under the benches
 function boardMetrics(){
   const B=$('board'),bw=B.parentElement.clientWidth,W=bw>=640?bw-176:bw,lab=30,cw=Math.min(62,(W-lab)/8),hh=placing&&flexible(placing.cur)?50:28;let rh=Math.max(34,Math.round(cw));
   // on phones, shrink the rows so all eight benches fit above the dock without scrolling
-  const sc=$('scr');if(sc){const top=B.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop,avail=sc.clientHeight-top-16,fit=Math.floor((avail-hh)/8);if(fit>=18)rh=Math.min(rh,fit);}
-  return{W,lab,cw,rh,hh,H:hh+rh*8};
+  const sc=$('scr');if(sc){const top=B.getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop,avail=sc.clientHeight-top-16,fit=Math.floor((avail-hh-TKH)/8);if(fit>=18)rh=Math.min(rh,fit);}
+  return{W,lab,cw,rh,hh,H:hh+rh*8+TKH};
 }
 const fURL={};
 function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
@@ -4301,9 +4383,12 @@ function renderBoard(){
   const live=drag&&drag.on?drag.pp:sel,nowX=m.lab+(c+(S.phase==='run'?S.t/PSEC:0))*m.cw,hand=placing&&sel&&!(drag&&drag.on),ev=hand&&pv?evalPv(pv.top):null;
   let h='';
   const fx=placing&&flexible(placing.cur)?placing.cur:null,fc=fx?crop(fx.crop).color:'',fv=fx?PSH.map((_,i)=>i>=dMin(fx)&&i<=fx.p?valAt(fx,i):0):[],fmax=Math.max(1,...fv);
-  for(let i=0;i<8;i++){const due=fx&&i===fx.p,pk=fx&&seasF(fx.crop,i)>1.1;
+  const gq=hand&&pv&&ev&&ev.ok?{p:dueOf(placing.cur),q:placing.cur.qty}:null;
+  for(let i=0;i<8;i++){const due=fx&&i===fx.p,pk=fx&&seasF(fx.crop,i)>1.1,dk=i>c||(i===c&&S.phase!=='run')?dockLoad(i,gq&&gq.p===i?{q:gq.q}:null):null,dw=dk&&dk.m>=.25;
     h+=`<div class="ch${i===c?' now':''}${i<c?' gone':''}${due?' due':''}" style="left:${m.lab+i*m.cw}px;top:0;width:${m.cw}px;height:28px">${i===c?'<b>Now</b>':due?'<span>Due</span>':PSH[i]}${pk?`<i class="pk" style="background:${fc}"></i>`:''}</div>`;
+    {const y=m.hh+8*m.rh+3,cls=!dk?' past':dk.m>=.75?' bad':dw?' warn':'';if(dk)h+=`<div class="tk${cls}" style="left:${m.lab+i*m.cw+1.5}px;top:${y}px;width:${m.cw-3}px;height:${TKH-4}px"${dw?` title="${esc(dockMsg(dk,i))}"`:''}>${dk&&dk.n?`<i></i>${dk.n}`:''}</div>`;}
     if(fx&&fv[i])h+=`<div class="vs" style="left:${m.lab+i*m.cw+2}px;top:29px;width:${m.cw-4}px;height:19px;background:rgba(46,125,74,${(.1+.55*fv[i]/fmax).toFixed(2)})">${kfmt(fv[i])}</div>`;}
+  h+=`<div class="tkl" style="left:0;top:${m.hh+8*m.rh+3}px;width:${m.lab}px;height:${TKH-4}px" title="Trucks picking up each period"><i></i></div>`;
   for(let r=0;r<8;r++){const g=base+r;h+=`<div class="rh" style="left:0;top:${m.hh+r*m.rh}px;width:${m.lab}px;height:${m.rh}px">${LETTERS[g]}</div>`;
     for(let i=0;i<8;i++){
       let cls=i<c?' past':i===c?' cur':'';if(fx&&i>fx.p)cls+=' late';
@@ -4418,6 +4503,7 @@ cv.addEventListener('pointerup',e=>{ptrEnd(e);
   if(cup&&cup.sx!=null&&Math.hypot(e.clientX-cup.sx,e.clientY-cup.sy)<=cup.r){drinkCup();return;}
   let best=null,bd=1e9;for(const h of iconHits){const d=Math.hypot(e.clientX-h.x,e.clientY-h.y);if(d<=h.r&&d<bd){bd=d;best=h;}}
   if(best){best.tasks.forEach(enqueue);return;}
+  {const bh=bayHits.find(h=>Math.hypot(e.clientX-h.x,e.clientY-h.y)<=h.r);if(bh){if(bh.lot){if(S.phase==='plan'){upSub='equip';openSheet('build');}toast('load',`Room for loading bay ${bh.i+1}. Build it in Equipment for ${fmt(UPS.bays.cost[upLv('bays')])}`);}else bayInfo(bh.i);return;}}
   {const ct=liveCats().filter(c=>c.f===viewF).map(c=>({c,d:Math.hypot(e.clientX-P(c.x,c.y,ZB()+14)[0],e.clientY-P(c.x,c.y,ZB()+14)[1])})).filter(o=>o.d<TW*.42*sc).sort((a,b)=>a.d-b.d)[0];if(ct){petCat(ct.c);return;}}
   if(sucOn()&&viewF===0&&S.phase==='plan'){const i=SUC_SLOTS.slice(0,sucCap()).findIndex(([a,b])=>{const m=P(SUCO.ox+a+.5,SUCO.oy+b+.5,30);return Math.abs(e.clientX-m[0])<TW*.55*sc&&Math.abs(e.clientY-m[1])<TH*.9*sc;});if(i>=0){openSheet('suc');return;}}
   if(fieldOpen()&&viewF===0){const sp=Array.from({length:fieldCap()},(_,i)=>i).find(i=>{const q=spotXY(i),m=P(q.x+.5,q.y+.5,40);return Math.abs(e.clientX-m[0])<TW*.9*sc&&Math.abs(e.clientY-m[1])<TH*2.4*sc;});
@@ -4429,10 +4515,13 @@ cv.addEventListener('pointerup',e=>{ptrEnd(e);
     if(uh){const t=S.tasks.find(t=>t.type==='fix'&&t.f===uh.h);if(t)enqueue(t);else toast('good',`${unitName(S.period)} is running fine`);return;}
     // any truck on the road, or the dock pad
     const tr=S.trucks.filter(k=>(k.state==='line'||k.state==='dock')&&k.x!=null);
-    const hitT=tr.find(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc)),hitB=BAYS.slice(0,bayCount()).findIndex(B=>near(P(B.x+.5,-.75,4),TW*.9*sc,TH*.6*sc));if(hitT||hitB>=0){const t=S.tasks.find(t=>t.type==='load'&&hitT&&t.truck===hitT.id)||S.tasks.find(t=>t.type==='load'&&(t.bay||0)===hitB)||S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');return;}
+    const hitT=tr.find(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc)),hitB=BAYS.slice(0,bayCount()).findIndex(B=>near(P(B.x+.5,-.75,4),TW*.9*sc,TH*.6*sc));if(hitT||hitB>=0){const t=S.tasks.find(t=>t.type==='load'&&hitT&&t.truck===hitT.id)||S.tasks.find(t=>t.type==='load'&&(t.bay||0)===hitB)||S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');else bayInfo(hitB);return;}
+    {const nb=bayCount(),B=BAYS[nb];if(B&&upOpen('bays',upLv('bays'))&&near(P(B.x+.5,-.5,0),TW*1.2*sc,TH*.7*sc)){toast('load',`Room for loading bay ${nb+1}. Build it in Equipment for ${fmt(UPS.bays.cost[upLv('bays')])}`);return;}}
   }
   for(const b of benchIds().map(i=>BENCH[i]).filter(b=>b.lv===viewF)){const a=P(b.x,b.y,22+ZB()),c=P(b.x+3,b.y+1,22+ZB()),m=[(a[0]+c[0])/2,(a[1]+c[1])/2];if(Math.abs(e.clientX-m[0])<1.6*TW/2*sc&&Math.abs(e.clientY-m[1])<TH*.6*sc){const ts=S.phase==='run'?S.tasks.filter(t=>t.type!=='load'&&t.type!=='fix'&&(t.bench===b.i||(t.rows&&t.rows.includes(b.i)))):[];if(ts.length)ts.forEach(enqueue);else benchInfo(b);return;}}
 });
+function bayInfo(i){const op=i<bayUse(),ls=staff.filter(w=>w.role==='load');
+  toast('load',!op?`Bay ${i+1} is closed. Hire a loader to open it`:i===0&&!ls.length?'Bay 1 is yours. Tap a waiting truck to load it, or hire a loader':`Bay ${i+1} is open${ls.length?': '+ls.map(w=>w.rec.name).join(', ')+' load'+(ls.length===1?'s':'')+' here':''}`);}
 function treeInfo(i){const t=treesOf()[i];
   if(S.phase==='plan'||(t&&treeReady(t)&&!t.sell&&treeWindow()&&!S.tasks.some(x=>x.type==='tree'&&x.spot===i))){openSheet('trees');return;}
   if(!t){toast('tree','An empty spot. Plant a tree in spring or fall from the Trees tab');return;}
@@ -4460,7 +4549,7 @@ function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON
 function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
   // closed mid-year: go back to the homestead checkpoint taken when this year started
   try{const ck=JSON.parse(localStorage.getItem('gy8ck')||'null');if(d&&ck&&ck.year===d.year&&ck.phase==='home'&&!['home','done','over'].includes(d.phase)&&!d.lost){d=ck;window.__rewound=d.year;}}catch(e){}
-  if(d)decoFix(d);if(d&&d.glv>=30&&d.robo==null){d.robo=1;d.roboNew=1;}if(d&&!d.fwin){d.fwin={};for(const f in FESTS){const n=(d.deco||{})[FESTS[f].deco]||0;if(n)d.fwin[f]=n;}}if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
+  if(d)decoFix(d);if(d&&d.up&&d.up.bays==null){const f=d.floors||1;d.up.bays=f>=7?3:f>=4?2:f>=2?1:0;}if(d&&d.glv>=30&&d.robo==null){d.robo=1;d.roboNew=1;}if(d&&!d.fwin){d.fwin={};for(const f in FESTS){const n=(d.deco||{})[FESTS[f].deco]||0;if(n)d.fwin[f]=n;}}if(d&&d.v===3&&d.plots){d.up=d.up||{pots:0,soil:0,hose:0};d.contracts=d.contracts||[];d.loans=d.loans||[];d.show=!!d.show;d.showOpen=!!d.showOpen;if(!d.stage)d.stage=Math.max(1,Math.min(8,d.year||1));d.hist=d.hist||[];d.redYears=d.redYears||0;d.lost=d.lost||null;d.yres=d.yres||null;d.cats=Array.isArray(d.cats)?d.cats:['anna'];if(!d.field)d.field={trees:{},sold:0};
   if(d.glv==null){let xp=(d.hist||[]).length*60,l=1;while(l<30&&xp>=10+3*l){xp-=10+3*l;l++;}d.glv=l;d.gxp=l>=30?0:xp;}
   if(!d.lvV){d.lvV=2;d.stage=Math.max(1,(d.stage||1)*2-1);(d.hist||[]).forEach(h=>{if(h.stage)h.stage=h.stage*2-1;});}
   if(!d.wageV){d.wageV=2;const NW={pot:190,water:145,pest:170,fix:130,load:190,prize:800},OW={pot:120,water:90,pest:105,fix:80,load:120,prize:600};(d.crew||[]).forEach(r=>{if(NW[r.role])r.wage=Math.round((r.wage||OW[r.role])*NW[r.role]/OW[r.role]/5)*5;});}
