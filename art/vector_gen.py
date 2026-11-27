@@ -605,6 +605,8 @@ def person(view='front', frame=0, st=None, work=None):
                 b += ell(32, y, 2.6 - i * .25, 2, hair, f'stroke="{hairD}" stroke-width=".6"')
             b += circ(32, 40.6, 1.3, '#5fb2e8')
         if 'mask' in extra: b += '<path d="M23.8,23.6 q8.2,3 16.4,0" fill="none" stroke="#8a96a3" stroke-width=".8"/>'
+    if 'tie' in extra and view == 'front':
+        b += '<path d="M30.6,27.4 h2.8 l-.6,2 l1.4,9 l-2.2,2.6 l-2.2,-2.6 l1.4,-9 Z" fill="#2f5a9a" stroke="#1f3f6e" stroke-width=".6"/>'
     if hat == 'none' and not long_:
         if view == 'front': b += f'<path d="M23.4,18 q-.4,-10.5 8.6,-10.5 q9,0 8.6,10.5 q-1.6,-5 -8.6,-5.2 q-7,.2 -8.6,5.2 Z" fill="{hair}" stroke="{hairD}" stroke-width=".7"/>'
         else: b += ell(32, 16, 8.7, 8.6, hair, f'stroke="{hairD}" stroke-width=".7"')
@@ -626,12 +628,13 @@ PEOPLE = {
     'crew_fix':   dict(shirt='#9aa7b2', shirtD='#56606b', hat='capd', extra=('coverall', 'wrench')),
     'crew_load':  dict(shirt='#5ccf74', shirtD='#2c8a47', hat='hard', extra=('vest',)),
     'crew_prize': dict(shirt='#fff6e0', shirtD='#c9b88a', hat='sun', extra=('gvest',)),
+    'mgr': dict(hat='none', shirt='#f4f6f9', shirtD='#aab4c0', hair='#5a3a22', hairD='#3a2414', extra=('casual', 'tie')),
     'shop_a': dict(hat='none', shirt='#7a6ad8', shirtD='#4f3fa8', hair='#3a2a1a', hairD='#24180e', extra=('casual',)),
     'shop_b': dict(hat='none', long=True, shirt='#f2a531', shirtD='#c2701f', hair='#c98a3a', hairD='#8a5a1f', extra=('casual',)),
     'shop_c': dict(hat='sun', shirt='#3fb0a8', shirtD='#24807a', extra=('casual',)),
     'shop_d': dict(hat='none', long=True, shirt='#e05a7a', shirtD='#a83a56', hair='#2a1a10', hairD='#180e08', extra=('casual',)),
 }
-WORKT = {'shop_a': 'box', 'shop_b': 'box', 'shop_c': 'box', 'shop_d': 'box', 'grower': 'can', 'growerf': 'can', 'crew_pot': 'pot', 'crew_water': 'can', 'crew_pest': 'spray', 'crew_fix': 'wrench', 'crew_load': 'box', 'crew_prize': 'snips'}
+WORKT = {'mgr': 'box', 'shop_a': 'box', 'shop_b': 'box', 'shop_c': 'box', 'shop_d': 'box', 'grower': 'can', 'growerf': 'can', 'crew_pot': 'pot', 'crew_water': 'can', 'crew_pest': 'spray', 'crew_fix': 'wrench', 'crew_load': 'box', 'crew_prize': 'snips'}
 for who, st_ in PEOPLE.items():
     for v in ('front', 'back'):
         for fr in (0, 1): add(f'{who}_{v}_{fr}', person(v, fr, st_))

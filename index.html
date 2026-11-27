@@ -356,6 +356,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .usub button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}.usub .n{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;min-width:20px;height:20px;display:inline-grid;place-items:center;padding:0 5px}
 @media (max-width:600px){.usub button{padding:9px 7px;font-size:14px;gap:4px;flex:1 0 auto}}
 .tbh{flex-wrap:wrap}
+.crm{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.crm .btn.sm{padding:6px 10px;font-size:13px}
+.bin2.hold{background:#3c6e8f!important;color:#fff!important;font-weight:700;font-size:15px;padding:0 14px}.bin2.hold:disabled{opacity:.45}
 .hpop{position:fixed;z-index:6;background:var(--paper);border-radius:18px;box-shadow:0 12px 34px rgba(0,0,0,.28),0 0 0 2px #e6dcc2;padding:12px 14px 12px;overflow-y:auto;animation:popin .14s ease-out}
 .hpop .hmt{padding-right:30px}.hpop .hpx{position:absolute;top:8px;right:8px;width:30px;height:30px;border:0;border-radius:50%;background:#efe9d8;font-size:20px;line-height:1;color:var(--ink);cursor:pointer}
 .hpop .blist{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
@@ -1048,7 +1050,7 @@ const plotF=pl=>BENCH[pl.rows[0]].f;
 function prog(pl){const el=(S.period-pl.s)+(S.phase==='run'?S.t/PSEC:0);return el/((pl.g||crop(pl.crop).g)-.85);}
 const minStart=()=>S.phase==='plan'?S.period:S.period+1;
 const roundKey=()=>S.year*100+S.period*2+(S.phase==='plan'?0:1);
-const crewCost=()=>S.crew.reduce((a,r)=>a+r.wage,0);
+const crewCost=()=>S.crew.reduce((a,r)=>a+r.wage,0)+(S.mgr?S.mgr.wage:0);
 const SHOW_COST=15000,SHOW_OH=250;
 const upkeep=()=>Math.round((OVERHEAD+FLOOR_OH*(S.floors-1)+(hasShow()?SHOW_OH:0)+(sucOn()?SUC_OH:0))*(S.fixedYear===S.year?.75:1));
 const houseAtXY=(x,y,L)=>{if(L===0&&hasShow()){const H=HOUSES[SH];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return SH;}for(let h=L*4;h<Math.min(S.floors,L*4+4);h++){const H=HOUSES[h];if(x>=H.ox&&x<=H.ox+8&&y>=H.oy&&y<=H.oy+6)return h;}return -1;};
@@ -1195,6 +1197,7 @@ function genOffers(){
   for(let i=S.offers.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[S.offers[i],S.offers[j]]=[S.offers[j],S.offers[i]];}
   const fo=S.offers.findIndex(offerOwned);if(fo>0)S.offers.unshift(...S.offers.splice(fo,1));
   if(hasShow())genShowEntries(c);
+  restoreHeld();
   vegOffers(c);
   logOffers(S.offers);
 }
@@ -1551,7 +1554,7 @@ function enqueue(t){
 // ---------------- period flow ----------------
 function startPeriod(){
   vegSettle(S.period);
-  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=S.floors*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
+  const c=S.period;S.repLog=[];setTimeout(maybeHint,1500);S.ys.cap=S.ys.cap||[];S.ys.cap[c]=S.floors*8;S.phase='run';S.t=0;S.busyUntil=0;S.busyShown=0;if(S.visit){const n=S.visit;S.visit=null;crmOf(n).visit=S.year;S.busyUntil=PSEC*.25;S.busyWhat=`Visiting ${short1(n)}`;custRep(n,12,'site visit');if(!window.__quiet)setTimeout(()=>toast('good',`Your grower is visiting ${short1(n)} this morning and will be back soon`),400);}S.events=[];S.tasks=[];S.queue=[];S.trucks=[];
   S.broken=Array(13).fill(false);S.dmgT=Array(13).fill(0);me.task=null;me.path=[];
   syncStaff();staff.forEach(w=>{w.task=null;w.path=[];});
   S.offers=S.offers.filter(o=>o.popup&&startOf(o)>c);
@@ -2467,7 +2470,7 @@ function drawHomestead(now){
   for(const L of LOTS_D){if(L.pre)continue;const v=lotLook(L);
     if(v.clear&&!v.b){poly([P(L.x+.15,L.y+.15,0),P(L.x+2.85,L.y+.15,0),P(L.x+2.85,L.y+2.85,0),P(L.x+.15,L.y+2.85,0)],'#cdb48a','rgba(110,80,40,.25)');for(let k=1;k<6;k++){const a=P(L.x+.15+k*.45,L.y+.2,0),b=P(L.x+.15+k*.45,L.y+2.8,0);cx.strokeStyle='rgba(120,90,50,.25)';cx.lineWidth=1.5*sc;cx.beginPath();cx.moveTo(...a);cx.lineTo(...b);cx.stroke();}
       cx.save();cx.setLineDash([5*sc,5*sc]);cx.strokeStyle='rgba(110,80,40,.55)';cx.lineWidth=2*sc;cx.beginPath();const q=[P(L.x,L.y,0),P(L.x+3,L.y,0),P(L.x+3,L.y+3,0),P(L.x,L.y+3,0)];cx.moveTo(...q[0]);q.slice(1).forEach(v=>cx.lineTo(...v));cx.closePath();cx.stroke();cx.restore();}}
-  const items=[{d:MAIL.x+MAIL.y,f:()=>spr(mailReady()?'h_mail_1':'h_mail_0',MAIL.x,MAIL.y,0)},...LOTS_D.map(L=>({d:L.x+L.y+3,f:()=>drawLot(L)})),...HSCEN.map(o=>({d:o.u+o.v,f:()=>spr(o.k,o.u,o.v,0)}))];
+  const items=[...(mgrOn()?[{d:14.9-3.25,f:()=>spr('mgr_front_'+(Math.floor(now/2200)%5===0?1:0),14.4,-3.75,0)}]:[]),{d:MAIL.x+MAIL.y,f:()=>spr(mailReady()?'h_mail_1':'h_mail_0',MAIL.x,MAIL.y,0)},...LOTS_D.map(L=>({d:L.x+L.y+3,f:()=>drawLot(L)})),...HSCEN.map(o=>({d:o.u+o.v,f:()=>spr(o.k,o.u,o.v,0)}))];
   if(home){
     if(!hg)hgReset();
     items.push({d:hg.x+hg.y,f:()=>drawHomeGrower(now)});
@@ -2579,6 +2582,8 @@ const TIPS=[
    {el:()=>sel$('#railL [data-rk="suc"]')||iconOf(t=>t.type==='shop')(),t:'Someone walked into the succulent house. Tap them to serve: your grower rings up the best plant you have for what they asked. Wait too long and they leave.',ok:1,done:()=>!hasT(t=>t.type==='shop'&&!S.queue.includes(t))}]},
  {id:'cup',tag:'COFFEE BREAK',when:()=>running()&&!!cup&&cup.sx!=null,steps:[
    {el:()=>cup&&cup.sx!=null?{x:cup.sx-cup.r,y:cup.sy-cup.r,w:cup.r*2,h:cup.r*2}:null,t:'A coffee! Tap it before it goes cold and everyone pitches in: every job nobody has started gets done at once. They turn up more often when things get hectic.',ok:1,done:()=>!cup}]},
+ {id:'hold',tag:'HOLDING ORDERS',when:()=>inPlan()&&tab==='orders'&&mgrOn()&&!!$('holdB'),steps:[
+   {el:'#holdB',t:'Can\u2019t fit this one now? Your office manager can hold it until the next planning step, as long as there\u2019s still time to grow it. Two at a time.',ok:1}]},
  {id:'glv',tag:'GROWER LEVEL',when:()=>inPlan()&&skPts()>0,steps:[
    {el:'[data-tab="crew"]',t:'You have a skill point to spend. Open the Crew tab.',guide:1,done:()=>tab==='crew'},
    {el:'#skB',t:'Every job you do yourself earns experience, and each level gives a skill point. Open your skills.',guide:1,done:()=>!!$('sktree')}]},
@@ -2950,7 +2955,7 @@ const unlockBtn=k=>`<button class="unl" type="button" data-gen="${k}">Unlock ${C
 const TICO={suc:'<path d="M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z"></path><path d="M7 15h10l-1.2 6H8.2z"></path>',trees:'<path d="M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z"></path><path d="M12 16v5"></path>',orders:'<rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h5"></path>',cust:'<path d="M3 21v-1a6 6 0 0 1 12 0v1"></path><circle cx="9" cy="8" r="4"></circle><path d="M17 11a3 3 0 1 0 0-6M21 21v-1a5 5 0 0 0-3-4.6"></path>',crew:'<circle cx="12" cy="7" r="4"></circle><path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>',build:'<path d="M12 19V5M5 12l7-7 7 7"></path>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path>',sun:'<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"></path>',bin:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path>',rot:'<path d="M20 12a8 8 0 1 1-3-6.3"></path><path d="M20 4v5h-5"></path>',book:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5M8 7h7M8 11h7"></path>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path>'};
 const tico=(k,s,col)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${col||'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TICO[k]}</svg>`;
 function handHTML(of,noShapes){
-  const T=tierOf(of.cust),head=of.showcase?`<div class="r1">${ribbonSVG('gold',36)}<span class="nm"><b>${esc(of.show)}</b><small>SHOWCASE ENTRY · ONLY YOU CAN TEND IT</small></span></div>`:`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}${of.veg?'<span class="tchip" style="background:#3f8a3a">Veg contract</span>':''}</div>`;
+  const T=tierOf(of.cust),head=of.showcase?`<div class="r1">${ribbonSVG('gold',36)}<span class="nm"><b>${esc(of.show)}</b><small>SHOWCASE ENTRY · ONLY YOU CAN TEND IT</small></span></div>`:`<div class="r1">${custAv(of.cust,36)}<span class="nm"><b>${esc(of.cust)}</b><small>${T.n.toUpperCase()} CUSTOMER</small></span>${of.popup?'<span class="tchip" style="background:var(--sun);color:#2b2104!important">Pop-up</span>':''}${of.veg?'<span class="tchip" style="background:#3f8a3a">Veg contract</span>':''}${of.held?'<span class="tchip" style="background:#3c6e8f">Held</span>':''}</div>`;
   const shapes=x=>{const F=formsHTML(x);return`<div class="r4"><small>Shape</small>${F.btns}</div><p class="fdesc">${F.desc}</p>`;};
   if(of.contract){
     const dl=of.dl,crops=[...new Set(dl.map(d=>d.crop))],cur=placing&&placing.of===of?placing.cur:null,C0=crop(dl[0].crop),lc=lockedCrop(of);
@@ -3042,7 +3047,7 @@ function renderSheet(){
     const q=queue(),hof=placing?placing.of:q[0],inQ=placing&&placing.of.contract,peek=(inQ?q:q.slice(1)).slice(0,2),left=q.length+(inQ?1:0);
     const okNow=placing&&pv&&evalPv(pv.top).ok;
     const nxt=`<div class="nx"><div class="h"><span>NEXT UP</span><span>${left} offer${left===1?'':'s'} left</span></div><div class="g">${peek.length?peek.map(nxHTML).join(''):'<div class="m"><span><small>Nothing after this one</small></span></div>'}</div></div>`;
-    const leftCol=hof?`${handHTML(hof)}<div id="ro">${readoutHTML()}</div><div class="abtn"><button class="bin2" type="button" id="binB">${tico('bin',18)}Bin</button><button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place order</button></div>${nxt}`
+    const leftCol=hof?`${handHTML(hof)}<div id="ro">${readoutHTML()}</div><div class="abtn"><button class="bin2" type="button" id="binB">${tico('bin',18)}Bin</button>${mgrOn()&&plan&&holdable(hof)?`<button class="bin2 hold" type="button" id="holdB"${(S.held||[]).length>=HOLD_MAX?' disabled':''}>Hold ${(S.held||[]).length}/${HOLD_MAX}</button>`:''}<button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place order</button></div>${nxt}`
       :`<div class="hc empty"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`;
     const sw=(st,txt)=>`<span><i style="${st}"></i>${txt}</span>`;
     const legend=`<div class="lgd" id="legend">${sw('background:#dff3e2;border:1px solid #b9dfc0','Free for this order')}${sw('background:#fff0c9;border:1px solid #ecd48e','Can be swapped out')}${sw('background:#8fb72e repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 5px,transparent 5px 10px)','Planned')}${sw('background:#d8433b','Growing')}${sw('height:6px;border-radius:3px;background:#e2a91f','Crop’s peak season')}<span><b style="border:2px solid var(--ink);border-radius:7px;padding:0 5px;font-size:11px">Due</b>Customer’s date</span><span class="note">${HOVER?'Move across the board to try periods and benches.':'Tap or slide across the board to try spots.'} The green strip shows what this order pays if it ships in each period.</span></div>`;
@@ -3052,12 +3057,12 @@ function renderSheet(){
       body=(hof?pbarHTML(hof,peek,left):`<div class="hc empty" style="margin-bottom:8px"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`)
         +(drawer&&hof?`<div class="drw">${handHTML(hof,true)}${nxt}${stHTML}<div>${lossPill}</div>${legend}</div>`:'')
         +`<div class="bp">${coach}${ft?`<div class="bh">${ft}</div>`:''}<div class="bwrap"><div class="board" id="board"></div></div></div>`;
-      dock=hof?`<div class="dock"><div class="dro" id="ro">${dockRO()}</div><button class="bin2" type="button" id="binB" aria-label="Bin this offer">${tico('bin',18)}</button><button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place</button></div>`:'';
+      dock=hof?`<div class="dock"><div class="dro" id="ro">${dockRO()}</div><button class="bin2" type="button" id="binB" aria-label="Bin this offer">${tico('bin',18)}</button>${mgrOn()&&plan&&holdable(hof)?`<button class="bin2 hold" type="button" id="holdB" aria-label="Hold this offer"${(S.held||[]).length>=HOLD_MAX?' disabled':''}>Hold</button>`:''}<button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place</button></div>`:'';
     }else body=`<div class="olay"><div class="ocol">${stHTML}${leftCol}</div><div class="bp">${coach}<div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
   }else if(tab==='cust'){
     const log=(S.repLog||[]).slice(-7).reverse();
-    body=`<div class="bhead"><h2>Your customers<small>Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier.</small></h2></div>
-      <div class="cl"><div class="cg">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,46)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span><span>${PERK[ti]}</span></div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
+    body=`<div class="bhead"><h2>Your customers<small>Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier. Between periods you can send one thank-you gift and make one site visit per customer each year; a visit takes your grower away for the first part of the next period. ${mgrOn()?'Your office manager can make amends with customers who\u2019ve turned wary or lost.':`An office manager can make amends with customers who\u2019ve turned wary or lost.`}</small></h2></div>
+      <div class="cl"><div class="cg">${CUST.slice().sort((a,b)=>custR(b)-custR(a)).map(n=>{const r=custR(n),ti=tierIx(r),T=TIERS[ti];return`<div class="cust">${custAv(n,46)}<div class="rn"><b>${esc(n)} ${tierChip(n)}</b><span class="meter"><i style="width:${Math.max(3,r)}%;background:${T.c}"></i>${TIERS.slice(1).map(t=>`<b style="left:${t.min}%"></b>`).join('')}</span><span>${PERK[ti]}</span>${crmButtons(n,plan)}</div><b class="rv">${Math.round(r)}</b></div>`;}).join('')}</div>
       <div class="cs"><div class="panel"><b>Tiers</b>${TIERS.slice().reverse().map((t,k)=>`<div class="tierrow"><span class="tchip" style="background:${t.c}">${t.n}</span>${PERK[4-k]} · from ${t.min}</div>`).join('')}</div>
       <div class="panel"><b>Last period</b>${log.length?log.map(e=>{const d=Math.round(e.d);return`<div class="lg"><b class="${d>0?'p':d<0?'n':''}">${d>0?'+':''}${d}</b><span>${esc(short1(e.n))}: ${esc(e.why)}</span></div>`;}).join(''):'<span style="font-size:14px;color:var(--mute)">No changes yet. Ship some trucks!</span>'}<span style="background:#f6f3ea;border-radius:12px;padding:10px 12px;font-size:13px;color:#33463a">Gains slow down near the top. Each new year, everyone drifts partway back toward Steady.</span></div></div></div>`;
   }else if(tab==='trees'){
@@ -3068,7 +3073,7 @@ function renderSheet(){
     body=ledgerHTML();
   }else if(tab==='crew'){
     body=`<div class="bhead"><h2>Crew<small>New hires start slow, around 60% of your speed, and get a little faster every period they stay. Until they reach full speed after ${VET} periods, they may ask for a raise between periods. Wages are paid at the start of each period. Miss a payday and you get a warning; miss a second in a row and they may quit. Each one works a single greenhouse; loaders work the dock. Tap someone in the tray to see what they're doing or move them. Crew with too little to do in a period get rusty and slow down until they're busy again, and long-serving veterans may retire.</small></h2></div>
-      ${growerCardHTML()}${prizeHTML(plan)}
+      ${growerCardHTML()}${mgrHTML(plan)}${prizeHTML(plan)}
       <div class="roles">${S.crew.filter(r=>r.role!=='prize').length?S.crew.filter(r=>r.role!=='prize').map(r=>`<div class="role">${crewFace(r,44)}<div class="rn"><b>${esc(r.name)} · ${ROLES[r.role].name}</b><span>Speed ${spd(r)}%${r.n>=VET?' (veteran)':''}${r.rust?` · <span class="neg">rusty</span>`:''} · ${fmt(r.wage)}/period${r.rush?' · rush hire':''}${r.missed?` · <b class="neg">missed ${r.missed} payday${r.missed>1?'s':''}, owed ${fmt(r.owed||0)}</b>`:''}</span>${S.floors>1&&r.role!=='load'?`<span class="fsel">${houseMap(r.home,h=>`data-home="${r.id}" data-f="${h}"`,'Works in house')}</span>`:''}</div><button class="xbtn" type="button" data-fire="${r.id}" aria-label="Let ${esc(r.name)} go">×</button></div>`).join(''):prizeR()?'':'<p class="norail">No crew yet. It’s just you.</p>'}</div>
       <h3 style="margin:16px 2px 6px;font-size:18px">Hire <span class="ccap${crewRoom()?'':' full'}">${crewN()}/${crewCap()} crew</span>${plan?'':' <span class="paused">Between periods</span>'}</h3>
       ${crewRoom()?'':`<p class="capnote">${lockChip(crewGate()>0?crewGate():CREW_CAP.length-1)} <span>Your level allows ${crewCap()} crew. Hit your yearly goal to hire more.</span></p>`}
@@ -3121,6 +3126,8 @@ function renderSheet(){
   const bb=$('buildB');if(bb)bb.onclick=buildFloor;
   el.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>buyUp(b.dataset.up));
   const shb=$('showB');if(shb)shb.onclick=buildShow;
+  const mgb=$('mgrB');if(mgb)mgb.onclick=hireMgr;const mgx=$('mgrX');if(mgx)mgx.onclick=letMgrGo;const hdb=$('holdB');if(hdb)hdb.onclick=holdHand;
+  el.querySelectorAll('[data-gift]').forEach(b=>b.onclick=()=>crmGift(b.dataset.gift));el.querySelectorAll('[data-visit]').forEach(b=>b.onclick=()=>crmVisit(b.dataset.visit));el.querySelectorAll('[data-amends]').forEach(b=>b.onclick=()=>crmAmends(b.dataset.amends));
   const skb=$('skB');if(skb)skb.onclick=()=>skillsModal();
   const sub_=$('sucB');if(sub_)sub_.onclick=sucBuild;const sxb=$('sucX');if(sxb)sxb.onclick=sucExpand;
   el.querySelectorAll('[data-splant]').forEach(b=>b.onclick=()=>sucPlantModal(+b.dataset.splant));
@@ -3146,7 +3153,7 @@ const loanLeft=()=>S.loans.reduce((a,l)=>a+l.left,0);
 const loanCap=()=>4000+2000*S.floors;
 const loanRoom=()=>Math.max(0,loanCap()-loanLeft());
 const loanPay=()=>S.loans.reduce((a,l)=>a+Math.min(l.left,Math.ceil(l.orig/LOAN_N))+Math.round(l.left*(l.rate??LOAN_RATE)),0);
-const payroll=()=>S.crew.reduce((a,r)=>a+r.wage+(r.owed||0),0);
+const payroll=()=>S.crew.reduce((a,r)=>a+r.wage+(r.owed||0),0)+(S.mgr?S.mgr.wage:0);
 const rushWage=r=>Math.max(r.wage+10,Math.round(r.wage*1.35/5)*5);
 function takeLoan(amt){
   amt=Math.min(amt,loanRoom());if(amt<=0)return false;
@@ -3206,7 +3213,7 @@ function readyCheck(){
   $('rdNo').onclick=closeModal;
 }
 function payday(){
-  if(!S.crew.length)return;
+  if(!S.crew.length&&!S.mgr)return;
   const due=payroll();
   if(S.cash>=due){S.cash-=due;S.ys.crew+=due;S.crew.forEach(r=>{r.owed=0;r.missed=0;});return;}
   S.crew.forEach(r=>{r.owed=(r.owed||0)+r.wage;r.missed=(r.missed||0)+1;});
@@ -3726,6 +3733,48 @@ function growerCardHTML(){
     ${mx?'':`<span class="gxpb"><i style="width:${Math.round(xp/need*100)}%"></i></span><span>${xp} of ${need} experience to level ${l+1}. Every job you do yourself counts; tree and showcase jobs count extra.</span>`}
     <span>Each level gives a skill point. Skills can make you faster, help your plants, win over customers and crew, or bring luck.</span>
     <span class="skrow"><button class="btn sm${skPts()?' sun':''}" type="button" id="skB">Skills${skPts()?` <span class="skn">${skPts()}</span>`:''}</button><small>${skSpent()} point${skSpent()===1?'':'s'} spent</small></span></div></div>`;
+}
+// ---- the office manager: holds offers for later and handles costly make-amends ----
+const MGR_LV=8,MGR_WAGE=260,HOLD_MAX=2,GIFT_COST=150,AMENDS_COST=2000;
+const MGR_NAMES=['Dolores','Walt','Renee','Marcus','Joanne','Felix'];
+const mgrOn=()=>!!(S&&S.mgr);
+const holdable=of=>!!of&&!of.contract&&!of.veg&&!of.showcase&&!of.popup&&offerOwned(of)&&forms(of).some(F=>(flexible(of)?of.p:dueOf(of))-F.g+1>=minStart()+1);
+function hireMgr(){
+  if(mgrOn()||S.phase!=='plan'||stage()<MGR_LV||(S.office||1)<2)return;
+  S.mgr={name:pick(MGR_NAMES),wage:MGR_WAGE,y:S.year};save();toast('crew',`${S.mgr.name} runs the office now`);renderSheet();hud();
+}
+function letMgrGo(){if(!mgrOn())return;toast('crew',`${S.mgr.name} cleared out the desk`);S.mgr=null;S.held=[];save();renderSheet();hud();}
+function holdHand(){
+  const of=placing?placing.of:queue()[0];if(!mgrOn()||!holdable(of)||(S.held||[]).length>=HOLD_MAX)return;
+  if(placing){placing=null;sel=null;pv=null;}
+  S.offers=S.offers.filter(x=>x!==of);S.held=[...(S.held||[]),of];toast('good',`${S.mgr.name} will hold the ${crop(of.crop).name.toLowerCase()} order until next period`);
+  renderSheet();hud();readyCheck();
+}
+// held offers come back at the next planning step if they can still be grown in time
+function restoreHeld(){
+  const h=S.held||[];S.held=[];const back=[];
+  for(const of of h){const ok=forms(of).some(F=>(flexible(of)?of.p:dueOf(of))-F.g+1>=minStart());
+    if(ok){of.held=1;of.fm=0;back.push(of);}else if(!window.__quiet)setTimeout(()=>toast('bad',`The held ${crop(of.crop).name.toLowerCase()} order ran out of time`),700);}
+  if(back.length)S.offers=[...back,...S.offers];
+}
+const crmOf=n=>(S.crm=S.crm||{})[n]||(S.crm[n]={});
+function crmGift(n){const c=crmOf(n);if(S.phase!=='plan'||c.gift===S.year||!spend(GIFT_COST,'a thank-you gift'))return;S.ys.overhead+=GIFT_COST;c.gift=S.year;custRep(n,6,'thank-you gift');toast('good',`Sent ${short1(n)} a thank-you basket`);renderSheet();hud();}
+function crmVisit(n){const c=crmOf(n);if(S.phase!=='plan'||c.visit===S.year)return;if(S.visit===n){S.visit=null;}else S.visit=n;renderSheet();}
+function crmAmends(n){const c=crmOf(n),r=custR(n);if(S.phase!=='plan'||!mgrOn()||c.amends===S.year||tierIx(r)>1||!spend(AMENDS_COST,'making amends'))return;
+  S.ys.overhead+=AMENDS_COST;c.amends=S.year;S.cust[n].r=Math.max(r,45);S.rep=avgRep();(S.repLog=S.repLog||[]).push({n,d:45-r,why:`${S.mgr.name} made amends`});toast('good',`${S.mgr.name} smoothed things over with ${short1(n)}`);renderSheet();hud();}
+function crmButtons(n,plan){
+  const c=crmOf(n),r=custR(n),ti=tierIx(r),vis=S.visit===n;
+  return`<div class="crm">
+    <button type="button" class="btn sm" data-gift="${esc(n)}"${plan&&c.gift!==S.year?'':' disabled'}>${c.gift===S.year?'Gift sent':`Thank-you gift ${fmt(GIFT_COST)}`}</button>
+    <button type="button" class="btn sm${vis?' sun':''}" data-visit="${esc(n)}"${plan&&c.visit!==S.year&&(!S.visit||vis)?'':' disabled'}>${c.visit===S.year?'Visited':vis?'Visiting next period ✓':'Site visit'}</button>
+    ${ti<=1?`<button type="button" class="btn sm" data-amends="${esc(n)}"${plan&&mgrOn()&&c.amends!==S.year?'':' disabled'}>${c.amends===S.year?'Amends made':mgrOn()?`Make amends ${fmt(AMENDS_COST)}`:'Make amends (needs a manager)'}</button>`:''}</div>`;
+}
+function mgrHTML(plan){
+  if(stage()<MGR_LV)return'';
+  if(!mgrOn())return`<div class="prizec">${svgIcon('crew',44)}<div class="rn"><b>Office manager</b><span>Works out of the homestead office. Holds up to ${HOLD_MAX} offers you can’t fit for the next planning step, and can make amends with customers who’ve turned on you. ${fmt(MGR_WAGE)} a period.</span>
+    ${(S.office||1)<2?`<span class="pgate"><span>○ Needs the bigger office at the homestead</span></span>`:`<button class="btn sun" type="button" id="mgrB"${plan?'':' disabled'}>Hire</button>`}</div></div>`;
+  return`<div class="prizec on"><span class="face" style="width:44px;height:44px;background:#9fb4d0"><img src="${personURL('mgr_front_0')}" alt=""></span><div class="rn"><b>${esc(S.mgr.name)} · Office manager</b><span>${fmt(S.mgr.wage)}/period · holding ${(S.held||[]).length}/${HOLD_MAX} offers</span><span>Use Hold on an offer to keep it for next period. Make amends from the Customers tab.</span>
+    <button class="btn sm" type="button" id="mgrX"${plan?'':' disabled'}>Let go</button></div></div>`;
 }
 function prizeHTML(plan){
   const r=prizeR();
