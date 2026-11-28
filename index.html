@@ -365,8 +365,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 @keyframes boxIn{0%{transform:translateY(70px);opacity:0}100%{transform:none;opacity:1}}
 @keyframes rowIn{0%{transform:translateY(22px);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.sheet.slidein,.mbox.slidein,.mbox.slidein>*,.sheet.popup{animation:none}#fade{transition:none}}
+.skyr{display:grid!important;grid-template-columns:repeat(8,1fr);gap:4px;margin:4px 0 14px}.skyr i{display:flex;flex-direction:column;align-items:center;gap:4px;width:auto!important;height:auto!important;background:none!important;box-shadow:none!important}.skyr i b{display:block;width:100%;height:8px;border-radius:4px;background:#e2dccb}.skyr i.d b{background:#c9b27a}.skyr i.n b{background:var(--sun)}.skyr small{font-size:10px;color:var(--mute);white-space:nowrap}.skyr i.n small{color:var(--ink);font-weight:700}
 .tbub p{margin:0}.tbub .tb{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
-.tbub .tb button{border:0;border-radius:10px;font:inherit;font-weight:700;padding:7px 14px;cursor:pointer}.tbub .tok{background:var(--sun);color:#2b2104}.tbub .tsk{background:none;color:var(--mute);font-size:13px;font-weight:600;margin-right:auto;padding:7px 4px}
+.tbub .tb button{border:0;border-radius:10px;font:inherit;font-weight:700;padding:7px 14px;cursor:pointer}.tbub .tok{background:var(--sun);color:#2b2104;position:relative;overflow:hidden}.tbub .tok:disabled{background:#efe6c4;color:#9a8a5a;cursor:default}.tbub .tok:disabled:after{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;background:rgba(242,194,48,.55);transform-origin:left;animation:tokfill var(--rt,1.5s) linear forwards}@keyframes tokfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}.tbub .tsk{background:none;color:var(--mute);font-size:13px;font-weight:600;margin-right:auto;padding:7px 4px}
 .tbub .tarr{position:absolute;width:16px;height:16px;background:#fff;border:3px solid #f2c230;transform:rotate(45deg)}
 .tbub .tarr.up{top:-10px;border-right:0;border-bottom:0}.tbub .tarr.dn{bottom:-10px;border-left:0;border-top:0}
 .tbub .tg{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;color:#a87200;margin-bottom:2px}
@@ -1843,7 +1844,7 @@ function genOffers(){
   const cand=candFlex(c);if(!cand.length)return;
   const mine=cand.filter(x=>owns(x.k));
   const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.min(Math.round(base*OFFER_MULT*Math.max(1,regHouses().length)*(.4+.6*(8-c)/8))+(sk('greenlight')?1:0),Math.max(2,Math.ceil(freeCells(c)/OFFER_CELLS)));
-  const theirs=cand.filter(x=>!owns(x.k)),sure=mine.length?Math.min(n,Math.max(2,Math.ceil(n*.5))):0;
+  const theirs=S.year===1&&c<3?[]:cand.filter(x=>!owns(x.k)),sure=mine.length?Math.min(n,Math.max(2,Math.ceil(n*.5))):0;
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
   for(let i=0;i<rest;i++)S.offers.push(mkOffer(wpick(theirs.length?theirs:cand)));
@@ -1861,6 +1862,7 @@ function genShowEntries(c){
   out.slice(0,3).reverse().forEach(({sh,k,key})=>S.offers.unshift({id:S.nid++,crop:k,p:sh.p,qty:ri(6,Math.min(10,capB())),price:CROPS[k].price,cust:'Best Homes and Gardens',showcase:true,show:sh.n,ekey:key}));
 }
 function genContracts(){
+  if(!introOn('contract'))return;
   const c=S.period;const n=(S.rep>=35?1:0)+(rnd()<S.rep/140?1:0)+(S.floors-1);
   for(let i=0;i<n;i++){const of=makeContract(c);if(of)S.offers.push(of);}
 }
@@ -1868,7 +1870,8 @@ const okAt=(k,p,c)=>{const C=CROPS[k];return p>=0&&p<=7&&C.sell.includes(p)&&p-C
 const cPrice=k=>Math.round(CROPS[k].price*1.1*(.95+rnd()*.15));
 function makeContract(c){
   const cust=pickCust(true);if(!cust)return null;const tpm=tierOf(cust).pm;
-  const keys=Object.keys(CROPS).filter(k=>!notFlower(k)),cands={steady:[],alt:[],ramp:[],long:[],mix:[]};
+  // only varieties you grow or could buy right now (a contract for a variety that opens at a later level couldn't be taken)
+  const keys=Object.keys(CROPS).filter(k=>!notFlower(k)&&cropOpen(k)),cands={steady:[],alt:[],ramp:[],long:[],mix:[]};
   for(const k of keys){const C=CROPS[k];for(let p0=c+C.g-1;p0<=c+C.g+1;p0++){
     const run=(step,max)=>{const out=[];for(let p=p0;p<=7&&out.length<max&&okAt(k,p,c);p+=step)out.push(p);return out;};
     const a=run(1,4),b=run(2,4),l=run(1,6);
@@ -2255,6 +2258,10 @@ function enqueue(t){
 }
 
 // ---------------- period flow ----------------
+// ---- a gentle first year: each kind of interruption starts at its own point, so there's one new thing at a time ----
+// [year, period] when it first can happen. Potting, watering and trucks are there from the start.
+const INTRO={pest:[1,2],contract:[1,2],break:[1,3],call:[1,4],star:[1,5],cup:[1,6],popup:[2,1]};
+const introOn=k=>{const a=INTRO[k];if(!a||!S)return true;return S.year>a[0]||(S.year===a[0]&&S.period>=a[1]);};
 function startPeriod(){
   try{localStorage.setItem('gy8pk',JSON.stringify(S));}catch(e){}// closing mid-period brings you back to this period's planning
   vegSettle(S.period);
@@ -2280,6 +2287,7 @@ function startPeriod(){
   if(c>=2&&c<=5&&rnd()<.6)S.events.push({at:PSEC*(.15+rnd()*.3),k:'popup'});
   propStart(c);schedTreeJobs(c);sucSched(c);festSched(c);
   if(!window.__quiet&&rnd()<Math.min(.95,(catOn('minaou')?.75:.5)*(1+.3*sk('starspot'))*(1+.06*houseIds().reduce((a,h)=>a+decB(h,'egg'),0))))S.events.push({at:PSEC*(.1+rnd()*.6),k:'star'});
+  S.events=S.events.filter(e=>introOn(e.k));// the first year brings things in one at a time
   S.events.sort((a,b)=>a.at-b.at);
   closeSheet();hud();
 }
@@ -2336,12 +2344,14 @@ function tick(dt){
   }
   for(const f of houseIds())if(S.broken[f]){S.dmgT[f]+=dt;if(S.dmgT[f]>=6){S.dmgT[f]-=6;S.plots.filter(p=>!p.done&&p.s<=S.period&&plotF(p)===f&&prog(p)<1).forEach(p=>p.rows.forEach(r=>{if(rnd()<.6&&hurt(p,r,0,1)){p.hurt=1;float(BENCH[r],'−1','#c8402f');}}));}}
   checkRed();
-  if(idleNow()){S.idleT=(S.idleT||0)+dt;if(S.t<1||S.idleT>3){const first=S.t<1,c=S.period;S.t=PSEC;if(!window.__quiet)toast('good',first?`Nothing growing in ${PN[c].toLowerCase()}. Skipping ahead; upkeep and wages still apply`:c===7?'Last truck is gone. Closing out the year':`Nothing left to do in ${PN[c].toLowerCase()}. Skipping ahead`);}}else S.idleT=0;
+  if(idleNow()){S.idleT=(S.idleT||0)+dt;if(S.t<1||S.idleT>3){const first=S.t<1,c=S.period;S.t=PSEC;if(first)S.skipP=c;if(!window.__quiet)toast('good',first?`Nothing growing in ${PN[c].toLowerCase()}. Skipping ahead; upkeep and wages still apply`:c===7?'Last truck is gone. Closing out the year':`Nothing left to do in ${PN[c].toLowerCase()}. Skipping ahead`);}}else S.idleT=0;
   stepCup(dt);
   if(S.t>=PSEC){
     // after the bell, jobs still on the board run out their timers (or get done) before planning starts
     const live=S.tasks.filter(t=>engaged(t)||(t.due!=null&&S.t<t.due&&t.type!=='pot'));
-    if(!live.length||S.t>=PSEC*1.8||(S.phase==='run'&&window.__quiet&&S.t>=PSEC*1.2)){if(window.__quiet||window.__noFade)endPeriod();else{const c=S.period;fadeThen(endPeriod,c>=7?`<small>YEAR ${S.year}</small>That\u2019s a wrap`:`<small>YEAR ${S.year}</small>${PN[c]} is done`);}}
+    if(!live.length||S.t>=PSEC*1.8||(S.phase==='run'&&window.__quiet&&S.t>=PSEC*1.2)){if(window.__quiet||window.__noFade)endPeriod();else{const c=S.period,skip=S.skipP===c;S.skipP=null;const firstSkip=skip&&!(S.tips&&S.tips.skipM)&&c<7;
+      fadeThen(()=>{endPeriod();if(firstSkip&&S.phase==='plan'){S.tips=S.tips||{};S.tips.skipM=1;save();skipModal(c);}},
+        skip?`<small>YEAR ${S.year} · NOTHING PLANTED</small>Skipping ${PN[c].toLowerCase()}<small style="margin:8px 0 0;letter-spacing:.04em">Upkeep and wages are still paid</small>`:c>=7?`<small>YEAR ${S.year}</small>That’s a wrap`:`<small>YEAR ${S.year}</small>${PN[c]} is done`);}}
     else if(!S.otShown){S.otShown=1;if(!window.__quiet)toast('good',`Time\u2019s up for ${PN[S.period].toLowerCase()}. Finish the jobs still on the board; planning starts when they\u2019re done or missed`);}
   }
 }
@@ -2353,6 +2363,7 @@ function stepCup(dt){
   if(window.__quiet||S.phase!=='run')return;
   if(cup){cup.t+=dt;if(cup.t>10+3*sk('caffeine')){cup=null;cupCool=20;}return;}
   if((cupCool-=dt)>0)return;
+  if(!introOn('cup'))return;
   const n=cupJobs().length;if(n<3)return;
   if(rnd()<(.004+.0016*(n-3))*(1+.4*sk('caffeine'))*dt){
     const sx=VW*(.25+rnd()*.5)-RAIL_W()/2,sy=viewTop+(viewBot-viewTop)*(.3+rnd()*.4),z=30;
@@ -3349,11 +3360,25 @@ function homeLookAt(L){if(S.phase!=='home'||!homeBox)return;const [X,Y]=P(L.x+1.
 const lotFocus=L=>{if(!L)return null;if(tipPan!==L.id){tipPan=L.id;homeLookAt(L);}return lotBox(L.id)();};
 const firstDebris=()=>{const c=LOTS.filter(l=>!l.pre&&!lotState(l.id).clear&&!jobFor(l.id)).sort((a,b)=>a.cost-b.cost)[0];return c;};
 const TIPS=[
- {id:'place',tag:'YOUR FIRST ORDER',when:()=>onTab('orders')&&placing&&!S.plots.length&&!S.hist.length,steps:[
-   {el:'#board',t:'This is the bench board. Each square is one bench for one period. The outlined spot is where this order would grow.',ok:1},
-   {el:'#pvGo',t:'Tap Place to book the order. You can tap the board first to try a different spot.',guide:1,done:()=>S.plots.length>0}]},
- {id:'start',tag:'START THE PERIOD',when:()=>inPlan()&&S.plots.length>0&&S.year===1&&S.period===0&&S.tips.place,steps:[
+ {id:'place',tag:'HOW PLANNING WORKS',when:()=>onTab('orders')&&placing&&!S.plots.length&&!S.hist.length,steps:[
+   {el:'.ttop .tw',t:'This is where you are: year 1, early winter. A year has 8 periods, two per season: early and late winter, spring, summer and fall. You plan between periods, and the clock is stopped while you do.',ok:1},
+   {el:()=>sel$('#board .ch.now'),t:'The board’s columns are those 8 periods, left to right. “Now” is the period you’re about to play. Columns to the left are already gone.',ok:1},
+   {el:()=>sel$('#board .rh'),t:'Each row is a bench, A to H. One square is one bench for one period. An order takes a block of squares: more flats need more benches, and slower varieties need more periods.',ok:1},
+   {el:()=>sel$('.hc:not(.empty)')||sel$('.pbar'),t:'This is the offer in your hand: who wants it, the variety, how many flats, and when it ships. “By” means ship it on that date or earlier. “Ships” means that exact period only.',ok:1},
+   {el:()=>sel$('#board .vs')||sel$('#board'),t:'The strip along the top shows what this order pays for each period it could ship in. Shipping on the customer’s date pays in full. Each period early pays less. Peak season for the variety pays extra.',ok:1},
+   {el:()=>sel$('#ro')||sel$('#board'),t:'Before you place, this readout explains the price: the multiplier for shipping early, the season, a crowded market if lots of the same plant ship that period, and any customer standing you’d gain or lose.',ok:1},
+   {el:()=>sel$('.nx')||sel$('.pbar .nxt')||sel$('.hc:not(.empty)'),t:'Offers come one at a time; “next up” shows what’s after this one. You’ll get more offers than benches, so pick the ones that pay best and fit.',ok:1},
+   {el:'#board',t:'Tap the board to try a spot. Green squares are free for this order; red ones are taken. The outlined block is where it would grow.',guide:1,done:()=>bTaps>tipTaps0&&!!pv},
+   {el:'#pvGo',t:'Tap Place to book it.',guide:1,done:()=>S.plots.length>0}]},
+ {id:'plan2',tag:'HOW PLANNING WORKS',when:()=>onTab('orders')&&S.plots.length>0&&S.year===1&&S.period===0&&S.tips.place,steps:[
+   {el:()=>sel$('#board .blk')||sel$('#board'),t:'Booked. The block shows the variety, flats and value. You pot it at its left edge and a truck collects it at the right edge.',ok:1},
+   {el:()=>sel$('#binB'),t:'Don’t want an offer? Bin it. There’s no penalty for turning one down before you book it.',ok:1},
+   {el:()=>sel$('#legend')||sel$('#board'),t:'Later on you’ll see other kinds of offer: contracts (a run of deliveries for one customer), pop-ups that call mid-period, and festival, vegetable and showcase orders. Each one is explained the first time it turns up.',ok:1}]},
+ {id:'start',tag:'START THE PERIOD',when:()=>inPlan()&&S.plots.length>0&&S.year===1&&S.period===0&&S.tips.plan2,steps:[
    {el:'#goB',t:'Place or bin the rest of the offers, then tap Start. Time runs during a period and stops while you plan.',ok:1,done:()=>S.phase==='run'}]},
+ {id:'periods',tag:'THE YEAR AT A GLANCE',when:()=>running()&&S.year===1&&S.period===0&&S.t>PSEC*.15,steps:[
+   {el:'#hYr',t:'These 8 bars are the year’s periods. The one filling up is the period you’re in. When it fills, any jobs still on the board finish, then you plan the next period.',ok:1},
+   {el:'#hYr',t:'If nothing is growing in a period, the game skips straight past it to the next planning step. Upkeep and wages are still paid, so an empty period costs money.',ok:1}]},
  {id:'pot',tag:'POTTING',when:()=>running()&&hasT(t=>t.type==='pot'),steps:[
    {el:iconOf(t=>t.type==='pot'),t:'A new order needs potting before its ring runs out. Tap the icon to send your grower.',guide:1,done:()=>S.queue.some(t=>t.type==='pot')||me.task&&me.task.type==='pot'||!hasT(t=>t.type==='pot')}]},
  {id:'queue',tag:'YOUR GROWER',when:()=>running()&&S.queue.length>0,steps:[
@@ -3391,12 +3416,14 @@ const TIPS=[
    {el:'.unl[data-gen]',t:'This customer wants a variety you don\u2019t grow yet. Unlock its genetics to take the order (you keep them for good), or bin the offer and wait for the next one.',ok:1}]},
  {id:'popup',tag:'POP-UP ORDER',when:()=>S.phase==='run'&&sheetOpen()&&tab==='orders'&&placing&&placing.of.popup,steps:[
    {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'Pop-up orders turn up mid-period and the clock waits while you decide. Place it if you have room, or bin it.',ok:1}]},
- {id:'loan',tag:'THE BANK',modal:1,when:()=>!!document.querySelector('#mbox [data-ln]'),steps:[
-   {el:'#mbox .opts',t:'Short on cash? The bank will lend. Each loan is paid back a bit every period, with interest; each option shows what it really costs. Borrow only what you need.',ok:1}]},
  {id:'raise',tag:'RAISES',modal:1,when:()=>!!document.querySelector('#mbox [id^="rq"]'),steps:[
    {el:'#mbox .roles',t:'Newer crew sometimes ask for a raise between periods. Say yes to keep them; say no and they quit. Veterans stop asking.',ok:1}]},
  {id:'contract',tag:'CONTRACT',when:()=>onTab('orders')&&placing&&placing.of.contract,steps:[
-   {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'A contract is a run of deliveries for one customer. Place each one. Ship them all for a reputation bonus; break one and it costs you.',ok:1}]},
+   {el:()=>sel$('.hc:not(.empty)')||sel$('.pbar'),t:'A contract is a run of deliveries for one customer, shown in purple. It pays more per flat than a one-off and wins their standing when every truck ships full.',ok:1},
+   {el:()=>sel$('.hc .cur')||sel$('.pbar'),t:'You book it one delivery at a time. This is delivery 1: its variety, flats and the period it ships. Each delivery has its own date, so its block may sit in a different place.',ok:1},
+   {el:()=>sel$('#board .blk.later')||sel$('#board'),t:'Faded blocks show where the later deliveries would go if you keep this spot.',ok:1},
+   {el:()=>sel$('#pvGo')||sel$('#board'),t:'Pick a spot and Place this delivery. Then the next one comes up in your hand; keep going until every delivery is on the board.',done:()=>!placing||placing.k>=1},
+   {el:()=>sel$('#binB')||sel$('#board'),t:'Changed your mind before the last one? Bin it and the whole contract is dropped, free. Once every delivery is booked it’s a promise: a truck that leaves empty costs standing with that customer, and they cancel the rest of the run.',ok:1}]},
  {id:'crew',tag:'HIRE SOME HELP',when:()=>inPlan()&&!S.crew.length&&crewRoom()>0&&S.cash>=900&&(S.period>=3||S.year>1),steps:[
    {el:'[data-tab="crew"]',t:'You’re ready for help. Open the Crew tab.',guide:1,done:()=>tab==='crew'},
    {el:'.hires',t:'Each hire does one kind of job in their own house, on their own. They start slow and speed up the longer they stay.',ok:1,done:()=>S.crew.length>0}]},
@@ -3427,8 +3454,8 @@ const TIPS=[
    {el:()=>{if(tipPan!=='mail'){tipPan='mail';homeLookAt({x:MAIL.x-1.5,y:MAIL.y-2});}const [X,Y]=P(MAIL.x,MAIL.y,30);return{x:X-28,y:Y-46,w:56,h:70};},t:'The flag on your mailbox is up. Tap it to get the mail. Mail turns up at random times, usually with a few stars inside.',guide:1,done:()=>HJ.some(j=>j.kind==='mail')||!mailReady()}]},
  {id:'veg',tag:'VEGETABLES',when:()=>inPlan()&&stage()>=VEG_LV&&!vegOn()&&S.period<=1,steps:[
    {el:'[data-tab="build"]',t:'You can now grow vegetable starts. Open Upgrades.',guide:1,done:()=>tab==='build'},
-   {el:'[data-sub="veg"]',t:'Open Veg.',guide:1,done:()=>upSub==='veg'},
-   {el:'.uprow',t:'Buy the certificate to sign a spring vegetable contract each year: you promise a customer benches for early and late spring, and plant their orders before your flowers.',ok:1}]},
+   {el:'[data-sub="houses"]',t:'Open Houses.',guide:1,done:()=>upSub==='houses'},
+   {el:()=>sel$('[data-spec$=":veg"]')||sel$('.uprow'),t:'Turn an empty house into a vegetable house. Vegetables only grow there, at half the upkeep, and their jobs go faster. It brings a spring vegetable contract (the big money), a smaller fall run, and herb and greens orders all year.',ok:1}]},
  {id:'vegord',tag:'VEGETABLE ORDERS',when:()=>inPlan()&&tab==='orders'&&S.offers.some(o=>o.veg),steps:[
    {el:()=>sel$('.pbar')||sel$('.hc:not(.empty)'),t:'Your vegetable orders come first. They\u2019re ready the period you plant them. Plant or bin each one; every line you bin cuts the contract bonus by a third.',ok:1}]},
  {id:'sucb',tag:'SUCCULENT HOUSE',when:()=>inPlan()&&stage()>=SUC_LV&&!sucOn(),steps:[
@@ -3463,11 +3490,40 @@ const TIPS=[
    {el:'.gfrow',t:'Swap gift cards with friends. Show yours on your screen and they snap it with their phone: they get 2 stars and you get 1. One card every 12 hours; open up to 3.',ok:1}]},
  {id:'orchard',tag:'RIPE FRUIT',when:()=>S.phase==='home'&&$('modal').hidden&&!HJ.length&&LOTS.some(l=>ripe(l.id)),steps:[
    {el:()=>lotFocus(LOTS.find(l=>ripe(l.id))),t:'Your fruit trees are ripe. Tap them and your grower gives them a shake: there\u2019s a star or two in there every 6 hours.',ok:1,done:()=>HJ.some(j=>j.kind==='shake')}]},
+ {id:'pickups',tag:'TRUCKS AND BAYS',when:()=>onTab('orders')&&!!(sel$('#board .tk.warn')||sel$('#board .tk.bad')),steps:[
+   {el:()=>sel$('#board .tk.bad')||sel$('#board .tk.warn'),t:'This bottom row counts the trucks picking up each period. Amber or red means your loading bays can’t load them all in time. Hire a loader, build another bay in Upgrades > Equipment, or spread pickups across periods.',ok:1}]},
+ {id:'shorttruck',tag:'A SHORT TRUCK',modal:1,when:()=>!!$('askBuy')&&!!$('askShort'),steps:[
+   {el:'#mbox .opts',t:'This order came up short. Buy the missing flats in to ship it full and keep the customer happy, or ship short: cheaper now, but their standing drops. The game waits while you choose.',ok:1}]},
+ {id:'nopot',tag:'NOT POTTED YET',when:()=>running()&&hasT(t=>t.type==='load'&&!potOK(t)),steps:[
+   {el:iconOf(t=>t.type==='load'&&!potOK(t)),t:'A truck is here for an order you haven’t potted. Only potted plants ship. Tap the truck and your grower pots it first, then loads it, but only if they get there before the truck gives up.',ok:1}]},
+ {id:'payday',tag:'PAYDAY',when:()=>inPlan()&&S.crew.some(r=>r.missed),steps:[
+   {el:'[data-tab="crew"]',t:'You couldn’t cover payday. Wages are paid at the start of every period; whoever has waited longest gets paid first, and the rest is owed. What you owe counts as debt at year end, and crew who miss two paydays in a row may quit.',ok:1}]},
+ {id:'custtab',tag:'YOUR CUSTOMERS',when:()=>onTab('cust'),steps:[
+   {el:()=>sel$('.cust')||sel$('.bhead'),t:'Each customer has a standing: Lost, Wary, Steady, Loyal or Partner. It sets what they pay: from 0.8× for Lost up to 1.25× for Partner. Full, on-time trucks raise it; short, late or empty trucks lower it, and it slips a little every period on its own.',ok:1},
+   {el:()=>sel$('.cust')||sel$('.bhead'),t:'Once a year per customer you can send a thank-you gift or make a site visit to win them over. A visit takes your grower away for the start of the next period.',ok:1}]},
+ {id:'mgr',tag:'OFFICE MANAGER',when:()=>onTab('crew')&&stage()>=8&&!mgrOn()&&!!(sel$('#mgrB')||sel$('.pgate')),steps:[
+   {el:()=>sel$('#mgrB')||sel$('.pgate'),t:'You can now hire an office manager (it needs the bigger office at the homestead). They hold up to two offers you can’t fit for the next planning step, and can make amends with customers who’ve turned wary or lost.',ok:1}]},
+ {id:'sellh',tag:'SELLING A HOUSE',when:()=>onTab('build')&&upSub==='houses'&&S.floors>=2&&!!sel$('#sellH'),steps:[
+   {el:'#sellH',t:'Too much to run? You can sell your newest house for 75% of what it cost. Its crew and specialty go with it, and its decorations go back to storage. It’s a good way back from a hard year.',ok:1}]},
+ {id:'taxend',tag:'THE TAX BREAK IS OVER',when:()=>inPlan()&&S.year===TAX_Y+1&&S.period===0,steps:[
+   {el:()=>sel$('.ttop .wallet')||sel$('.ttop .tw'),t:`From now on upkeep is full price, you pay income tax on each year’s operating profit, and crew wages rise ${Math.round(WAGE_INFL*100)}% a year. Keep an eye on your profit margin: it’s one of your four health targets.`,ok:1}]},
+ {id:'healthwarn',tag:'HEALTH CHECK',when:()=>running()&&S.year>1&&S.period>=3&&!reviewNow().pass,steps:[
+   {el:'#hGoalB',t:'You’re on track for fewer than 3 of your 4 health targets this year. If it stays that way at year end, the year starts over. Tap here to see which ones need work.',ok:1}]},
+ {id:'propb',tag:'PROPAGATION HOUSE',when:()=>inPlan()&&stage()>=PROP_LV&&!propOn()&&S.period<=1,steps:[
+   {el:'[data-tab="build"]',t:'You can now build a propagation house. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="houses"]',t:'Open Houses.',guide:1,done:()=>upSub==='houses'},
+   {el:()=>sel$('[data-spec$=":prop"]')||sel$('.uprow'),t:'A propagation house takes no orders. Its benches grow plugs for your other houses, so planting is free while its strike rate stays at 85% or more. A propagator runs it.',ok:1}]},
+ {id:'propjob',tag:'PROPAGATION',when:()=>running()&&hasT(t=>t.type==='prop'),steps:[
+   {el:iconOf(t=>t.type==='prop'),t:'Your propagation house needs sticking, misting and cleaning. Missed jobs lower the strike rate. Below 85% it goes on probation and you pay 35% of planting costs until it runs well two periods in a row. Bought varieties owe a 10% royalty per plug until you’ve paid their genetics price once.',ok:1}]},
+ {id:'treesell',tag:'A TREE IS READY',when:()=>onTab('trees')&&Object.values(treesOf()).some(treeReady),steps:[
+   {el:()=>sel$('.tcard.rdy')||sel$('.tcard'),t:'This tree is ready. Sell it in spring or fall: to a landscaper for cash, or to the county arboretum for stars. Its grade, from the care jobs you did on time, sets the price.',ok:1}]},
+ {id:'build',tag:'BUILD SOMETHING',when:()=>S.phase==='home'&&$('modal').hidden&&!HJ.length&&S.tips.home&&LOTS.some(l=>!l.pre&&lotState(l.id).clear&&!lotState(l.id).b),steps:[
+   {el:()=>lotFocus(LOTS.find(l=>!l.pre&&lotState(l.id).clear&&!lotState(l.id).b)),t:'A cleared plot. Tap it to see what you can build with stars: each building brings its own small bonus, from a farm stand to fruit trees that drop stars.',ok:1}]},
  {id:'adopt',tag:'CATS',when:()=>S.phase==='home'&&$('modal').hidden&&(S.stars||0)>=CAT_COST&&S.cats.length<catCap()&&!HJ.length,steps:[
    {el:()=>lotFocus(lotOf('L01')),t:'You have stars for a new cat. Tap the cat house to adopt.',guide:1,done:()=>homeSel==='L01'},
    {el:'.adopt',t:'Every cat helps in her own way. Read their bonuses, then adopt one.',ok:1}]},
 ];
-let tipCur=null,tipStep=0,tipCool=1,tipMiss=0,tipScrolled=null;
+let tipCur=null,tipStep=0,tipCool=1,tipMiss=0,tipScrolled=null,tipReadFor=null,tipRead=0,tipTaps0=0;
 const safeT=f=>{try{return!!f();}catch(e){return false;}};
 const tipStepNow=()=>tipCur&&tipCur.steps[tipStep];
 const tipBlocking=()=>!!(tipStepNow()&&!$('tut').hidden);
@@ -3475,7 +3531,7 @@ const tipBlocking=()=>!!(tipStepNow()&&!$('tut').hidden);
 const detailOpen=()=>S&&S.phase==='home'&&!!homeSel&&!$('hpop').hidden;
 const tipHoldsDetail=()=>{if(!tipBlocking())return false;const st=tipStepNow();if(st.guide)return false;if(typeof st.el==='string'){const e=document.querySelector(st.el);if(e&&e.closest('#hpop'))return false;}return true;};
 let detailHeld=false;
-function endTip(mark){tipPan='';if(detailHeld){detailHeld=false;setTimeout(()=>{if(S.phase==='home')renderHome();},0);}if(tipCur&&mark){S.tips=S.tips||{};S.tips[tipCur.id]=1;save();}tipCur=null;tipCool=mark?2:3;$('tut').hidden=true;}
+function endTip(mark){tipPan='';tipReadFor=null;if(detailHeld){detailHeld=false;setTimeout(()=>{if(S.phase==='home')renderHome();},0);}if(tipCur&&mark){S.tips=S.tips||{};S.tips[tipCur.id]=1;save();}tipCur=null;tipCool=mark?(S&&S.year<=1?3.5:2):3;$('tut').hidden=true;}
 function nextTipStep(){tipStep++;tipMiss=0;tipScrolled=null;if(!tipCur||tipStep>=tipCur.steps.length)endTip(true);}
 function tipsTick(dt){
   const T=$('tut');
@@ -3495,13 +3551,16 @@ function tipsTick(dt){
   pos('tring',x0,y0,x1-x0,y1-y0);
   const g=!!st.guide;['td1','td2','td3','td4'].forEach(id=>$(id).hidden=!g);
   if(g){pos('td1',0,0,innerWidth,y0);pos('td2',0,y1,innerWidth,innerHeight-y1);pos('td3',0,y0,x0,y1-y0);pos('td4',x1,y0,innerWidth-x1,y1-y0);}
-  const B=$('tbub');$('ttg').textContent=tipCur.tag||'';if($('ttx').textContent!==st.t)$('ttx').textContent=st.t;$('tok').hidden=!st.ok;$('tsk').textContent=g?'Skip':'Turn off tips';
+  const B=$('tbub');$('ttg').textContent=tipCur.tag||'';if($('ttx').textContent!==st.t)$('ttx').textContent=st.t;$('tok').hidden=!st.ok;
+  // reading time: OK unlocks after a moment that scales with the text (longer in the first year), so tips don't get clicked away unread
+  if(tipReadFor!==st){tipReadFor=st;tipTaps0=bTaps;tipRead=Math.min(3.2,(S.year<=1?.9:.5)+st.t.length/(S.year<=1?70:110));const k=$('tok');k.style.setProperty('--rt',tipRead+'s');k.disabled=true;}
+  if(tipRead>0&&(tipRead-=dt)<=0)$('tok').disabled=false;$('tsk').textContent=g?'Skip':'Turn off tips';
   const bw=Math.min(320,innerWidth-24),bh=B.offsetHeight||110;B.style.width=bw+'px';
   const below=y1+14+bh<innerHeight-8||y0-14-bh<8,top=below?y1+14:y0-14-bh,left=clamp((x0+x1)/2-bw/2,12,innerWidth-bw-12);
   B.style.left=left+'px';B.style.top=clamp(top,8,innerHeight-bh-8)+'px';
   const A=$('tarr');A.className='tarr '+(below?'up':'dn');A.style.left=clamp((x0+x1)/2-left-8,14,bw-30)+'px';
 }
-$('tok').onclick=()=>nextTipStep();
+$('tok').onclick=()=>{if(!$('tok').disabled)nextTipStep();};
 $('tsk').onclick=()=>{if(tipStepNow()&&tipStepNow().guide){endTip(true);return;}S.tipsOff=1;save();endTip(true);toast('good','Tips are off. Turn them back on from the Ledger tab');};
 // ---------------- attention rail (phones, one house at a time) ----------------
 const railOn=()=>!!S&&focusMode()&&S.phase==='run';
@@ -3793,7 +3852,8 @@ function evalPv(top){
   const G=[...gone];
   return{ok:true,hit:[...hit],gone:G,ctr:[...ctr],rep,gain:ppVal(pp),loss:G.reduce((a,p)=>a+plVal(p),0)};
 }
-function boardTap(r,c){
+let bTaps=0;// counts taps on the board, so the planning walkthrough waits for a real tap
+function boardTap(r,c){bTaps++;
   if(!placing||r<0)return;
   if(!S.coached){S.coached=1;const cm=$('coach');if(cm)cm.remove();}
   const inRows=pv&&r>=pv.top&&r<pv.top+sel.h,changed=c!=null&&c>=0?aimCol(c):false;
@@ -5066,6 +5126,13 @@ function welcome(){
 
 // ---------------- loop ----------------
 let lastT=performance.now(),uiT=0;
+// the first time an empty period is skipped, say what happened
+function skipModal(c){
+  modal(`<h2>${PN[c]} went by</h2><p>Nothing was growing in ${PN[c].toLowerCase()}, so the game skipped straight past it. You’re now planning <b>${PN[S.period].toLowerCase()}</b>.</p>
+    <p>A year has 8 periods, and the bars under the year in the top bar show which one you’re in. An empty period still costs upkeep and wages, so keep your benches busy.</p>
+    <div class="yr skyr">${PN.map((n,i)=>`<i class="${i<S.period?'d':i===S.period?'n':''}"><b></b><small>${n.replace('Early ','E. ').replace('Late ','L. ')}</small></i>`).join('')}</div>
+    <button class="btn go" type="button" id="skpOk">Got it</button>`);$('skpOk').onclick=closeModal;
+}
 // fade to black between periods and at year end, then the planning sheet or year-end screen slides in
 let fading=0;
 function fadeThen(fn,label){
