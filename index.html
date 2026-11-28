@@ -909,7 +909,7 @@ function guardRep(ch,what,ok){
   $('gNo').onclick=closeModal;$('gOk').onclick=()=>{closeModal();ok();};
 }
 const LETTERS='ABCDEFGH'.repeat(13);
-const SLOT=[[0,0],[11,0],[0,9],[11,9]];
+const SLOT=[[0,9],[11,9],[0,0],[11,0]]; // houses 1 and 2 sit by the main road and dock; 3 and 4 fill in toward the homestead
 const HOUSES=Array.from({length:12},(_,h)=>({h,s:h%4,L:Math.floor(h/4),ox:SLOT[h%4][0],oy:SLOT[h%4][1]}));
 const SH=12;HOUSES.push({h:SH,s:-1,L:0,ox:-11,oy:0,show:true});
 const hasShow=()=>!!(S&&S.show);
@@ -971,8 +971,8 @@ const houseIds=()=>{const a=[...Array(S.floors).keys()];if(hasShow())a.push(SH);
 const builtH=()=>houseIds().map(h=>HOUSES[h]);
 const benchIds=()=>houseIds().flatMap(h=>[0,1,2,3,4,5,6,7].map(i=>h*8+i));
 const hName=h=>h===SH?'Showcase house':floorName(h)+(specOf(h)==='veg'?' (vegetables)':specOf(h)==='prop'?' (propagation)':'');
-const FIELD_H=30,SUC_H=31;
-const lvOf=h=>h===FIELD_H||h===SUC_H?0:HOUSES[h].L;
+const FIELD_H=30,SUC_H=31,DOCK_H=32; // DOCK_H: the loading dock's own view on phones
+const lvOf=h=>h===FIELD_H||h===SUC_H||h===DOCK_H?0:HOUSES[h].L;
 // ---- succulent house: plants carry over from year to year; customers walk in to buy them ----
 const SUC_LV=12,SUC_COST=12000,SUC_OH=150,SUC_EXP=6000,SUCO={ox:-11,oy:9};
 const SUCS={echeveria:{n:'Echeveria',pup:60,m:1,c:'#6f9a92'},jade:{n:'Jade',pup:40,m:.85,c:'#3f8a3f'},aloe:{n:'Aloe',pup:50,m:.95,c:'#6f9a4a'},haworthia:{n:'Haworthia',pup:50,m:1,c:'#2f6a4a'},cactus:{n:'Barrel cactus',pup:80,m:1.25,c:'#5a8a2a'}};
@@ -1130,7 +1130,7 @@ const BENCH=Array.from({length:104},(_,i)=>{const H=HOUSES[Math.floor(i/8)],b=LB
 const unitOf=h=>{const H=HOUSES[h];return{x:8+H.ox,y:3+H.oy,ax:7+H.ox,ay:3+H.oy};};
 const liftOf=h=>{const H=HOUSES[h];return{x:H.ox,y:6+H.oy};};
 const DOCK={x:4,y:-1,f:0,h:-1};
-const BAYS=[{x:4,tx:3.3},{x:9,tx:8.8},{x:15,tx:14.3},{x:20,tx:19.8}];
+const BAYS=[{x:1},{x:3.5},{x:6},{x:8.5}]; // dock doors, packed along the back of house 1
 // loading bays are bought in Equipment; bay 1 is yours, every bay past the first needs its own loader to open
 const bayCount=()=>Math.min(BAYS.length,1+upLv('bays'));
 const loaders=()=>S.crew.filter(r=>r.role==='load').length;
@@ -1256,7 +1256,7 @@ function fresh(){
   S.snap={...S.ys,cash:S.cash};
 }
 const mkWorker=(id,role,x,y)=>({id,role,x,y,f:0,path:[],task:null,work:0,leg:null,ride:0});
-let me=mkWorker('me','me',4.5,3.5),staff=[],viewF=0;
+let me=mkWorker('me','me',HOUSES[0].ox+4.5,HOUSES[0].oy+3.5),staff=[],viewF=0;
 // ---- Robo-Cat: the secret cat at grower level 30. He takes any job nobody has queued. ----
 // S.robo: undefined until he turns up, 1 switched on, 2 switched off.
 const ROBO_WAIT=2.5,ROBO_SLOW=1.2;
@@ -1968,7 +1968,7 @@ function taskLabel(t){
   return nm+' '+benchName(t.bench);
 }
 function target(t){
-  if(t.type==='load')return{x:BAYS[t.bay||0].x,y:-1,f:0,h:-1};
+  if(t.type==='load')return{x:Math.floor(BAYS[t.bay||0].x),y:17,f:0,h:-1};
   if(t.type==='phone')return{x:HOUSES[0].ox+PHONE.x,y:HOUSES[0].oy+PHONE.y,f:0,h:0};
   if(t.type==='star')return{x:t.x,y:t.y,f:lvOf(t.h),h:t.h};
   if(t.type==='tree'){const p=spotXY(t.spot);return{x:p.x-1,y:p.y,f:0,h:FIELD_H};}
@@ -2106,17 +2106,16 @@ function walkableL(x,y,L){
   const h=houseAtXY(x,y,L);
   if(h>=0){const H=HOUSES[h],lx=x-H.ox,ly=y-H.oy;if(lx===8&&ly===3)return false;if(h===0&&lx===BOWL.x&&ly===BOWL.y&&S.cats.length)return false;if(h!==SH&&PROPS.some(p=>p.x===lx&&p.y===ly&&upLv(p.k)))return false;return!inLB(lx,ly);}
   if(L>0)return false;
-  if(x===6&&y===-1&&upLv('fork'))return false;
   if(x>=22&&treeAt(x,y))return false;
   if(sucBlocked(x,y))return false;
-  return x>=(hasShow()||sucOn()?-12:-1)&&x<=(fieldOpen()?31:20)&&y>=-1&&y<=16;
+  return x>=(hasShow()||sucOn()?-12:-1)&&x<=(fieldOpen()?31:20)&&y>=-1&&(y<=16||y===17&&x>=0&&x<=(S.floors>1?20:10));
 }
 const walkable=(x,y)=>walkableL(x,y,0);
 function stepOK(x,y,nx,ny,L){
   const a=houseAtXY(x,y,L),b=houseAtXY(nx,ny,L);if(a===b)return true;
   if(a>=0&&b>=0)return false;
   const h=a>=0?a:b,H=HOUSES[h],ix=a>=0?x:nx,iy=a>=0?y:ny,ox=a>=0?nx:x,oy=a>=0?ny:y;
-  return H.L===0&&ix-H.ox===4&&iy-H.oy===0&&ox-H.ox===4&&oy-H.oy===-1;
+  return H.L===0&&ix-H.ox===4&&ox-H.ox===4&&(iy-H.oy===0&&oy-H.oy===-1||iy-H.oy===6&&oy-H.oy===7);
 }
 function route(fx,fy,tx,ty,L){
   L=L||0;const k=(x,y)=>x+','+y,prev={},q=[[fx,fy]];prev[k(fx,fy)]=null;
@@ -2135,7 +2134,7 @@ function goPlan(w,tg){
   const lf=liftOf(lh);w.leg='lift';w.liftTo=to;w.ride=0;w.path=route(fx,fy,lf.x,lf.y,L);
 }
 function plan(w){goPlan(w,target(w.task));}
-const homeSpot=w=>{const hh=w.rec&&w.role!=='load'?w.rec.home:0,H=HOUSES[hh];if(w.role==='load'){const i=Math.max(0,staff.filter(x=>x.role==='load').indexOf(w))%bayCount();return{x:BAYS[i].x,y:-1,f:0,h:-1};}return{x:H.ox+2,y:H.oy+3,f:H.L,h:hh};};
+const homeSpot=w=>{const hh=w.rec&&w.role!=='load'?w.rec.home:0,H=HOUSES[hh];if(w.role==='load'){const i=Math.max(0,staff.filter(x=>x.role==='load').indexOf(w))%bayCount();return{x:Math.floor(BAYS[i].x+1),y:16,f:0,h:-1};}return{x:H.ox+2,y:H.oy+3,f:H.L,h:hh};};
 function moveAlong(w,dt,slow){const n=w.path[0],dx=n.x-w.x,dy=n.y-w.y,d=Math.hypot(dx,dy),sp=4/slow*dt;if(d>.01){w.face=dx+dy>=0?'front':'back';if(Math.abs(dx-dy)>.01)w.flip=dx-dy<0;}if(d<=sp){w.x=n.x;w.y=n.y;w.path.shift();}else{w.x+=dx/d*sp;w.y+=dy/d*sp;}}
 function assign(w,t){w.task=t;w.work=0;w.ride=0;plan(w);}
 // ---- grower experience: every job you do yourself counts toward the next level ----
@@ -2510,16 +2509,16 @@ function layout(){
   const top=$('hud').offsetHeight+16+(focusMode()?54:0),bot=$('tray').offsetHeight+8,tall=VH>VW*1.2,side=S&&S.floors>4&&!tall?84:0;
   TW=64;TH=32;
   if(S&&S.phase==='home'){layoutHome();return;}
-  const fs=focusMode()&&focusH===SUC_H&&sucOn(),ff=focusMode()&&focusH===FIELD_H&&fieldOpen(),fm=fs||ff||(focusMode()&&focusH>=0&&(focusH<S.floors||(focusH===SH&&hasShow()))),rx=ff?20:fm&&focusH===SH?HOUSES[SH].ox:0;
-  const dock=ff||fs?[]:[[rx+2.5,-2.7,40],[rx+7.5,-2.7,40],...(fm?[]:[[rx+2,-5.2,22]])],pts=[];
+  const fd=focusMode()&&focusH===DOCK_H,fs=focusMode()&&focusH===SUC_H&&sucOn(),ff=focusMode()&&focusH===FIELD_H&&fieldOpen(),fm=fd||fs||ff||(focusMode()&&focusH>=0&&(focusH<S.floors||(focusH===SH&&hasShow()))),rx=ff?20:fm&&focusH===SH?HOUSES[SH].ox:0;
+  const xe=BAYS[Math.max(1,bayCount())-1].x+2.2,dock=fm?[]:[[-1,APRON1+1.4,0],[11,APRON1+1.4,0]],pts=fd?[[-.8,PLAT0-1,64],[xe,PLAT0-1,64],[-.8,APRON1+.5,0],[xe,APRON1+.5,0]]:[];
   if(fs)pts.push([SUCO.ox-.4,SUCO.oy-.4,0],[SUCO.ox+9.4,SUCO.oy-.4,0],[SUCO.ox-.4,SUCO.oy+7.6,0],[SUCO.ox+9.4,SUCO.oy+7.6,0],[SUCO.ox,SUCO.oy,96]);
   else if(ff)pts.push([21.4,-.6,0],[30.6,-.6,0],[21.4,fieldY1(),0],[30.6,fieldY1(),0],[26,1,70]);else if(!fm&&fieldOpen()&&S.floors<=4)pts.push([30.6,-.6,0],[30.6,fieldY1(),0],[26,0,70]);
   if(!fm&&sucOn())pts.push([SUCO.ox-1.6,SUCO.oy+7.6,0],[SUCO.ox-1.2,SUCO.oy-.4,0]);
-  if(!ff&&!fs)for(const H of fm?[HOUSES[focusH]]:[...HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))),...(S&&hasShow()?[HOUSES[SH]]:[])])pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
-  // the road dock is framed too, unless it sits so far from a focused house that showing both would zoom far out (house 3 on phones)
+  if(!ff&&!fs&&!fd)for(const H of fm?[HOUSES[focusH]]:[...HOUSES.slice(0,Math.max(1,Math.min(4,S?S.floors:1))),...(S&&hasShow()?[HOUSES[SH]]:[])])pts.push([H.ox-.4,H.oy+7.4,0],[H.ox+9.4,H.oy-.4,0],[H.ox+9.4,H.oy+7.4,0],[H.ox,H.oy,64]);
+  // a focused front-row house is framed with its dock; back-row houses frame just themselves
   const rw=RAIL_W(),AW=VW-rw,fit=ps=>{let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const [x,y,z] of ps){const X=(x-y)*TW/2,Y=(x+y)*TH/2-z;x0=Math.min(x0,X);x1=Math.max(x1,X);y0=Math.min(y0,Y);y1=Math.max(y1,Y);}
-    return{x0,x1,y0,y1,s:clamp(Math.min((tall?AW*(fs?1:ff?1.12:S&&S.floors>1&&!fm?1.12:1.3):AW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6)};};
-  let F=fit([...dock,...pts]);if(fm&&dock.length&&pts.length){const N=fit(pts);if(F.s<N.s*.9)F=N;}
+    return{x0,x1,y0,y1,s:clamp(Math.min((tall?AW*(fs?1:ff||fd?1.12:S&&S.floors>1&&!fm?1.12:ps.length>pts.length?1.12:1.3):AW-16-side*2)/(x1-x0),(VH-top-bot)/(y1-y0)),.4,2.6)};};
+  const F=fit([...dock,...pts]);
   const {x0,x1,y0,y1}=F;sc=F.s;
   ox=AW/2-(x0+x1)/2*sc;oy=top+(VH-top-bot)/2-(y0+y1)/2*sc;
   iconR=clamp(15*sc+12,S&&S.floors>1?21:24,34);viewTop=top;viewBot=VH-bot;
@@ -2601,17 +2600,19 @@ const onScreen=(u,v)=>{const p=P(u,v,0);return p[0]>-TW*sc&&p[0]<VW+TW*sc&&p[1]>
 function drawGround(){
   const ss=season();
   cx.fillStyle=GROUNDBG[ss];cx.fillRect(0,0,VW,VH);
-  for(let v=-28;v<26;v++)for(let u=-14;u<38;u++){
+  for(let v=-28;v<27;v++)for(let u=-16;u<40;u++){
     if(viewF===0&&houseAtXY(u,v,0)>=0)continue;
     if(!onScreen(u+.5,v+.5))continue;
-    const n=v===-3?'road':v===-2?(((u%2)+2)%2?'road_line':'road'):(v===-1&&BAYS.slice(0,bayCount()).some(B=>u>=B.x-1&&u<=B.x+1))?'dock':`grass_${ss}_${'abc'[Math.floor(tileHash(u,v)*3)]}`;
+    const n=v===22?'road':v===23?(((u%2)+2)%2?'road_line':'road'):`grass_${ss}_${'abc'[Math.floor(tileHash(u,v)*3)]}`;
     spr(n,u,v,0);
   }
+  drawDrive();if(S.phase!=='home')drawDockGround();
 }
 function drawSlab(H){
   const z=H.L*FH,ox=H.ox,oy=H.oy;
   if(H.L>0)for(const [x,y] of [[-.2,-.2],[8.95,-.2],[-.2,6.95],[8.95,6.95]])box(x+ox,y+oy,z-FH+60,.25,.25,FH-54,'#8d948f');
   box(ox-.25,oy-.25,z,9.5,7.5,6,H.show?['#efe7d2','#d6c79f','#c2b083']:FLOORCOL[H.L%3]);
+  if(dockRow(H))poly([P(ox-.25,oy+7.25,6),P(ox+9.25,oy+7.25,6),P(ox+9.25,oy+7.25,0),P(ox-.25,oy+7.25,0)],'#d9d3c4');
   for(let v=0;v<7;v++)for(let u=0;u<9;u++)spr((u===4&&v===3?'floor_drain':'floor')+(H.show?'|marble':''),u+ox,v+oy,z+6);
 }
 const GH={slab:['#c9ccc6','#adb1aa','#9a9e97'],wall:['#bfc3bd','#a6aaa4','#959992'],bench:['#b9b8af','#9e9d95','#8b8a82'],plant:['#a9b2a3','#8f978a','#7f8679'],post:'#8d948f'};
@@ -2659,43 +2660,90 @@ function drawLift(H){
   box(L.x+.04,L.y+.04,6+z,.08,.08,52,POST);box(L.x+.88,L.y+.04,6+z,.08,.08,52,POST);box(L.x+.04,L.y+.88,6+z,.08,.08,52,POST);box(L.x+.88,L.y+.88,6+z,.08,.08,52,POST);
   box(L.x+.04,L.y+.04,56+z,.92,.92,4,POST);
 }
-function drawTruck(x,col){
-  spr('truck',x+1.2,-2.08,0);
-}
+// ---------------- the loading dock ----------------
+// The main road runs behind the front-row houses (1 and 2), on the camera's side. Trucks come along it, swing round and back up
+// to a concrete dock at floor height on the back of those houses, so the forklift and the loaders work in plain view.
+// The old road in front of the homestead is now a dirt drive that loops round the farm from the main road.
+const PLAT0=16.25,PLAT1=18,PZ=6,TLANE=22.95,TBACK=19.5,APRON1=22,DRIVE_R=4;
+const bayU=i=>BAYS[i||0].x+.5;
+const dockRow=H=>H.L===0&&!H.show&&H.oy===9&&H.h<2;
+function truckUV(k){if(k.b>0){const b=clamp(k.b,0,1),e=b*b*(3-2*b);return{u:bayU(k.bay),v:TLANE+(TBACK-TLANE)*e,fl:true};}return{u:k.x,v:TLANE,fl:false};}
 function truckTargets(){
   const line=S.trucks.filter(k=>k.state==='line').sort((a,b)=>a.arrived-b.arrived);
-  const out=[];S.trucks.filter(k=>k.state==='dock').forEach(k=>out.push([k,BAYS[k.bay||0].tx]));line.forEach((k,i)=>out.push([k,3.3-3.7*(i+1)]));
+  const out=[];S.trucks.filter(k=>k.state==='dock').forEach(k=>out.push([k,bayU(k.bay)]));line.forEach((k,i)=>out.push([k,bayU(0)-3.6*(i+1)]));
   return out;
 }
 let lastNow=0;
-function drawTrucks(now){
+function stepTrucks(now){
   const dt=Math.min(.1,(now-lastNow)/1000);lastNow=now;
-  const tg=truckTargets();
-  for(const [k,x] of tg){if(k.x==null)k.x=-14;k.x+=(x-k.x)*Math.min(1,dt*3);}
-  for(const k of S.trucks.filter(k=>k.state==='gone'&&k.x!=null&&k.x<22)){k.v=(k.v||0)+dt*14;k.x+=k.v*dt;}
-  for(const k of S.trucks){if(k.x==null||k.state==='coming'||(k.state==='gone'&&k.x>=22))continue;const pl=S.plots.find(p=>p.id===k.plot);drawTruck(k.x,pl?crop(pl.crop).color:null);}
+  for(const [k,x] of truckTargets()){if(k.x==null){k.x=-17;k.b=0;}
+    if(k.state==='dock'&&Math.abs(k.x-x)<.06){k.x=x;k.b=Math.min(1,(k.b||0)+dt*.75);}
+    else if(k.b>0)k.b=Math.max(0,k.b-dt*.9);
+    else k.x+=(x-k.x)*Math.min(1,dt*2.4);}
+  for(const k of S.trucks.filter(k=>k.state==='gone'&&k.x!=null&&k.x<40)){if(k.b>0)k.b=Math.max(0,k.b-dt*.9);else{k.v=(k.v||0)+dt*10;k.x+=k.v*dt;}}
 }
-// ---------------- loading bays at the road ----------------
-// built bays get painted lines on the pad, and a barrier when nobody works them; the next bay you can buy is staked out on the grass.
-// Their numbered signs float above the walls in drawBaySigns, so the glass never hides them.
-function drawBays(now){
-  if(S.phase==='home')return;const nb=bayCount(),op=bayUse(),r=sc;
+const truckShown=k=>k.x!=null&&k.state!=='coming'&&!(k.state==='gone'&&k.x>=40);
+function truckItems(){return S.trucks.filter(truckShown).map(k=>{const t=truckUV(k);return{d:t.u+t.v,f:()=>sprFlip('truck',t.u,t.v,0,t.fl)};});}
+// the dirt drive: a horseshoe from the main road, up past the showcase and succulent houses, across in front of the homestead and back down past the tree field
+let drivePts=null;
+function driveShape(){
+  if(drivePts)return drivePts;const R=DRIVE_R,c=[],arc=(cx0,cy0,a0,a1)=>{for(let i=0;i<=8;i++){const a=a0+(a1-a0)*i/8;c.push([cx0+R*Math.cos(a),cy0+R*Math.sin(a)]);}};
+  const xl=-13,xr=33,yt=-2;
+  c.push([xl,APRON1]);arc(xl+R,yt+R,Math.PI,Math.PI*1.5);arc(xr-R,yt+R,Math.PI*1.5,Math.PI*2);c.push([xr,APRON1]);
+  const off=s=>c.map((p,i)=>{const a=c[Math.max(0,i-1)],b=c[Math.min(c.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return[p[0]-dy/l*s,p[1]+dx/l*s];});
+  return drivePts=[...off(1.05),...off(-1.05).reverse()];
+}
+const DIRT={winter:['#ddd3c0','#c9bda6'],spring:['#c9ab7c','#ad8f61'],summer:['#c7a874','#a98a58'],fall:['#bf9e6a','#a2834f']};
+function drawDrive(){const [f,e]=DIRT[season()]||DIRT.summer;poly(driveShape().map(([u,v])=>P(u,v,0)),f,e);}
+// the paved apron in front of the dock, its painted bay lines, and the dock itself
+function drawDockGround(){
+  poly([P(-.8,PLAT1,0),P(11.2,PLAT1,0),P(11.2,APRON1,0),P(-.8,APRON1,0)],'#bdb8ad','rgba(0,0,0,.12)');
+  const nb=bayCount(),r=sc;
   BAYS.forEach((B,i)=>{
-    if(i<nb){
-      for(const u of [B.x-.96,B.x+1.96])seg(P(u,-.92,0),P(u,-.08,0),'#f2c230',Math.max(1,2.2*r));
-      const on=i<op;
-      if(!on){const a=B.x-.72,b=B.x+1.72,v=-.88,z=13;
-        for(const u of [a,b]){seg(P(u-.12,v,0),P(u,v,z),'#7a5a3a',Math.max(1,1.6*r));seg(P(u+.12,v,0),P(u,v,z),'#7a5a3a',Math.max(1,1.6*r));}
-        const N=7;for(let k=0;k<N;k++){const u0=a+(b-a)*k/N,u1=a+(b-a)*(k+1)/N;seg(P(u0,v,z),P(u1,v,z),k%2?'#fff':'#d8342a',Math.max(1.5,3.6*r));}
-        const m=P(B.x+.5,v,z+8);cx.fillStyle='#fff';rr(m[0]-14*r,m[1]-5*r,28*r,10*r,2*r);cx.fill();cx.strokeStyle='#d8342a';cx.lineWidth=Math.max(.8,r);cx.stroke();
-        cx.fillStyle='#d8342a';cx.font=`800 ${Math.round(6.5*r)}px Outfit,sans-serif`;cx.fillText('CLOSED',m[0],m[1]+.3*r);}
-    }else if(i===nb&&upOpen('bays',upLv('bays'))){
-      const cs=[[B.x-1,-1],[B.x+2,-1],[B.x+2,0],[B.x-1,0]].map(([u,v])=>P(u,v,0));
-      cx.save();cx.setLineDash([4*r,4*r]);cx.strokeStyle='rgba(240,150,40,.8)';cx.lineWidth=Math.max(1,1.5*r);cx.beginPath();cs.forEach((p,k)=>k?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();cx.stroke();cx.restore();
+    if(i<nb){for(const u of [B.x-.3,B.x+1.3])seg(P(u,PLAT1+.12,0),P(u,APRON1-.2,0),'#f2c230',Math.max(1,2.2*r));}
+    else if(i===nb&&upOpen('bays',upLv('bays'))){
+      const cs=[[B.x-.3,PLAT1+.1],[B.x+1.3,PLAT1+.1],[B.x+1.3,APRON1-.2],[B.x-.3,APRON1-.2]].map(([u,v])=>P(u,v,0));
+      cx.save();cx.setLineDash([4*r,4*r]);cx.strokeStyle='rgba(240,150,40,.85)';cx.lineWidth=Math.max(1,1.5*r);cx.beginPath();cs.forEach((p,k)=>k?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1]));cx.closePath();cx.stroke();cx.restore();
       for(const p of cs){seg(p,[p[0],p[1]-11*r],'#a07a4a',Math.max(1,1.6*r));cx.fillStyle='#f0962a';cx.beginPath();cx.moveTo(p[0],p[1]-11*r);cx.lineTo(p[0]+6*r,p[1]-9*r);cx.lineTo(p[0],p[1]-7*r);cx.fill();}
     }
   });
-  cx.textAlign='start';cx.textBaseline='alphabetic';
+  // the platform: same height as the greenhouse floor, so carts roll straight out onto it
+  const x0=-.25,x1=S.floors>1?20.65:10.6,top='#d9d3c4';
+  poly([P(x0,PLAT1,PZ),P(x1,PLAT1,PZ),P(x1,PLAT1,0),P(x0,PLAT1,0)],'#a39c8c','rgba(0,0,0,.15)');
+  poly([P(x1,PLAT0,PZ),P(x1,PLAT1,PZ),P(x1,PLAT1,0),P(x1,PLAT0,0)],'#b8b1a1','rgba(0,0,0,.15)');
+  poly([P(x0,PLAT0,PZ),P(x1,PLAT0,PZ),P(x1,PLAT1,PZ),P(x0,PLAT1,PZ)],top,'rgba(0,0,0,.12)');
+  for(let u=x0+.2;u<x1-.2;u+=.5)seg(P(u,PLAT1-.04,PZ),P(Math.min(x1-.1,u+.25),PLAT1-.04,PZ),'#e8b21c',Math.max(1,2*r));
+  const op=bayUse();
+  BAYS.slice(0,nb).forEach((B,i)=>{
+    poly([P(B.x+.02,PLAT1-.62,PZ+.2),P(B.x+.98,PLAT1-.62,PZ+.2),P(B.x+.98,PLAT1,PZ+.2),P(B.x+.02,PLAT1,PZ+.2)],'#8e979d','rgba(0,0,0,.25)');
+    for(let k=1;k<4;k++)seg(P(B.x+.02+k*.24,PLAT1-.58,PZ+.2),P(B.x+.02+k*.24,PLAT1-.04,PZ+.2),'rgba(255,255,255,.22)',Math.max(.8,1*r));
+    for(const u of [B.x-.12,B.x+1])box(u,PLAT1,.5,.12,.1,PZ-1,['#3a3a3a','#262626','#1a1a1a']);
+    if(i>=op){const a=B.x-.15,b=B.x+1.15,v=PLAT1-.12,z=PZ+13;
+      for(const u of [a,b])seg(P(u,v,PZ),P(u,v,z),'#7a5a3a',Math.max(1,1.6*r));
+      const N=6;for(let k=0;k<N;k++)seg(P(a+(b-a)*k/N,v,z),P(a+(b-a)*(k+1)/N,v,z),k%2?'#fff':'#d8342a',Math.max(1.5,3.6*r));
+      const m=P(B.x+.5,v,z+8);cx.fillStyle='#fff';rr(m[0]-14*r,m[1]-5*r,28*r,10*r,2*r);cx.fill();cx.strokeStyle='#d8342a';cx.lineWidth=Math.max(.8,r);cx.stroke();
+      cx.fillStyle='#d8342a';cx.font=`800 ${Math.round(6.5*r)}px Outfit,sans-serif`;cx.textAlign='center';cx.textBaseline='middle';cx.fillText('CLOSED',m[0],m[1]+.3*r);cx.textAlign='start';cx.textBaseline='alphabetic';}
+  });
+}
+// pallets of the order waiting on the dock beside a backed-in truck; they go as the truck fills
+function palletItems(){
+  const out=[];
+  for(const k of S.trucks.filter(k=>k.state==='dock'&&k.b>.6)){
+    const pl=S.plots.find(p=>p.id===k.plot),col=pl?crop(pl.crop).color:'#6fae4a',t=S.tasks.find(t=>t.type==='load'&&t.truck===k.id),pr=t?workProg(t)||0:1,n=t?Math.ceil(3*(1-pr)-.01):0,B=BAYS[k.bay||0];
+    for(let j=0;j<n;j++){const x=B.x+1.2+(j%2)*.55,y=PLAT0+.25+(j>1?.7:0);out.push({d:x+y+.6,f:()=>{box(x,y,PZ,.5,.5,3,['#c9a46a','#a8854f','#8e6f40']);box(x+.04,y+.04,PZ+3,.42,.42,7,['#5b4a3a','#4a3c2f','#3d3126']);box(x+.06,y+.06,PZ+10,.38,.38,5,[col,shade(col,.82),shade(col,.68)]);}});}
+  }
+  return out;
+}
+// the forklift (once bought) drives along the dock to whichever bay is loading and runs pallets into the truck
+const fk={x:10.4,y:16.9};
+function forkItem(now){
+  const lv=upLv('fork');if(!lv)return null;
+  const w=[me,...staff,...(robo?[robo]:[])].find(w=>w&&w.task&&w.task.type==='load'&&!w.path.length&&w.work>0),dt=Math.min(.1,(now-(fk.t||now))/1000);fk.t=now;
+  let tx=10.4,ty=16.9,poke=0;
+  if(w){tx=bayU(w.task.bay)-.05;ty=16.95;}
+  const d=Math.hypot(tx-fk.x,ty-fk.y),sp=dt*3;if(d>sp){fk.x+=(tx-fk.x)/d*sp;fk.y+=(ty-fk.y)/d*sp;}else{fk.x=tx;fk.y=ty;if(w)poke=.62*(.5-.5*Math.cos(now/650));}
+  const x=fk.x,y=fk.y+poke,car=w&&(d>sp||poke<.45);
+  return{d:x+y+.3,f:()=>{spr('forklift_'+lv,x-.5,y-.5,PZ);if(car){const p=x-.38,q=y+.32;box(p,q,PZ+2,.42,.42,2,['#c9a46a','#a8854f','#8e6f40']);box(p+.04,q+.04,PZ+4,.34,.34,6,['#5b4a3a','#4a3c2f','#3d3126']);}}};
 }
 // ---------------- weather ----------------
 let wx=[];
@@ -2730,7 +2778,7 @@ const CATS=[{id:'anna',name:'Miley',x:2.5,y:3.5,f:0,path:[],mode:'sit',t:2,face:
             {id:'minaou',name:'Minaou',x:5.5,y:4.5,f:0,path:[],mode:'sit',t:2,face:1,dir:[1,0],col:'#3a2a22',dk:'#1e1612',wh:'#b8742e'},
             {id:'otis',name:'Otis',x:6.5,y:3.5,f:0,path:[],mode:'sit',t:3,face:-1,dir:[0,1],col:'#a9afb7',dk:'#6c737b',wh:'#ffffff'},
             {id:'smokey',name:'Smokey',x:2.5,y:5.5,f:0,path:[],mode:'sleep',t:5,face:1,dir:[1,0],col:'#f4e6c8',dk:'#c9b08a',wh:'#fbf1dc'}];
-CATS.forEach((c,i)=>c.meal=20+i*25+Math.random()*30);
+CATS.forEach((c,i)=>{c.meal=20+i*25+Math.random()*30;c.x+=HOUSES[0].ox;c.y+=HOUSES[0].oy;});
 const CAT_INFO={anna:'Calico. Bossy, fast, the best mouser.',miley:'Grey tuxedo. Naps on the warmest bench.',max:'Orange tabby. Mostly here for the snacks.',gremlin:'Old tortoiseshell. Wise, motherly, keeps everyone in line.',beatrice:'Long-haired, white with black spots. A princess with a temper.',minaou:'Small dark tortie. Explores everything, loves everyone.',otis:'Tall white tabby. The sneakiest boy on the farm.',smokey:'Cream-coloured herding cat. Rarely seen; keeps everyone close.'};
 const liveCats=()=>CATS.filter(c=>S.cats.includes(c.id));
 const BOWL={x:2,y:6};
@@ -2814,7 +2862,7 @@ function drawSign(){
   const nm=nurseryName(),k=sc;
   cx.save();cx.font=`700 ${Math.round(11*k)}px Outfit,system-ui,sans-serif`;
   const tw0=cx.measureText(nm).width,top0=$('hud').offsetHeight+6,bot0=innerHeight-(trayH||0)-6;
-  const mu=S.floors>1?20:9,mv=S.floors>2?16:7,C=[[1.2,-3.4],[mu+1.7,mv*.35],[mu*.3,mv+1.4],[mu+.9,mv+1]].map(([u,v])=>P(u,v,0));
+  const C=[[-11.4,21.3],[31.4,21.3],[-1.7,21.4],[21.7,21.4]].map(([u,v])=>P(u,v,0)); // by the main road, where the drive turns in
   const [X,Y]=C.find(([x,y])=>y-50*k>top0&&y+6*k<bot0&&x-(tw0/2+12*k)>4&&x+(tw0/2+12*k)<innerWidth-4)||C[0];
   const tw=tw0,bw=tw+18*k,bh=22*k,top=Y-46*k;
   cx.fillStyle='rgba(29,58,36,.18)';cx.beginPath();cx.ellipse(X,Y,bw*.45,5*k,0,0,Math.PI*2);cx.fill();
@@ -2891,7 +2939,7 @@ function drawBaySigns(now){
   if(S.phase==='home'||viewF!==0)return;const nb=bayCount(),op=bayUse(),busy=new Set(S.tasks.filter(t=>t.type==='load').map(t=>t.bay||0));
   cx.textAlign='center';cx.textBaseline='middle';
   BAYS.forEach((B,i)=>{
-    const p=P(B.x+.5,-1.3,52);p[1]=clamp(p[1],viewTop+18,viewBot-18);
+    const p=P(B.x+.5,APRON1-.35,26);p[1]=clamp(p[1],viewTop+18,viewBot-18);
     if(i<nb){if(busy.has(i)&&S.phase==='run')return;const on=i<op,w=30,h=20;
       cx.fillStyle='rgba(0,0,0,.18)';rr(p[0]-w/2+1,p[1]-h/2+2,w,h,6);cx.fill();
       cx.fillStyle=on?'#1d3326':'#c8402f';rr(p[0]-w/2,p[1]-h/2,w,h,6);cx.fill();
@@ -2909,7 +2957,7 @@ let bayHits=[];
 function drawIcons(){
   iconHits=[];if(S.phase!=='run')return;
   const r=iconR,items=[],load=S.tasks.find(t=>t.type==='load');
-  for(const lt of S.tasks.filter(t=>t.type==='load')){const p=P(BAYS[lt.bay||0].x+.5,-1,70);items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:'load',t:lt,tasks:[lt],n:lt===load?S.trucks.filter(k=>k.state==='line').length:0});}
+  for(const lt of S.tasks.filter(t=>t.type==='load')){const p=P(BAYS[lt.bay||0].x+.5,PLAT1-.6,64);items.push({x:p[0],y:p[1],ax:p[0],ay:p[1],k:'load',t:lt,tasks:[lt],n:lt===load?S.trucks.filter(k=>k.state==='line').length:0});}
   const group=sc<.6&&S.floors>1,groups={},left=t=>t.due!=null?(t.due-S.t)/(t.due-t.born):9;
   const fOnly=focusMode()&&focusH>=0;
   for(const t of S.tasks.filter(t=>t.type!=='load'&&lvOf(taskF(t))===viewF&&(!fOnly||taskF(t)===focusH)).sort((a,b)=>a.id-b.id)){
@@ -2934,7 +2982,7 @@ function drawIcons(){
     iconHits.push({x:m.x,y:m.y,r:r+6,tasks:m.tasks});
   }
   // waiting trucks get a patience ring
-  for(const k of S.trucks.filter(k=>k.state==='line')){if(k.x==null)continue;const p=P(k.x+1.1,-2.1,62);p[1]=clamp(p[1],viewTop+30,viewBot-30);const frac=(S.t-k.arrived)/(k.deadline-k.arrived);drawIcon('load',p[0],p[1],Math.max(16,r*.62),frac,0,'',false);}
+  for(const k of S.trucks.filter(k=>k.state==='line')){if(k.x==null)continue;const p=P(k.x,TLANE,62);p[1]=clamp(p[1],viewTop+30,viewBot-30);const frac=(S.t-k.arrived)/(k.deadline-k.arrived);drawIcon('load',p[0],p[1],Math.max(16,r*.62),frac,0,'',false);}
 }
 function drawFloats(now){
   floats=floats.filter(f=>now-f.t0<1600);
@@ -2945,13 +2993,13 @@ function draw(now){
   const dt=Math.min(.1,(now-(camT||now))/1000);camT=now;
   camZ+=(viewF*FH-camZ)*Math.min(1,dt*7);if(Math.abs(viewF*FH-camZ)<.5)camZ=viewF*FH;
   cx.setTransform(DPR,0,0,DPR,0,0);
-  drawGround();drawHomestead(now);drawField();drawSucGround();drawTrucks(now);drawBays(now);if(upLv('fork'))spr('forklift_'+upLv('fork'),6,-1,0);
+  drawGround();drawHomestead(now);drawField();drawSucGround();stepTrucks(now);const fki=S.phase==='home'?null:forkItem(now),dockIt=S.phase==='home'?[]:[...truckItems(),...palletItems(),...(fki?[fki]:[])];if(viewF!==0)dockIt.sort((a,b)=>a.d-b.d).forEach(o=>o.f());
   const dockers=[...(noMe()?[]:[me]),...staff,...roboL()].filter(w=>w.y<0).sort((a,b)=>(a.x+a.y)-(b.x+b.y));dockers.forEach(w=>drawPerson(w,SHIRT[w.role],now));
   drawWeather(dt);
   const built=builtH(),dep=H=>H.ox+H.oy+8;
   built.filter(H=>H.L<viewF).sort((a,b)=>a.L-b.L||dep(a)-dep(b)).forEach(drawGhostFloor);
   if(viewF===0&&S.phase==='plan'&&S.floors<4)drawNextPlot(HOUSES[S.floors]);
-  const items=[...built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)})),...treeItems(),...festItems(),...sucItems(now)];
+  const items=[...built.filter(H=>H.L===viewF).map(H=>({d:dep(H),f:()=>drawHouse(H,now)})),...treeItems(),...festItems(),...sucItems(now),...(viewF===0?dockIt:[])];
   if(viewF===0){
     for(const w of [...(noMe()?[]:[me]),...staff,...roboL()])if(w.f===0&&w.y>=0&&houseAtXY(Math.floor(w.x),Math.floor(w.y),0)<0&&!(w.leg==='lift'&&w.ride>0))items.push({d:w.x+w.y,f:()=>drawPerson(w,SHIRT[w.role],now)});
     if(S.phase!=='home')for(const c of liveCats())if(c.f===0&&houseAtXY(Math.floor(c.x),Math.floor(c.y),0)<0)items.push({d:c.x+c.y,f:()=>drawCat(c,now)});
@@ -3622,6 +3670,8 @@ $('tsk').onclick=()=>{if(tipStepNow()&&tipStepNow().guide){endTip(true);return;}
 // ---------------- attention rail (phones, one house at a time) ----------------
 const railOn=()=>!!S&&focusMode()&&S.phase==='run';
 const RAIL_W=()=>S&&focusMode()?68:0;
+const DOCK_GLYPH=()=>glyph('load',18).replace(/#fff/g,'currentColor');
+const dockLoad0=()=>{const ts=S.tasks.filter(t=>t.type==='load'&&truckById(t.truck)?.state==='dock');return{n:ts.length,hot:ts.some(t=>t.due!=null&&!engaged(t)&&(t.due-S.t)<(t.due-t.born)*.35)};};
 const hShort=h=>h===SH?'★':h===FIELD_H?'Trees':h===SUC_H?'Shop':'H'+(h+1);
 const SUC_GLYPH='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3c2.2 0 3.4 1.8 3.4 4.4v6.6H8.6V7.4C8.6 4.8 9.8 3 12 3z"/><path d="M7 15h10l-1.2 6H8.2z"/></svg>';
 const TREE_GLYPH='<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l5.5 7.5h-3l4.5 6H5l4.5-6h-3z"/><rect x="11" y="16" width="2" height="5"/></svg>';
@@ -3629,7 +3679,7 @@ function railItems(){
   const out=[],left=t=>t.due!=null?clamp((t.due-S.t)/Math.max(.01,t.due-t.born),0,1):1,vis=h=>focusH<0||h===focusH,qd=t=>S.queue.includes(t)||engaged(t);
   for(const t of S.tasks.filter(t=>t.type==='phone'))out.push({k:'phone',key:'ph'+t.id,lab:'Phone',left:left(t),t,pr:0,q:qd(t)});
   for(const t of S.tasks.filter(t=>t.type==='star'))out.push({k:'star',key:'st'+t.id,lab:hShort(t.h),left:left(t),t,pr:1,q:qd(t)});
-  if(focusH>=0){const ls=S.tasks.filter(t=>t.type==='load'&&!engaged(t)&&truckById(t.truck)?.state==='dock').sort((a,b)=>left(a)-left(b));if(ls.length)out.push({k:'load',key:'ld',lab:'Dock',n:ls.length,left:left(ls[0]),t:ls[0],pr:2,q:ls.every(t=>S.queue.includes(t))});}
+  if(focusH>=0&&focusH!==DOCK_H){const ls=S.tasks.filter(t=>t.type==='load'&&!engaged(t)&&truckById(t.truck)?.state==='dock').sort((a,b)=>left(a)-left(b));if(ls.length)out.push({k:'load',key:'ld',lab:'Dock',n:ls.length,left:left(ls[0]),t:ls[0],pr:2,q:ls.every(t=>S.queue.includes(t))});}
   for(const H of builtH()){if(vis(H.h))continue;const ts=S.tasks.filter(t=>!['load','phone','star'].includes(t.type)&&taskF(t)===H.h&&!engaged(t)).sort((a,b)=>left(a)-left(b));if(!ts.length)continue;
     out.push({k:ts[0].care||ts[0].type,key:'h'+H.h,lab:hShort(H.h),n:ts.length,left:left(ts[0]),h:H.h,pr:2,q:ts.every(t=>S.queue.includes(t))});}
   if(sucOn()&&!vis(SUC_H)){const ts=S.tasks.filter(t=>(t.type==='shop'||t.type==='succ')&&!engaged(t)).sort((a,b)=>left(a)-left(b));if(ts.length)out.push({k:ts[0].type,key:'suc',lab:'Shop',n:ts.length,left:left(ts[0]),h:SUC_H,pr:2,q:ts.every(t=>S.queue.includes(t))});}
@@ -3706,24 +3756,24 @@ function houseLoad(h){const ts=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===h);
 function houseMap(cur,mk,lab,withShow){
   const star=withShow&&hasShow()?`<button type="button" ${mk(SH)} class="shb${cur===SH?' on':''}" aria-label="Showcase house">★</button>`:'';
   if(S.floors<=4)return`<div class="hmap row">${lab?`<span class="hl0">${lab}</span>`:''}<div class="hmg">${Array.from({length:S.floors},(_,h)=>`<button type="button" ${mk(h)} class="${cur===h?'on':''}${specOf(h)?' sp-'+specOf(h):''}" aria-label="${esc(hName(h))}">${h+1}</button>`).join('')}${star}</div></div>`;
-  return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}${specOf(h)?' sp-'+specOf(h):''}" aria-label="${esc(hName(h))}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}${star?`<div class="hml"><small>Show</small><div class="hmg one">${star}</div></div>`:''}</div>`;
+  return`<div class="hmap">${lab?`<span class="hl0">${lab}</span>`:''}${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[2,3,0,1].map(sl=>{const h=L*4+sl;return h<S.floors?`<button type="button" ${mk(h)} class="${cur===h?'on':''}${specOf(h)?' sp-'+specOf(h):''}" aria-label="${esc(hName(h))}">${h+1}</button>`:'<i></i>';}).join('')}</div></div>`).join('')}${star?`<div class="hml"><small>Show</small><div class="hmg one">${star}</div></div>`:''}</div>`;
 }
 let hpOpen=false;
 function renderStrip(){
   const el=$('hstrip'),on=focusMode()&&!sheetOpen()&&S.phase!=='home';el.hidden=!on;if(!on){stripSig='';hpOpen=false;$('hpick').hidden=true;return;}
   el.style.top=($('hud').offsetHeight+8)+'px';
-  const hs=builtH(),items=[{h:-1,lab:'All',n:0,hot:false},...hs.map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)})),...(fieldOpen()?[{h:FIELD_H,lab:TREE_GLYPH,...houseLoad(FIELD_H)}]:[]),...(sucOn()?[{h:SUC_H,lab:SUC_GLYPH,...houseLoad(SUC_H)}]:[])];
+  const hs=builtH(),items=[{h:-1,lab:'All',n:0,hot:false},...hs.map(H=>({h:H.h,lab:H.show?'★':H.h+1,sub:H.show?'':H.L?'F'+(H.L+1):'',...houseLoad(H.h)})),...(fieldOpen()?[{h:FIELD_H,lab:TREE_GLYPH,...houseLoad(FIELD_H)}]:[]),...(sucOn()?[{h:SUC_H,lab:SUC_GLYPH,...houseLoad(SUC_H)}]:[]),{h:DOCK_H,lab:DOCK_GLYPH(),...dockLoad0()}];
   const sig=focusH+'|'+hpOpen+'|'+items.map(i=>i.n+(i.hot?'!':'')).join(',');if(sig===stripSig)return;stripSig=sig;
   const badge=i=>i.n?`<span class="n${i.hot?' hot':''}">${i.n}</span>`:'';
   if(items.length<=6){
     el.className='hstrip';
-    el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':i.h===FIELD_H?'Tree field':i.h===SUC_H?'Succulent house':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${badge(i)}</button>`).join('');
+    el.innerHTML=items.map(i=>`<button type="button" data-fh="${i.h}" class="${focusH===i.h?'on':''}" aria-label="${i.h<0?'All houses':i.h===FIELD_H?'Tree field':i.h===SUC_H?'Succulent house':i.h===DOCK_H?'Loading dock':'House '+i.lab}">${i.lab}${i.sub?`<small>${i.sub}</small>`:''}${badge(i)}</button>`).join('');
     $('hpick').hidden=true;
   }else{
     // compact picker: arrows plus one button that opens a map of every house
     const cur=items.find(i=>i.h===focusH)||items[0],others=items.filter(i=>i.h!==focusH&&i.h>=0),on=others.reduce((a,i)=>a+i.n,0),hot=others.some(i=>i.hot);
     el.className='hstrip pick';
-    el.innerHTML=`<button type="button" class="ar" id="hpPrev" aria-label="Previous house">‹</button><button type="button" class="cur on" id="hpCur" aria-expanded="${hpOpen}">${focusH<0?'All houses':focusH===SH?'★ Showcase':focusH===FIELD_H?'Tree field':focusH===SUC_H?'Succulent house':'House '+(focusH+1)}${cur.sub?`<small>${cur.sub==='F2'?'Floor 2':cur.sub==='F3'?'Floor 3':cur.sub}</small>`:focusH>=0&&focusH!==SH?'<small>Ground</small>':''}<i class="chev">▾</i>${on?`<span class="n${hot?' hot':''}">${on}</span>`:''}</button><button type="button" class="ar" id="hpNext" aria-label="Next house">›</button>`;
+    el.innerHTML=`<button type="button" class="ar" id="hpPrev" aria-label="Previous house">‹</button><button type="button" class="cur on" id="hpCur" aria-expanded="${hpOpen}">${focusH<0?'All houses':focusH===SH?'★ Showcase':focusH===FIELD_H?'Tree field':focusH===SUC_H?'Succulent house':focusH===DOCK_H?'Loading dock':'House '+(focusH+1)}${cur.sub?`<small>${cur.sub==='F2'?'Floor 2':cur.sub==='F3'?'Floor 3':cur.sub}</small>`:focusH>=0&&focusH!==SH&&focusH!==DOCK_H?'<small>Ground</small>':''}<i class="chev">▾</i>${on?`<span class="n${hot?' hot':''}">${on}</span>`:''}</button><button type="button" class="ar" id="hpNext" aria-label="Next house">›</button>`;
     const order=items.map(i=>i.h),step=d=>{const k=order.indexOf(focusH);focusHouse(order[(k+d+order.length)%order.length]);};
     $('hpPrev').onclick=()=>step(-1);$('hpNext').onclick=()=>step(1);
     $('hpCur').onclick=()=>{hpOpen=!hpOpen;stripSig='';renderStrip();};
@@ -3731,7 +3781,7 @@ function renderStrip(){
     if(hpOpen){
       P0.style.top=(el.offsetTop+el.offsetHeight+6)+'px';
       const cell=h=>{const it=items.find(i=>i.h===h);return it?`<button type="button" data-fh="${h}" class="${focusH===h?'on':''}${h===SH?' shb':''}">${it.lab}${badge(it)}</button>`:'<i></i>';};
-      P0.innerHTML=`<button type="button" data-fh="-1" class="all${focusH<0?' on':''}">All houses</button>${fieldOpen()?`<button type="button" data-fh="${FIELD_H}" class="all${focusH===FIELD_H?' on':''}">Tree field${badge(items.find(i=>i.h===FIELD_H))}</button>`:''}${sucOn()?`<button type="button" data-fh="${SUC_H}" class="all${focusH===SUC_H?' on':''}">Succulent house${badge(items.find(i=>i.h===SUC_H))}</button>`:''}<div class="hpg">${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[0,1,2,3].map(sl=>{const h=L*4+sl;return h<S.floors?cell(h):'<i></i>';}).join('')}</div></div>`).join('')}${hasShow()?`<div class="hml"><small>Show</small><div class="hmg one">${cell(SH)}</div></div>`:''}</div>`;
+      P0.innerHTML=`<button type="button" data-fh="-1" class="all${focusH<0?' on':''}">All houses</button>${fieldOpen()?`<button type="button" data-fh="${FIELD_H}" class="all${focusH===FIELD_H?' on':''}">Tree field${badge(items.find(i=>i.h===FIELD_H))}</button>`:''}${sucOn()?`<button type="button" data-fh="${SUC_H}" class="all${focusH===SUC_H?' on':''}">Succulent house${badge(items.find(i=>i.h===SUC_H))}</button>`:''}<button type="button" data-fh="${DOCK_H}" class="all${focusH===DOCK_H?' on':''}">Loading dock${badge(items.find(i=>i.h===DOCK_H))}</button><div class="hpg">${Array.from({length:levels()},(_,L)=>`<div class="hml"><small>${L?'Floor '+(L+1):'Ground'}</small><div class="hmg">${[2,3,0,1].map(sl=>{const h=L*4+sl;return h<S.floors?cell(h):'<i></i>';}).join('')}</div></div>`).join('')}${hasShow()?`<div class="hml"><small>Show</small><div class="hmg one">${cell(SH)}</div></div>`:''}</div>`;
       P0.querySelectorAll('[data-fh]').forEach(b=>b.onclick=()=>{hpOpen=false;focusHouse(+b.dataset.fh);});
     }
   }
@@ -3739,7 +3789,7 @@ function renderStrip(){
 }
 addEventListener('pointerdown',e=>{if(hpOpen&&!e.target.closest('#hpick,#hpCur')){hpOpen=false;stripSig='';renderStrip();}});
 function focusHouse(h){
-  if(!S||(h>=S.floors&&!(h===SH&&hasShow())&&!(h===FIELD_H&&fieldOpen())&&!(h===SUC_H&&sucOn())))return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
+  if(!S||(h>=S.floors&&!(h===SH&&hasShow())&&!(h===FIELD_H&&fieldOpen())&&!(h===SUC_H&&sucOn())&&h!==DOCK_H))return;focusH=h;if(h>=0){viewF=lvOf(h);}else viewF=0;
   stripSig='';layout();renderFloors();
 }
 function jumpTo(h){if(focusMode()&&focusH!==h&&h>=0)focusHouse(h);else if(lvOf(h)!==viewF)setFloor(lvOf(h));}
@@ -4111,7 +4161,7 @@ function renderSheet(){
     body=`<div class="bhead"><h2>Build and upgrade ${plan?'':'<span class="paused">Paused</span>'}<small>Upgrades work in every greenhouse, last for good and show up in the houses. You can buy them any time.</small></h2></div>
       <div class="usub" role="tablist">${subs.map(([k,n,b])=>`<button type="button" data-sub="${k}" class="${upSub===k?'on':''}">${n}${b?`<span class="n">${b}</span>`:''}</button>`).join('')}</div>
       ${upSub==='bank'&&false?bankHTML(plan):upSub==='decor'?decoHTML(plan):upSub==='veg'?vegHTML(plan):upSub==='gen'?`<h3 style="margin:4px 2px 0;font-size:18px">Genetics</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Customers ask for every variety. You can only take orders for the ones you grow.</p>
-      <div class="gens">${Object.entries(CROPS).filter(([k])=>!notFlower(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} by the road; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
+      <div class="gens">${Object.entries(CROPS).filter(([k])=>!notFlower(k)).map(([k,C])=>`<div class="gen${owns(k)?' own':''}">${cropPill(k)}<span class="gi">${C.g} period${C.g>1?'s':''} · ${fmt(C.price)}/flat<br>Ships ${C.sell.length>=7?'all year':C.sell.map(p=>PSH[p]).join(', ')}</span>${owns(k)?'<b class="ok">Growing</b>':!cropOpen(k)?lockChip(GATE_GEN[k]):`<button class="btn sun" type="button" data-gen="${k}">${fmt(GEN[k])}${S.cash<GEN[k]?'<small class="oc">short</small>':''}</button>`}</div>`).join('')}</div>`:upSub==='houses'?`<h3 style="margin:4px 2px 0;font-size:18px">Greenhouses</h3><p style="margin:2px 2px 0;color:var(--mute);font-size:14px">Build up to four greenhouses side by side, then add floors on top of them. Each house adds eight benches with its own heater, pests and watering. Upper floors are reached by a lift. Trucks load at ${bayCount()} loading bay${bayCount()>1?'s':''} on the dock behind houses 1 and 2; more bays open at 2, 4 and 7 houses, and each needs someone to load it.</p>
       <div class="build"><div class="hgrid">${[2,1,0].map(L=>`<span class="hl">${L?'Floor '+(L+1):'Ground'}</span>`+[0,1,2,3].map(s=>{const h=L*4+s;return`<i class="${h<S.floors?'on':h===S.floors?'nx':''}">${h<S.floors?h+1:h===S.floors?'+':''}</i>`;}).join('')).join('')}</div>
       ${next&&S.floors>=houseCap()?`<h3>House ${S.floors+1}</h3><p>${lockChip(HOUSE_CAP.findIndex(c=>c>S.floors))}</p><p style="margin-top:8px;color:var(--mute)">Hit your yearly goals to open more houses. See the Ledger tab.</p>`:next?`<h3>Build house ${S.floors+1} (${levelName(lvOf(S.floors))})</h3><p>${fmt(next)}${S.cash<next?` (you're ${fmt(next-S.cash)} short, see the bank above)`:' now'}, then ${fmt(nextHouseOH())} more upkeep each period (each house costs a little more to run than the last). Brings more orders each round. You can't keep up with two houses alone, so hire crew before you start the next period.</p><button class="btn sun" type="button" id="buildB"${plan?'':' disabled'}>Build for ${fmt(next)}</button>${plan?'':'<p style="margin-top:8px">You can build between periods.</p>'}`:'<h3>Every lot and floor is built</h3>'}</div>
       ${specHTML(plan)}
@@ -4861,7 +4911,7 @@ function buyUp(k){
   const l=upLv(k),U=UPS[k];if(l>=U.lv.length)return;if(!upOpen(k,l)){toast('bad',`${U.lv[l]} opens at ${stg(GATE_UP[k][l]).n}`);return;}
   const cost=U.cost[l];if(!spend(cost,U.lv[l]))return;
   S.ys.build=(S.ys.build||0)+cost;S.up[k]=l+1;
-  toast('good',k==='bays'?`Bay ${l+2} is built at the road${bayUse()<bayCount()?'. Hire a loader to open it':''}`:`${U.lv[l]} in place`);renderSheet();hud();
+  toast('good',k==='bays'?`Bay ${l+2} is built on the dock${bayUse()<bayCount()?'. Hire a loader to open it':''}`:`${U.lv[l]} in place`);renderSheet();hud();
 }
 const staffCount=()=>S.crew.length;
 const CLASSES=[{n:'Greenhouse short course',cost:4000},{n:'Advanced plant care',cost:8000},{n:'Master gardener program',cost:15000},{n:'Royal horticulture fellowship',cost:30000}];
@@ -5135,8 +5185,8 @@ cv.addEventListener('pointerup',e=>{ptrEnd(e);
     if(uh){const t=S.tasks.find(t=>t.type==='fix'&&t.f===uh.h);if(t)enqueue(t);else toast('good',`${unitName(S.period)} is running fine`);return;}
     // any truck on the road, or the dock pad
     const tr=S.trucks.filter(k=>(k.state==='line'||k.state==='dock')&&k.x!=null);
-    const hitT=tr.find(k=>near(P(k.x+1.55,-2.1,20),TW*1.4*sc,TH*1.3*sc)),hitB=BAYS.slice(0,bayCount()).findIndex(B=>near(P(B.x+.5,-.75,4),TW*.9*sc,TH*.6*sc));if(hitT||hitB>=0){const t=S.tasks.find(t=>t.type==='load'&&hitT&&t.truck===hitT.id)||S.tasks.find(t=>t.type==='load'&&(t.bay||0)===hitB)||S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');else bayInfo(hitB);return;}
-    {const nb=bayCount(),B=BAYS[nb];if(B&&upOpen('bays',upLv('bays'))&&near(P(B.x+.5,-.5,0),TW*1.2*sc,TH*.7*sc)){toast('load',`Room for loading bay ${nb+1}. Build it in Equipment for ${fmt(UPS.bays.cost[upLv('bays')])}`);return;}}
+    const hitT=tr.find(k=>{const t=truckUV(k);return near(P(t.u,t.v,20),TW*1.4*sc,TH*1.3*sc);}),hitB=BAYS.slice(0,bayCount()).findIndex(B=>near(P(B.x+.5,PLAT1+1.5,4),TW*.9*sc,TH*.9*sc));if(hitT||hitB>=0){const t=S.tasks.find(t=>t.type==='load'&&hitT&&t.truck===hitT.id)||S.tasks.find(t=>t.type==='load'&&(t.bay||0)===hitB)||S.tasks.find(t=>t.type==='load');if(t)enqueue(t);else if(tr.length)toast('load','The truck is pulling in');else bayInfo(hitB);return;}
+    {const nb=bayCount(),B=BAYS[nb];if(B&&upOpen('bays',upLv('bays'))&&near(P(B.x+.5,PLAT1+1.8,0),TW*1.2*sc,TH*1.2*sc)){toast('load',`Room for loading bay ${nb+1}. Build it in Equipment for ${fmt(UPS.bays.cost[upLv('bays')])}`);return;}}
   }
   for(const b of benchIds().map(i=>BENCH[i]).filter(b=>b.lv===viewF)){const a=P(b.x,b.y,22+ZB()),c=P(b.x+3,b.y+1,22+ZB()),m=[(a[0]+c[0])/2,(a[1]+c[1])/2];if(Math.abs(e.clientX-m[0])<1.6*TW/2*sc&&Math.abs(e.clientY-m[1])<TH*.6*sc){const ts=S.phase==='run'?S.tasks.filter(t=>t.type!=='load'&&t.type!=='fix'&&(t.bench===b.i||(t.rows&&t.rows.includes(b.i)))):[];if(ts.length)ts.forEach(enqueue);else benchInfo(b);return;}}
 });
