@@ -417,15 +417,38 @@ button{font:inherit;color:inherit;cursor:pointer}
 @keyframes popin{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
 .mbox:has(#sktree){max-width:1040px}
 #sktree h2{margin-bottom:4px}.skhd{font-size:14px;color:var(--mute);margin:0 0 10px}.skp{display:inline-block;font-weight:700;color:var(--ink);background:#efe9d8;border-radius:99px;padding:2px 10px;margin-right:6px}.skp.on{background:var(--sun)}
-.skgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.skbr{border:2px solid color-mix(in srgb,var(--bc) 35%,#fff);border-radius:14px;padding:8px;background:color-mix(in srgb,var(--bc) 6%,#fff);display:flex;flex-direction:column;gap:6px}
-.skbh b{display:block;color:var(--bc);font-size:17px}.skbh small{color:var(--mute);font-size:12px}
-.sktier{display:flex;flex-direction:column;gap:6px;padding-top:6px;border-top:1px dashed color-mix(in srgb,var(--bc) 30%,#fff)}.sktier:first-of-type{border-top:0;padding-top:0}
-.sknode{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:2px;background:#fff;border:2px solid #e6e0cf;border-radius:10px;padding:7px 9px;cursor:pointer}
-.sknode.can{border-color:var(--bc);box-shadow:0 0 0 3px color-mix(in srgb,var(--bc) 18%,transparent)}.sknode.has{background:color-mix(in srgb,var(--bc) 10%,#fff)}.sknode.lk{opacity:.55;cursor:default}.sknode[aria-disabled]{cursor:default}
-.sknode .skt{display:flex;justify-content:space-between;align-items:center;gap:6px}.sknode b{font-size:14.5px}.sknode small{font-size:12.5px;color:var(--mute);line-height:1.35}.sknode em{font-style:normal;font-size:11.5px;color:#a0937a}
+.sktabs{display:none;gap:6px;margin:0 0 10px}.sktabs button{all:unset;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;border-radius:12px;padding:7px 4px;font-weight:700;font-size:13px;color:var(--bc);background:color-mix(in srgb,var(--bc) 10%,#fff);border:2px solid transparent;cursor:pointer}
+.sktabs button.on{border-color:var(--bc);background:color-mix(in srgb,var(--bc) 18%,#fff)}.sktabs i{font-style:normal;background:var(--bc);color:#fff;border-radius:99px;font-size:11px;padding:0 6px}
+.skgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.skbr{position:relative;border-radius:18px;padding:10px 6px 12px;background:linear-gradient(180deg,color-mix(in srgb,var(--bc) 14%,#fff),color-mix(in srgb,var(--bc) 4%,#fff));display:flex;flex-direction:column;align-items:center}
+.skroot{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px}
+.skroot .orb{width:58px;height:58px;border-radius:50%;background:var(--bc);display:grid;place-items:center;box-shadow:0 4px 0 color-mix(in srgb,var(--bc) 60%,#000),inset 0 3px 0 rgba(255,255,255,.35)}
+.skroot b{color:var(--bc);font-size:16px;margin-top:4px}.skroot small{color:var(--mute);font-size:12px}
+.skseg{width:5px;height:22px;border-radius:3px;background:#d8d2c2;position:relative}.skseg.on{background:var(--bc)}
+.skgate{font-size:11px;font-weight:700;border-radius:99px;padding:2px 9px;background:#eee8d8;color:#8a7d62;white-space:nowrap}.skgate.on{background:var(--bc);color:#fff}
+.skrow{position:relative;display:flex;justify-content:space-around;width:100%;padding-top:14px}
+.skrow:before{content:'';position:absolute;top:0;height:5px;border-radius:3px;background:#d8d2c2;left:calc(100%/(var(--n)*2));right:calc(100%/(var(--n)*2))}.skrow.on:before{background:var(--bc)}
+.skrow[style*="--n:1"]:before{display:none}
+.sknode{all:unset;position:relative;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;width:calc(100%/var(--n));min-width:0;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.sknode:before{content:'';position:absolute;top:-14px;left:calc(50% - 2.5px);width:5px;height:16px;background:#d8d2c2;border-radius:3px}.skrow.on .sknode:before{background:var(--bc)}
+.sknode .orb{position:relative;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:#cfc8b6;box-shadow:0 3px 0 #a99f88,inset 0 3px 0 rgba(255,255,255,.35);transition:transform .15s}
+.sknode.open .orb{background:color-mix(in srgb,var(--bc) 55%,#fff);box-shadow:0 3px 0 color-mix(in srgb,var(--bc) 55%,#000),inset 0 3px 0 rgba(255,255,255,.35)}
+.sknode.has .orb{background:var(--bc)}
+.sknode.max .orb{box-shadow:0 0 0 3px #f2c230,0 3px 0 4px #c9951a,inset 0 3px 0 rgba(255,255,255,.35)}
+.sknode.can .orb{animation:skpulse 1.6s ease-in-out infinite}
+@keyframes skpulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bc) 55%,transparent),0 3px 0 color-mix(in srgb,var(--bc) 55%,#000)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--bc) 0%,transparent),0 3px 0 color-mix(in srgb,var(--bc) 55%,#000)}}
+.sknode.sel .orb{transform:scale(1.12);outline:3px solid var(--ink);outline-offset:3px}
+.sknode .lock{position:absolute;right:-4px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:#7a705c;display:grid;place-items:center;border:2px solid #fff}
+.sknode .rk{position:absolute;right:-6px;top:-4px;min-width:20px;height:20px;border-radius:10px;background:#fff;color:var(--ink);font-size:11px;font-weight:800;display:grid;place-items:center;border:2px solid var(--bc);padding:0 3px}
+.sknode.max .rk{background:#f2c230;border-color:#c9951a}
+.sknode b{font-size:12px;line-height:1.15;margin-top:9px;color:var(--ink);padding:0 2px}.sknode:not(.open) b{color:#9a907a}
+.skdet{margin:0 0 2px;text-align:left;background:#fff;border:2px solid var(--bc,#e6e0cf);border-radius:16px;padding:10px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 -6px 16px rgba(30,40,30,.12);z-index:3}
+.skdet .orb{flex:none;width:46px;height:46px;border-radius:50%;background:var(--bc);display:grid;place-items:center}
+.skdet .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.skdet .tx b{font-size:15px}.skdet .tx small{font-size:13px;color:#4a5a50;line-height:1.35}.skdet .tx em{font-style:normal;font-size:12px;color:var(--mute)}
+.skdet .btn{flex:none;padding:10px 14px}
+@media (max-width:760px){.skx{display:none}.sktabs{display:flex}.skgrid{grid-template-columns:1fr}.skbr{display:none}.skbr.on{display:flex}.sknode b{font-size:13px}.sknode .orb{width:58px;height:58px}}
 .pips{display:flex;gap:3px}.pips i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bc);display:block}.pips i.on{background:var(--bc)}
-.sknote{font-size:13px;color:var(--mute);margin:10px 2px 0}.skrow{display:flex;align-items:center;gap:10px;margin-top:4px}.skrow small{color:var(--mute)}.skn{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;padding:0 6px;margin-left:4px}
+.sknote{font-size:13px;color:var(--mute);margin:10px 2px 0}.skn{background:#e2552f;color:#fff;border-radius:99px;font-size:12px;padding:0 6px;margin-left:4px}
 .lvup{text-align:center}.lvup .lvb{width:76px;height:76px;border-radius:50%;margin:4px auto 8px;display:grid;place-items:center;font:800 34px Outfit,sans-serif;color:#fff;background:radial-gradient(circle at 35% 30%,#ffd86a,#e2a91f 60%,#b8860b);box-shadow:0 0 0 6px #fff3c4}
 .skins{display:flex;gap:10px;margin-top:10px}.skins .sk{width:36px;height:36px;border-radius:50%;border:3px solid;padding:0;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}.skins .sk.on{outline:3px solid var(--go);outline-offset:2px}
 @media (max-width:600px){.ttabs.many button:not(.on) .tl{display:none}.ttabs.many button{justify-content:center;min-height:44px}.ttabs.many button.on{grid-column:span 2}}
@@ -2119,6 +2142,16 @@ const SKB=[
     {k:'bulk',n:'Bulk buyer',r:2,t:1,d:r=>`Plugs cost ${5*r}% less`},
     {k:'greenlight',n:'Green light',r:1,t:1,d:()=>'One extra offer each planning period'},
     {k:'lucky',n:'Lucky break',r:1,t:2,d:()=>'A third of breakdowns fix themselves'}]}];
+// tree icons (24x24, drawn in white on the coloured orb)
+const SKI={hustle:'M13 3L6 13h5l-1 8 7-10h-5z',green:'M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l7-7',people:'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19c0-3 3-5 6-5s6 2 6 5M16 11a2.5 2.5 0 1 0 0-5M17 14c2.4 0 4 1.6 4 4',luck:'M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z',
+ quick:'M4 16h6l3-6 4 2M13 10l-2-4h-3M7 20l3-4M17 12l2 4',steady:'M7 13l3 3 7-8M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z',shortcut:'M5 19V9a4 4 0 0 1 4-4h10M15 1l4 4-4 4',wind:'M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h6',multi:'M4 6h10M4 11h10M4 16h7M17 14l2 2 3-4M18 4v6',
+ deepw:'M12 3c3 4.5 6 8 6 11a6 6 0 0 1-12 0c0-3 3-6.5 6-11zM9 15a3 3 0 0 0 3 3',pesteye:'M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',gentle:'M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V12M16 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-2.6-4.5a1.5 1.5 0 0 1 2.6-1.5L7 13',
+ arbor:'M12 2l6 8h-3l4 6H5l4-6H6zM12 16v6',finesse:'M12 7a3 3 0 1 0 0 .1M12 4V2M12 12v10M8 8c-3 0-4-2-4-4 2 0 4 1 4 4zM16 8c3 0 4-2 4-4-2 0-4 1-4 4M8 16c-2 0-3-1.5-3-3 2 0 3 1 3 3z',whisper:'M12 21c-4 0-6-3-6-6 2 0 4 1 6 4 2-3 4-4 6-4 0 3-2 6-6 6zM12 19V9M9 10c0-3 1.5-5 3-7 1.5 2 3 4 3 7',
+ smooth:'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',shopkeep:'M3 9l2-5h14l2 5M4 9v11h16V9M3 9h18M10 20v-6h4v6',mentor:'M2 9l10-5 10 5-10 5zM6 11v5c3 2.5 9 2.5 12 0v-5M22 9v6',foreman:'M4 15a8 8 0 0 1 16 0M2 15h20v3H2zM12 7V4',negot:'M2 12l4-4 4 2 4-3 4 3M2 12l5 5 3-1 3 3 3-1 3-4M18 10l4 2',
+ starspot:'M11 3l2 4.4 4.8.6-3.5 3.3.9 4.8L11 13.7 6.8 16l.9-4.8L4.2 8l4.8-.6zM16 16l5 5',caffeine:'M4 9h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 11h1.5a2.5 2.5 0 0 1 0 5H16M8 3c-1 1 1 2 0 4M12 3c-1 1 1 2 0 4',bulk:'M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10',greenlight:'M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 8a2 2 0 1 0 0-.1M12 15a2 2 0 1 0 0-.1',
+ lucky:'M12 12c-3-3-6-3-6 0s3 3 6 0zM12 12c3-3 3-6 0-6s-3 3 0 6zM12 12c3 3 6 3 6 0s-3-3-6 0zM12 12c-3 3-3 6 0 6s3-3 0-6zM12 18c0 2 1 3 3 4'};
+const skIco=(k,sz)=>`<svg viewBox="0 0 24 24" width="${sz}" height="${sz}" aria-hidden="true"><path d="${SKI[k]||SKI.luck}" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const lockIco='<svg viewBox="0 0 24 24" width="11" height="11"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>';
 const SKALL=Object.fromEntries(SKB.flatMap(b=>b.s.map(s=>[s.k,{...s,b:b.k}])));
 const TIER_AT=[0,3,6],SK_RESET=3;
 const sk=k=>(S&&S.sk&&S.sk[k])||0;
@@ -2135,18 +2168,36 @@ function skReset(){
   if(S.phase!=='home'||S.skReset===S.year||(S.stars||0)<SK_RESET||!skSpent())return;
   S.stars-=SK_RESET;S.sk={};S.skReset=S.year;save();skillsModal(true);if(S.phase==='home')renderHome();toast('good','Skills reset. Spend your points again');
 }
+let skSel=null,skTab=null;
 function skillsModal(keep){
   const pts=skPts(),home=S.phase==='home',canReset=home&&S.skReset!==S.year&&(S.stars||0)>=SK_RESET&&skSpent()>0;
-  const node=(b,s)=>{const r=sk(s.k),open=skOpen(s.k),can=open&&pts>0&&r<s.r;
-    return`<button type="button" class="sknode${r?' has':''}${can?' can':''}${open?'':' lk'}" data-sk="${s.k}"${can?'':' aria-disabled="true"'} style="--bc:${b.c}">
-      <span class="skt"><b>${s.n}</b><span class="pips">${Array.from({length:s.r},(_,i)=>`<i class="${i<r?'on':''}"></i>`).join('')}</span></span>
-      <small>${r&&r<s.r?`${s.d(r)}. Next rank: ${s.d(r+1).charAt(0).toLowerCase()+s.d(r+1).slice(1)}`:s.d(Math.max(1,r))}</small>${open?'':`<em>${TIER_AT[s.t]} points in ${b.n}</em>`}</button>`;};
-  const html=`<div id="sktree"><h2>Grower skills</h2><p class="skhd"><span class="skp${pts?' on':''}">${pts} point${pts===1?'':'s'} to spend</span> Level ${glv()}. You earn a point each time your grower levels up. Higher tiers open after ${TIER_AT[1]} and ${TIER_AT[2]} points in a branch.</p>
-    <div class="skgrid">${SKB.map(b=>`<div class="skbr" style="--bc:${b.c}"><div class="skbh"><b>${b.n}</b><small>${b.d} · ${skIn(b.k)} spent</small></div>${[0,1,2].map(t=>`<div class="sktier">${b.s.filter(s=>s.t===t).map(s=>node(b,s)).join('')}</div>`).join('')}</div>`).join('')}</div>
+  if(!keep){skSel=null;skTab=null;}
+  // start on a branch where a point can go, else the first
+  if(!skTab)skTab=(SKB.find(b=>b.s.some(s=>skOpen(s.k)&&sk(s.k)<s.r&&pts>0))||SKB[0]).k;
+  if(!skSel){const b=SKB.find(x=>x.k===skTab);skSel=(b.s.find(s=>skOpen(s.k)&&sk(s.k)<s.r)||b.s[0]).k;}
+  const node=(b,s,n)=>{const r=sk(s.k),open=skOpen(s.k),can=open&&pts>0&&r<s.r;
+    return`<button type="button" class="sknode${open?' open':''}${r?' has':''}${r>=s.r?' max':''}${can?' can':''}${skSel===s.k?' sel':''}" data-sk="${s.k}" style="--n:${n}" aria-label="${s.n}, rank ${r} of ${s.r}">
+      <span class="orb">${skIco(s.k,26)}${open?`<span class="rk">${r}/${s.r}</span>`:`<span class="lock">${lockIco}</span>`}</span><b>${s.n}</b></button>`;};
+  const branch=b=>{const spent=skIn(b.k);
+    return`<div class="skbr${skTab===b.k?' on':''}" style="--bc:${b.c}"><div class="skroot"><span class="orb">${skIco(b.k,32)}</span><b>${b.n}</b><small>${b.d} · ${spent} spent</small></div>
+      ${[0,1,2].map(t=>{const ss=b.s.filter(s=>s.t===t),on=spent>=TIER_AT[t];
+        return`<div class="skseg${on?' on':''}"></div>${t?`<span class="skgate${on?' on':''}">${on?'Open':`${spent}/${TIER_AT[t]} points`}</span><div class="skseg${on?' on':''}" style="height:10px"></div>`:''}
+        <div class="skrow${on?' on':''}" style="--n:${ss.length}">${ss.map(s=>node(b,s,ss.length)).join('')}</div>`;}).join('')}</div>`;};
+  const S0=SKALL[skSel],B0=SKB.find(x=>x.k===S0.b),r=sk(skSel),open=skOpen(skSel),can=open&&pts>0&&r<S0.r;
+  const desc=r&&r<S0.r?`Now: ${S0.d(r)}. Next: ${S0.d(r+1).charAt(0).toLowerCase()+S0.d(r+1).slice(1)}.`:`${S0.d(Math.max(1,r))}.`;
+  const why=r>=S0.r?'Fully learned':!open?`Opens after ${TIER_AT[S0.t]} points in ${B0.n} (${skIn(B0.k)} so far)`:pts<1?'Level up your grower to earn more points':`Rank ${r+1} of ${S0.r} · costs 1 point`;
+  const html=`<div id="sktree"><h2>Grower skills</h2><p class="skhd"><span class="skp${pts?' on':''}">${pts} point${pts===1?'':'s'} to spend</span> Level ${glv()}<span class="skx">. One point per grower level. Each branch opens new skills at ${TIER_AT[1]} and ${TIER_AT[2]} points.</span></p>
+    <div class="sktabs">${SKB.map(b=>{const n=b.s.filter(s=>skOpen(s.k)&&sk(s.k)<s.r).length&&pts?'•':'';return`<button type="button" data-skt="${b.k}" class="${skTab===b.k?'on':''}" style="--bc:${b.c}">${b.n}${n?' <i>!</i>':''}</button>`;}).join('')}</div>
+    <div class="skgrid">${SKB.map(branch).join('')}</div>
+    <div class="skdet" style="--bc:${B0.c}"><span class="orb">${skIco(skSel,26)}</span><span class="tx"><b>${S0.n}</b><small>${desc}</small><em>${why}</em></span>${can?`<button class="btn go" type="button" id="skL">Learn</button>`:''}</div>
     <p class="sknote">${home?(canReset?'':S.skReset===S.year?'You’ve already reset this year.':skSpent()?`Resetting costs ${SK_RESET} ★.`:''):`You can reset your skills once a year at the homestead for ${SK_RESET} ★.`}</p>
     <div class="ab2">${home&&skSpent()?`<button class="btn" type="button" id="skR"${canReset?'':' disabled'}>Reset for ${SK_RESET} ★</button>`:''}<button class="btn go" type="button" id="skX">Done</button></div></div>`;
-  const keepScroll=keep&&$('mbox').scrollTop;modal(html);if(keep)$('mbox').scrollTop=keepScroll;
-  $('mbox').querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>skBuy(b.dataset.sk));
+  const keepScroll=keep&&$('mbox').scrollTop;modal(html);
+  {const mf=document.querySelector('#mbox .mfoot'),det=document.querySelector('#mbox .skdet');if(mf&&det)mf.prepend(det);}// the chosen skill sits with the buttons, always in view
+  if(keep)$('mbox').scrollTop=keepScroll;
+  $('mbox').querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{skSel=b.dataset.sk;skTab=SKALL[skSel].b;skillsModal(true);});
+  $('mbox').querySelectorAll('[data-skt]').forEach(b=>b.onclick=()=>{skTab=b.dataset.skt;const B=SKB.find(x=>x.k===skTab);skSel=(B.s.find(s=>skOpen(s.k)&&sk(s.k)<s.r)||B.s[0]).k;skillsModal(true);});
+  const lb=$('skL');if(lb)lb.onclick=()=>skBuy(skSel);
   $('skX').onclick=()=>{closeModal();if(sheetOpen())renderSheet();};const rb=$('skR');if(rb)rb.onclick=skReset;
 }
 // Between periods: if the grower levelled up and has points waiting, say so once per new level.
@@ -3400,8 +3451,8 @@ const TIPS=[
    {el:'[data-tab="crew"]',t:'You have a skill point to spend. Open the Crew tab.',guide:1,done:()=>tab==='crew'},
    {el:'#skB',t:'Every job you do yourself earns experience, and each level gives a skill point. Open your skills.',guide:1,done:()=>!!$('sktree')}]},
  {id:'sktut',tag:'SKILLS',modal:1,when:()=>!!$('sktree'),steps:[
-   {el:'.skbh',t:'Four branches: Hustle makes you faster, Green thumb helps your plants, People helps with customers and crew, and Luck brings extras.',ok:1},
-   {el:()=>sel$('.sknode.can')||sel$('.sknode'),t:'Tap a skill to spend a point on it. Some take more than one point. Lower rows open after 3 and 6 points in that branch, so it pays to focus.',ok:1},
+   {el:()=>sel$('.skbr.on .skroot')||sel$('.skroot'),t:'Four branches: Hustle makes you faster, Green thumb helps your plants, People helps with customers and crew, and Luck brings extras.',ok:1},
+   {el:()=>sel$('.sknode.can')||sel$('.sknode.open'),t:'Tap a skill to read it, then Learn to spend a point. Some have more than one rank. The lower rows open once you have 3 and 6 points in that branch, so it pays to focus.',ok:1},
    {el:'#skX',t:'Can\u2019t decide? Points keep. You can also reset once a year at the homestead.',ok:1}]},
  {id:'field',tag:'TREE FIELD',when:()=>inPlan()&&fieldOpen()&&!Object.keys(treesOf()).length&&(S.stars||0)>=1&&treeWindow(),steps:[
    {el:'[data-tab="trees"]',t:'Your tree field is open. Open the Trees tab to plant.',guide:1,done:()=>tab==='trees'},
