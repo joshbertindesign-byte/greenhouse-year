@@ -3519,6 +3519,20 @@ const TIPS=[
    {el:()=>sel$('.tcard.rdy')||sel$('.tcard'),t:'This tree is ready. Sell it in spring or fall: to a landscaper for cash, or to the county arboretum for stars. Its grade, from the care jobs you did on time, sets the price.',ok:1}]},
  {id:'build',tag:'BUILD SOMETHING',when:()=>S.phase==='home'&&$('modal').hidden&&!HJ.length&&S.tips.home&&LOTS.some(l=>!l.pre&&lotState(l.id).clear&&!lotState(l.id).b),steps:[
    {el:()=>lotFocus(LOTS.find(l=>!l.pre&&lotState(l.id).clear&&!lotState(l.id).b)),t:'A cleared plot. Tap it to see what you can build with stars: each building brings its own small bonus, from a farm stand to fruit trees that drop stars.',ok:1}]},
+ {id:'promo',tag:'UP THE LADDER',modal:1,when:()=>!!sel$('#mbox .edpromo.up'),steps:[
+   {el:'#mbox .edpromo.up',t:'Five stars moves you up the magazine ladder: Gardener Quarterly, Greenhouse Monthly, Pro Growers Magazine, then Prize Growers. Each step has stricter star thresholds, a higher profit bar and stronger rivals, and customers’ standing slips a little faster.',ok:1},
+   {el:'#mbox .edpromo.up',t:'Staying up there pays a bonus star every year. Two years in a row at two stars or less moves you back down a step.',ok:1}]},
+ {id:'demote',tag:'DOWN A STEP',modal:1,when:()=>!!sel$('#mbox .edpromo.down'),steps:[
+   {el:'#mbox .edpromo.down',t:'Two years at two stars or less moves you down a step. The judges are easier there, so it’s a chance to rebuild: a five-star year takes you straight back up.',ok:1}]},
+ {id:'almanac',tag:'THE ALMANAC',modal:1,when:()=>!!$('almGo')&&!!sel$('#mbox .alsec'),steps:[
+   {el:'#mbox .alsec',t:'The almanac comes out before each year: last year in review, the weather outlook, when each of your flowers sells best, the show calendar, and what’s in and out for succulents.',ok:1},
+   {el:'#almGo',t:'Plan around it: book flowers to ship in their peak season and you earn more per flat. You can reopen it any time from the Ledger, the Shop tab or the homestead.',ok:1}]},
+ {id:'golddeco',tag:'GOLD DECORATION',when:()=>inPlan()&&Object.keys(S.goldD||{}).some(k=>decOwned('g:'+k)>decUsed('g:'+k)),steps:[
+   {el:'[data-tab="build"]',t:'You won a festival for the second time and earned its decoration in gold. Open Upgrades.',guide:1,done:()=>tab==='build'},
+   {el:'[data-sub="decor"]',t:'Open Decor.',guide:1,done:()=>upSub==='decor'},
+   {el:()=>sel$('.dopt.gold')||sel$('.dslot'),t:'Gold decorations give twice the boost of the plain one. Place it on the house where that boost helps most.',ok:1}]},
+ {id:'hats',tag:'CAT HATS',when:()=>S.phase==='home'&&$('modal').hidden&&!HJ.length&&Object.keys(S.hats||{}).length>0&&S.cats.length>0,steps:[
+   {el:()=>lotFocus(lotOf('L01')),t:'You have a hat for the cats (they come with gold festival wins and weekly prizes). Tap the cat house and open the wardrobe: cats can wear each festival’s hat while it’s on, or one hat every day. Just for looks.',ok:1}]},
  {id:'adopt',tag:'CATS',when:()=>S.phase==='home'&&$('modal').hidden&&(S.stars||0)>=CAT_COST&&S.cats.length<catCap()&&!HJ.length,steps:[
    {el:()=>lotFocus(lotOf('L01')),t:'You have stars for a new cat. Tap the cat house to adopt.',guide:1,done:()=>homeSel==='L01'},
    {el:'.adopt',t:'Every cat helps in her own way. Read their bonuses, then adopt one.',ok:1}]},
