@@ -808,8 +808,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 })();
 </script>
 <script src="art.js"></script>
-<script src="art_bright.js"></script>
-<script src="art_cel.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -2455,53 +2453,8 @@ function layoutHome(){
 const vecImg={},vecCan={};let vecK=0;
 // ---- art style test: "cel" turns every sprite's soft gradients into hard-edged bands and its outlines into darker,
 // slightly heavier versions of each part's own colour (never black). Classic is the shipped look.
-let ARTSTYLE='cel';try{ARTSTYLE=localStorage.getItem('gyArt2')||'cel';}catch(e){}
-let CEL=ARTSTYLE==='cel';
-// hand-drawn sprite sets: ART_CEL (the cel-shaded redraw) and ART_BRIGHT (the bright test) replace or add sprites;
-// anything not redrawn yet falls back to the automatic look for that style
-const ART_ORIG={},ART_ADDED=new Set();
-function applyStyle(st){
-  for(const k in ART_ORIG)if(ART.vector[k])ART.vector[k][4]=ART_ORIG[k];
-  for(const k of ART_ADDED)delete ART.vector[k];ART_ADDED.clear();
-  const set=st==='bright'&&typeof ART_BRIGHT!=='undefined'?ART_BRIGHT:st==='cel'&&typeof ART_CEL!=='undefined'?ART_CEL:null;if(!set)return;
-  for(const k in set){if(ART.vector[k]){if(!(k in ART_ORIG))ART_ORIG[k]=ART.vector[k][4];ART.vector[k][4]=set[k];}else{ART.vector[k]=[64,64,32,32,set[k]];ART_ADDED.add(k);}}
-}
-applyStyle(ARTSTYLE);
-const hexHsl=h=>{h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16),r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let H=0,S0=0;
-  if(mx!==mn){const d=mx-mn;S0=l>.5?d/(2-mx-mn):d/(mx+mn);H=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;H/=6;}return[H,S0,l];};
-const hslHex=(H,S0,l)=>{const f=n=>{const k=(n+H*12)%12,a=S0*Math.min(l,1-l);return Math.round((l-a*Math.max(-1,Math.min(k-3,9-k,1)))*255).toString(16).padStart(2,'0');};return'#'+f(0)+f(8)+f(4);};
-const inkOf=c=>{if(!/^#[0-9a-f]{3,6}$/i.test(c))return c;const [H,S0,l]=hexHsl(c);return hslHex(H,Math.min(1,S0*1.15+.08),Math.max(.1,l*.5));};
-const mixHex=(a,b,t)=>{const A=hexHsl(a),B=hexHsl(b);return hslHex(A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t);};
-function celify(svg){
-  if(svg.includes('<!--hc-->'))return svg;
-  svg=svg.replace(/<(linear|radial)Gradient([^>]*)>([\s\S]*?)<\/\1Gradient>/g,(m,t,at,inner)=>{
-    const cs=[...inner.matchAll(/stop-color="(#[0-9a-fA-F]{3,6})"/g)].map(x=>x[1]);if(cs.length<2||new Set(cs).size===1)return m;
-    const pop=c=>{const [H,S0,l]=hexHsl(c);return hslHex(H,Math.min(1,S0*1.15),l);};
-    const hi=pop(cs[0]),sh0=cs[cs.length-1],mid=pop(cs.length>2?cs[Math.floor(cs.length/2)]:mixHex(cs[0],sh0,.5)),sh=(()=>{const [H,S0,l]=hexHsl(sh0);return hslHex(H,Math.min(1,S0*1.2),l*.86);})();
-    const st=t==='radial'?[[0,hi],[.24,hi],[.24,mid],[.64,mid],[.64,sh],[1,sh]]:[[0,hi],[.26,hi],[.26,mid],[.66,mid],[.66,sh],[1,sh]];
-    return`<${t}Gradient${at}>${st.map(([o,c])=>`<stop offset="${o}" stop-color="${c}"/>`).join('')}</${t}Gradient>`;});
-  return svg.replace(/<(path|circle|ellipse|rect|polygon|polyline|line)\b([^>]*?)(\/?)>/g,(m,tag,at,sl)=>{
-    const st=/\sstroke="([^"]+)"/.exec(at);if(!st||st[1]==='none')return m;
-    const fl=/\sfill="([^"]+)"/.exec(at),open=!fl||fl[1]==='none';
-    at=at.replace(/\sstroke="([^"]+)"/,` stroke="${open?mixHex(st[1].startsWith('#')?st[1]:'#888888',inkOf(st[1].startsWith('#')?st[1]:'#888888'),.4):inkOf(st[1])}"`);
-    if(!open)at=at.replace(/\sstroke-width="([\d.]+)"/,(q,w)=>` stroke-width="${Math.min(2,Math.max(1,+w*1.9)).toFixed(2)}"`);
-    if(!open&&!/stroke-linejoin/.test(at))at+=' stroke-linejoin="round"';
-    return`<${tag}${at}${sl}>`;});
-}
-// bright: no outlines anywhere (filled shapes drop their stroke; plain lines stay) and colours lifted a touch.
-// Hand-made bright sprites carry a <!--hb--> marker and are left exactly as drawn.
-function brightify(svg){
-  if(svg.includes('<!--hb-->'))return svg;
-  svg=svg.replace(/<(path|circle|ellipse|rect|polygon|polyline)\b([^>]*?)(\/?)>/g,(m,tag,at,sl)=>{
-    const st=/\sstroke="([^"]+)"/.exec(at);if(!st||st[1]==='none')return m;const fl=/\sfill="([^"]+)"/.exec(at);if(!fl||fl[1]==='none')return m;
-    return`<${tag}${at.replace(/\sstroke="[^"]+"/,' stroke="none"')}${sl}>`;});
-  return svg.replace(/(stop-color|fill)="(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})"/g,(m,a,c)=>{const [H,S0,l]=hexHsl(c);return`${a}="${hslHex(H,Math.min(1,S0*1.12),Math.min(.97,l*1.03+.01))}"`;});
-}
-const styled=svg=>CEL?celify(svg):ARTSTYLE==='bright'?brightify(svg):svg;
-const svgSrc=svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(svg));
-function setArtStyle(st){ARTSTYLE=st;CEL=st==='cel';applyStyle(st);try{localStorage.setItem('gyArt2',st);}catch(e){}
-  for(const id in ART.vector)if(id.includes('|'))delete ART.vector[id];for(const k in vecImg)delete vecImg[k];for(const k in vecCan)delete vecCan[k];if(typeof fURL!=='undefined')for(const k in fURL)delete fURL[k];
-  prepArt();hud();if(sheetOpen())renderSheet();if(S.phase==='home')renderHome();}
+try{localStorage.removeItem('gyArt');localStorage.removeItem('gyArt2');}catch(e){}// art-style tests are gone
+const svgSrc=svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 function prepArt(){
   for(const id in ART.vector)if(!vecImg[id]){const im=new Image();im.onload=()=>{vecCan[id]=null;};im.src=svgSrc(ART.vector[id][4]);vecImg[id]=im;}
 }
@@ -2546,7 +2499,7 @@ const tileHash=(u,v)=>{const n=Math.sin(u*12.9898+v*78.233)*43758.5453;return n-
 function poly(pts,fill,stroke){cx.beginPath();cx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);cx.closePath();cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1;cx.stroke();}}
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;r=clamp(Math.round(r*f),0,255);g=clamp(Math.round(g*f),0,255);b=clamp(Math.round(b*f),0,255);return`rgb(${r},${g},${b})`;}
 function box(x,y,z,w,d,h,col){
-  const c=typeof col==='string'?[col,shade(col,.8),shade(col,.66)]:col,e=CEL?'rgba(30,20,10,.42)':ARTSTYLE==='bright'?null:'rgba(0,0,0,.14)';
+  const c=typeof col==='string'?[col,shade(col,.8),shade(col,.66)]:col,e='rgba(0,0,0,.14)';
   poly([P(x,y+d,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x,y+d,z+h)],c[1],e);
   poly([P(x+w,y,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x+w,y,z+h)],c[2],e);
   poly([P(x,y,z+h),P(x+w,y,z+h),P(x+w,y+d,z+h),P(x,y+d,z+h)],c[0],e);
@@ -4245,26 +4198,21 @@ function answerCall(){
     if(sheetOpen())renderSheet();});
 }
 function drawPhone(H,now){
-  // a red wall phone lying flat on the back wall: x runs along the wall (screen slope 1:2), y straight down
+  // the wall phone lies flat on the back wall: x runs along the wall (screen slope 1:2), y straight down
   const z=H.L*FH,ring=S.tasks.some(t=>t.type==='phone'),sh=ring?Math.sin(now/35)*1.2:0,[X,Y]=P(H.ox+PHONE.x+.55,H.oy+.04,z+40),k=sc;
-  const ink='#5a160e',lw=Math.max(1,1.3*k);
+  const ln='#5d4a36';
   cx.save();cx.translate(X,Y);cx.transform(1,.5,0,1,0,0);cx.scale(k,k);cx.translate(sh,0);cx.lineJoin='round';cx.lineCap='round';
-  const R=(x,y,w,h,r,fill,stroke)=>{rr(x,y,w,h,r);cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=lw/k;cx.stroke();}};
-  // depth: the body stands out from the wall toward the viewer
-  cx.fillStyle='#8a2a1e';cx.beginPath();cx.moveTo(7,-10);cx.lineTo(4.6,-8.8);cx.lineTo(4.6,11.2);cx.lineTo(7,10);cx.closePath();cx.fill();
-  cx.fillStyle='rgba(0,0,0,.18)';rr(-6,-8.5,14,20,3);cx.fill();
-  R(-7,-10,14,20,3,'#e8483a',ink);
-  cx.save();rr(-7,-10,14,20,3);cx.clip();cx.fillStyle='#b83226';rr(-5.6,-8.2,14,20,3);cx.fill();cx.fillStyle='#e8483a';rr(-7.6,-10.4,14,20,3);cx.fill();cx.fillStyle='#ff8070';rr(-6.2,-9.2,3,8,1.5);cx.fill();cx.restore();
-  // face plate and dial
-  R(-3.4,-3.6,8.2,9.6,2,'#f4ead2','#7a5a3a');
-  cx.fillStyle='#5a3a26';for(let i=0;i<3;i++)for(let j=0;j<3;j++){cx.beginPath();cx.arc(-1.4+j*2.4,-1.4+i*2.4,.65,0,7);cx.fill();}
-  // handset hanging on the left side, with a coiled cord
-  const hx=-8.2;
-  cx.strokeStyle=ink;cx.lineWidth=.8;cx.beginPath();for(let t=0;t<=1;t+=.04){const y=9+t*7,x=hx+1.6+Math.sin(t*40)*1.1-t*2;t?cx.lineTo(x,y):cx.moveTo(x,y);}cx.stroke();
-  R(hx-1.6,-11,4.2,21,2.1,'#e8483a',ink);
-  cx.fillStyle='#b83226';rr(hx-1.6,-1.5,4.2,4,1);cx.fill();
-  R(hx-3,-12.6,6.4,5,2.4,'#e8483a',ink);R(hx-3,7.4,6.4,5,2.4,'#e8483a',ink);
-  cx.fillStyle='#ff8070';rr(hx-2.2,-11.8,2.2,2,1);cx.fill();
+  const R=(x,y,w,h,r,fill,stroke)=>{rr(x,y,w,h,r);cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1.2;cx.stroke();}};
+  cx.fillStyle='#c9bb98';cx.beginPath();cx.moveTo(6,-9);cx.lineTo(4,-8);cx.lineTo(4,10);cx.lineTo(6,9);cx.closePath();cx.fill();  // side, standing off the wall
+  cx.fillStyle='rgba(0,0,0,.12)';rr(-5,-7.5,12,18,3);cx.fill();
+  R(-6,-9,12,18,3,'#e9dfc6',ln);
+  cx.fillStyle='#f6efdd';rr(-5,-8,3,7,1.5);cx.fill();
+  cx.fillStyle=ln;for(let i=0;i<3;i++)for(let j=0;j<3;j++){cx.beginPath();cx.arc(-2.4+j*2.6,-.6+i*2.6,.75,0,7);cx.fill();}
+  // handset on the left with a coiled cord
+  const hx=-7.6;
+  cx.strokeStyle='#2f3a44';cx.lineWidth=.7;cx.beginPath();for(let t=0;t<=1;t+=.04){const y=8+t*6,x=hx+1.4+Math.sin(t*40)*1-t*2;t?cx.lineTo(x,y):cx.moveTo(x,y);}cx.stroke();
+  R(hx-1.4,-10,3.8,19,1.9,'#2f3a44',null);R(hx-2.6,-11.4,6,4.4,2.2,'#2f3a44',null);R(hx-2.6,6.6,6,4.4,2.2,'#2f3a44',null);
+  cx.fillStyle='#4a5866';rr(hx-1.8,-10.6,2,2,1);cx.fill();
   cx.restore();
   if(ring){const [RX,RY]=P(H.ox+PHONE.x+.55,H.oy+.04,z+44);cx.strokeStyle='#e2552f';cx.lineWidth=2*k;const a=(now/600)%1;cx.globalAlpha=1-a;
     for(const [a0,a1] of [[-.4,.4],[Math.PI-.4,Math.PI+.4]]){cx.beginPath();cx.arc(RX,RY,(15+a*10)*k,a0,a1);cx.stroke();}cx.globalAlpha=1;}
@@ -4279,7 +4227,6 @@ function settingsModal(){
     ${row('stName','Nursery and grower',`${esc(nurseryName())} · ${(S.gender||'m')==='f'?'woman':'man'} grower`,'Change')}
     ${row('stTips','Tips',S.tipsOff?'Off. Turn them on to get pointers the first time you meet something new.':'On. A short pointer the first time you meet something new.',S.tipsOff?'Turn on':'Turn off')}
     ${row('stReplay','Replay tips','Shows every tip again as it comes up, including the ones you’ve seen.','Replay')}
-    ${row('stArt','Art style (test)',{classic:'Classic: soft shading and thin outlines.',cel:'Cel-shaded (the new look): hard-edged shading and darker outlines in each part\u2019s own colour. Being redrawn piece by piece.',bright:'Bright: no outlines anywhere, plus new shapes for petunias, mums, pothos, geraniums, vincas and begonias as they grow.'}[ARTSTYLE]||'Classic',{classic:'Try cel-shaded',cel:'Try bright',bright:'Back to classic'}[ARTSTYLE]||'Switch')}
     ${row('stDay','Daily visits',`Day ${Math.max(1,(S.daily||{}).day||0)} of 7 · ${(S.daily||{}).wk||0} of ${WEEKLY.length} weekly prizes`,'Open')}
     ${S.dev?row('stDev','Developer mode','On: unlimited cash and stars.','Turn off'):''}${''/*dev*/}
     ${row('stReset','Start over','Wipes this nursery, the homestead, your cats and stars. It can’t be undone.','Start over','bad')}
@@ -4287,7 +4234,6 @@ function settingsModal(){
     <div class="ab2"><button class="btn go" type="button" id="stX">Done</button></div>`);
   $('stX').onclick=closeModal;
   $('stName').onclick=()=>nameModal(false);
-  $('stArt').onclick=()=>{setArtStyle({classic:'cel',cel:'bright',bright:'classic'}[ARTSTYLE]||'classic');settingsModal();};
   $('stTips').onclick=()=>{S.tipsOff=S.tipsOff?0:1;if(S.tipsOff){tipCur=null;}save();settingsModal();};
   $('stReplay').onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();closeModal();toast('good','Tips will show again as you play');};
   $('stReset').onclick=resetModal;
@@ -4371,7 +4317,7 @@ function rewardsOf(g){ // what opens when you reach stage g
   return out;
 }
 function spriteURL(id,vb){const k='s_'+id+vb;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';const m=d[4].match(/viewBox="[^"]*" width="\d+" height="\d+"/);
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?styled(d[4]).replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):styled(d[4]));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?d[4].replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):d[4]);}
 let upSub='equip';
 function upSubs(){
   const gens=Object.keys(CROPS).filter(k=>!notFlower(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0)+(stage()>=SUC_LV&&!sucOn()?1:0);
@@ -4846,12 +4792,12 @@ function boardMetrics(){
 }
 const fURL={};
 function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
-  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
+  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
 function personURL(id){const k='p_'+id;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
 const crewFace=(r,px)=>`<span class="face" style="width:${px}px;height:${px}px;background:${IC[r.role].c}"><img src="${personURL('crew_'+r.role+'_front_0|'+lookOf(r))}" alt=""></span>`;
 function catURL(id){const k='cat_'+id;if(fURL[k])return fURL[k];const d=ART.vector['cat_'+id+'_sit'];if(!d)return'';
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(d[4].replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
 const flowerImg=(k,px)=>`<img class="fi" src="${flowerURL(k,3)}" alt="" style="width:${px}px;height:${px}px">`;
 const cropPill=(k,txt,noImg)=>`<span class="crop" style="background:${CROPS[k].color}">${noImg?'':flowerImg(k,20)}${txt??CROPS[k].name}</span>`;
 const plantPic=(k,cls)=>`<img class="${cls}" src="${flowerURL(k,3)}" alt="${CROPS[k].name}">`;
