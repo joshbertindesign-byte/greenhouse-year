@@ -1592,7 +1592,7 @@ function dailyTile(i,next,claimed){const R=DAILY[i],n=i+1,done=n<next||(claimed&
 function dailyModal(force){
   if(!force&&!dailyDue())return;if(!$('modal').hidden){setTimeout(()=>dailyModal(force),700);return;}
   const due=dailyDue(),next=due?dailyNext():((S.daily||{}).day||1),wk=(S.daily||{}).wk||0;
-  modal(`<h2>${due?'Welcome back!':'Daily visits'}</h2><p style="margin-top:-4px;color:var(--mute);font-size:14px">Open the game each day for a reward. Day 7 brings a weekly prize. Miss a day and it starts again at day 1.</p>
+  modal(`<h2>${due?((S.daily||{}).last?'Welcome back!':'Your first daily reward'):'Daily visits'}</h2><p style="margin-top:-4px;color:var(--mute);font-size:14px">Open the game each day for a reward. Day 7 brings a weekly prize. Miss a day and it starts again at day 1.</p>
     <div class="dweek">${DAILY.map((_,i)=>dailyTile(i,next,!due)).join('')}</div>
     <p class="alnote" style="margin:10px 0 0">${wk<WEEKLY.length?`Weekly prizes won: ${wk} of ${WEEKLY.length}.`:'You’ve won every weekly prize. Day 7 still brings stars.'}${S.trowel?` You have the diamond trowel: +${TROWEL_N} flats on everything you plant.`:''}</p>
     <div class="ab2">${due?`<button class="btn go" type="button" id="dyOk">Collect day ${next}</button>`:'<button class="btn go" type="button" id="dyOk">Done</button>'}</div>`);
@@ -3088,6 +3088,7 @@ function failYear(why,rv){
   $('fyOk').onclick=closeModal;
 }
 function enterHome(){
+  setTimeout(()=>{if(S.phase==='home')dailyModal();},1200);// daily visit rewards show up at the homestead
   if(S.pendingGift){const c=S.pendingGift;S.pendingGift=null;setTimeout(()=>redeemGift(c),900);}
   $('toasts').innerHTML='';hgReset();S.phase='home';homeSel=null;panX=null;panY=0;viewF=0;focusH=-1;closeSheet();closeModal();save();layout();hud();renderHome();
   if(!S.homeSeen&&!window.__quiet){S.homeSeen=1;save();modal(`<h2>Your homestead</h2><p>Between years you come home. Spend the stars you earn on clearing land, building, and adopting greenhouse cats. Miley is already settled in the cat house.</p>
@@ -3096,7 +3097,7 @@ function enterHome(){
     <div>${catURL?`<img src="${catURL('anna')}" width="40" height="40" alt="">`:''}<span><b>Cats:</b> tap the cat house to adopt more. Each cat helps in her own way.</span></div></div>
     <button class="btn go" id="hmOk" type="button">Let's go</button>`);$('hmOk').onclick=closeModal;}
 }
-function leaveHome(){if(S.phase!=='home')return;setTimeout(()=>dailyModal(),1200);flushHJobs();save();yearCk=JSON.stringify(S);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
+function leaveHome(){if(S.phase!=='home')return;flushHJobs();save();yearCk=JSON.stringify(S);try{localStorage.setItem('gy8ck',yearCk);}catch(e){}$('homeP').hidden=true;homeSel=null;panX=0;panY=0;beginPlan();layout();}
 function spendStars(n){if((S.stars||0)<n){toast('bad',`You need ${n} ★`);return false;}S.stars-=n;return true;}
 function clearLot(id){const L=lotOf(id),st=lotState(id);if(st.clear||!L.cost||jobFor(id))return;if(!spendStars(L.cost))return;S.home[id]={clear:true};
   const find=rnd()<.3?(rnd()<.3?2:1):0;S.stars+=find;addHJob({lot:id,kind:'clear',prev:{clear:false},find});homeSel=null;save();renderHome();}
