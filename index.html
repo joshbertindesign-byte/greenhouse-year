@@ -1812,11 +1812,14 @@ function decoHTML(plan){
 }
 // more offers than benches: choosing what to turn down is part of planning
 const OFFER_MULT=1.5;
+// free bench-periods left this year in flower houses
+function freeCells(c){let n=0;for(const h of regHouses())for(let i=0;i<8;i++){const r=h*8+i;for(let p=c;p<=7;p++)if(!liveAt(r,p))n++;}return n;}
+const OFFER_CELLS=3;// fewer offers as the board fills: still more than fit, but not a pile to bin
 function genOffers(){
   const c=S.period;S.offers=[];genContracts();
   const cand=candFlex(c);if(!cand.length)return;
   const mine=cand.filter(x=>owns(x.k));
-  const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.round(base*OFFER_MULT*Math.max(1,regHouses().length))+(sk('greenlight')?1:0);
+  const base=clamp(1+Math.floor(S.rep/35)+(rnd()<.5?1:0),2,5),n=Math.min(Math.round(base*OFFER_MULT*Math.max(1,regHouses().length)*(.4+.6*(8-c)/8))+(sk('greenlight')?1:0),Math.max(2,Math.ceil(freeCells(c)/OFFER_CELLS)));
   const theirs=cand.filter(x=>!owns(x.k)),sure=mine.length?Math.min(n,Math.max(2,Math.ceil(n*.5))):0;
   for(let i=0;i<sure;i++)S.offers.push(mkOffer(wpick(mine)));
   const rest=theirs.length?n-sure+1:n-sure;
@@ -3519,9 +3522,9 @@ function walletPing(id,txt,col){if(window.__quiet)return;const b=$(id);if(!b)ret
 function walletSet(){if(!S)return;const c=Math.round(S.cash),st=S.stars||0;
   if(WV.c==null||WV.ts==null){WV.c=c;WV.s=st;$('hCash').textContent=cashTxt(c);$('hStars').textContent=st;}
   if(WV.tc!=null&&c-WV.tc>=50)walletPing('hCashB','+'+cashTxt(c-WV.tc),'#c9ffd6');
-  if(WV.ts!=null&&st>WV.ts)walletPing('hStarB','+'+(st-WV.ts)+' ★','#fff2a8');
+  if(WV.ts!=null&&st!==WV.ts)walletPing('hStarB',(st>WV.ts?'+':'\u2212')+Math.abs(st-WV.ts)+' ★',st>WV.ts?'#fff2a8':'#ffd0d0');
   WV.tc=c;WV.ts=st;$('hCashB').classList.toggle('neg',c<0);}
-function walletTick(dt){if(!S||WV.tc==null)return;const k=Math.min(1,dt*9);
+function walletTick(dt){if(!S)return;if(WV.tc==null||Math.round(S.cash)!==WV.tc||(S.stars||0)!==WV.ts)walletSet();const k=Math.min(1,dt*9);
   if(WV.c!==WV.tc){WV.c+=(WV.tc-WV.c)*k;if(Math.abs(WV.tc-WV.c)<1)WV.c=WV.tc;$('hCash').textContent=cashTxt(Math.round(WV.c));}
   if(WV.s!==WV.ts){WV.s+=(WV.ts-WV.s)*Math.min(1,dt*6);if(Math.abs(WV.ts-WV.s)<.5)WV.s=WV.ts;$('hStars').textContent=Math.round(WV.s);}}
 function hud(){

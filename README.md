@@ -10,7 +10,7 @@ Open `index.html` in a browser, or play it on GitHub Pages: https://joshbertinde
 
 ## How it plays
 
-- **Planning:** offers come up one at a time, and you can see the next two. Place each one on the board or bin it.
+- **Planning:** offers come up one at a time, and you can see the next two. Place each one on the board or bin it. The number of offers tapers through the year (to about 45% by the last period) and never runs much past the free bench space you have left, so a full board doesn't mean binning dozens.
 - **Shapes:** each square on the board is one bench for one period. Most orders can be rotated between Standard, Tight and Spaced shapes.
 - **Timing:** one-off orders can ship early but never late. Shipping early pays less, and shipping in a crop's peak season pays more.
 - **Swaps:** placing an order over unplanted ones swaps them out. Breaking a promise from an earlier round costs reputation with that customer.
