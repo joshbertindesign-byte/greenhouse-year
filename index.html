@@ -2480,7 +2480,17 @@ function celify(svg){
     if(!open&&!/stroke-linejoin/.test(at))at+=' stroke-linejoin="round"';
     return`<${tag}${at}${sl}>`;});
 }
-const svgSrc=svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(CEL?celify(svg):svg);
+// bright: no outlines anywhere (filled shapes drop their stroke; plain lines stay) and colours lifted a touch.
+// Hand-made bright sprites carry a <!--hb--> marker and are left exactly as drawn.
+function brightify(svg){
+  if(svg.includes('<!--hb-->'))return svg;
+  svg=svg.replace(/<(path|circle|ellipse|rect|polygon|polyline)\b([^>]*?)(\/?)>/g,(m,tag,at,sl)=>{
+    const st=/\sstroke="([^"]+)"/.exec(at);if(!st||st[1]==='none')return m;const fl=/\sfill="([^"]+)"/.exec(at);if(!fl||fl[1]==='none')return m;
+    return`<${tag}${at.replace(/\sstroke="[^"]+"/,' stroke="none"')}${sl}>`;});
+  return svg.replace(/(stop-color|fill)="(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})"/g,(m,a,c)=>{const [H,S0,l]=hexHsl(c);return`${a}="${hslHex(H,Math.min(1,S0*1.12),Math.min(.97,l*1.03+.01))}"`;});
+}
+const styled=svg=>CEL?celify(svg):ARTSTYLE==='bright'?brightify(svg):svg;
+const svgSrc=svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(svg));
 function setArtStyle(st){ARTSTYLE=st;CEL=st==='cel';applyBright(st==='bright');try{localStorage.setItem('gyArt',st);}catch(e){}
   for(const id in ART.vector)if(id.includes('|'))delete ART.vector[id];for(const k in vecImg)delete vecImg[k];for(const k in vecCan)delete vecCan[k];if(typeof fURL!=='undefined')for(const k in fURL)delete fURL[k];
   prepArt();hud();if(sheetOpen())renderSheet();if(S.phase==='home')renderHome();}
@@ -2528,7 +2538,7 @@ const tileHash=(u,v)=>{const n=Math.sin(u*12.9898+v*78.233)*43758.5453;return n-
 function poly(pts,fill,stroke){cx.beginPath();cx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)cx.lineTo(pts[i][0],pts[i][1]);cx.closePath();cx.fillStyle=fill;cx.fill();if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1;cx.stroke();}}
 function shade(hex,f){const n=parseInt(hex.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;r=clamp(Math.round(r*f),0,255);g=clamp(Math.round(g*f),0,255);b=clamp(Math.round(b*f),0,255);return`rgb(${r},${g},${b})`;}
 function box(x,y,z,w,d,h,col){
-  const c=typeof col==='string'?[col,shade(col,.8),shade(col,.66)]:col,e=CEL?'rgba(30,20,10,.42)':'rgba(0,0,0,.14)';
+  const c=typeof col==='string'?[col,shade(col,.8),shade(col,.66)]:col,e=CEL?'rgba(30,20,10,.42)':ARTSTYLE==='bright'?null:'rgba(0,0,0,.14)';
   poly([P(x,y+d,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x,y+d,z+h)],c[1],e);
   poly([P(x+w,y,z),P(x+w,y+d,z),P(x+w,y+d,z+h),P(x+w,y,z+h)],c[2],e);
   poly([P(x,y,z+h),P(x+w,y,z+h),P(x+w,y+d,z+h),P(x,y+d,z+h)],c[0],e);
@@ -4242,7 +4252,7 @@ function settingsModal(){
     ${row('stName','Nursery and grower',`${esc(nurseryName())} · ${(S.gender||'m')==='f'?'woman':'man'} grower`,'Change')}
     ${row('stTips','Tips',S.tipsOff?'Off. Turn them on to get pointers the first time you meet something new.':'On. A short pointer the first time you meet something new.',S.tipsOff?'Turn on':'Turn off')}
     ${row('stReplay','Replay tips','Shows every tip again as it comes up, including the ones you’ve seen.','Replay')}
-    ${row('stArt','Art style (test)',{classic:'Classic: soft shading and thin outlines.',cel:'Cel-shaded: hard-edged shading and darker outlines in each part\u2019s own colour.',bright:'Bright: no outlines, new shapes for petunias, mums, pothos and geraniums in full bloom.'}[ARTSTYLE]||'Classic',{classic:'Try cel-shaded',cel:'Try bright',bright:'Back to classic'}[ARTSTYLE]||'Switch')}
+    ${row('stArt','Art style (test)',{classic:'Classic: soft shading and thin outlines.',cel:'Cel-shaded: hard-edged shading and darker outlines in each part\u2019s own colour.',bright:'Bright: no outlines anywhere, plus new shapes for petunias, mums, pothos, geraniums, vincas and begonias as they grow.'}[ARTSTYLE]||'Classic',{classic:'Try cel-shaded',cel:'Try bright',bright:'Back to classic'}[ARTSTYLE]||'Switch')}
     ${row('stDay','Daily visits',`Day ${Math.max(1,(S.daily||{}).day||0)} of 7 · ${(S.daily||{}).wk||0} of ${WEEKLY.length} weekly prizes`,'Open')}
     ${S.dev?row('stDev','Developer mode','On: unlimited cash and stars.','Turn off'):''}${''/*dev*/}
     ${row('stReset','Start over','Wipes this nursery, the homestead, your cats and stars. It can’t be undone.','Start over','bad')}
@@ -4334,7 +4344,7 @@ function rewardsOf(g){ // what opens when you reach stage g
   return out;
 }
 function spriteURL(id,vb){const k='s_'+id+vb;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';const m=d[4].match(/viewBox="[^"]*" width="\d+" height="\d+"/);
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?(CEL?celify(d[4]):d[4]).replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):(CEL?celify(d[4]):d[4]));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(m?styled(d[4]).replace(m[0],`viewBox="${vb}" width="120" height="${Math.round(120*vb.split(' ')[3]/vb.split(' ')[2])}"`):styled(d[4]));}
 let upSub='equip';
 function upSubs(){
   const gens=Object.keys(CROPS).filter(k=>!notFlower(k)&&!owns(k)&&cropOpen(k)).length,house=(S.floors<MAXF&&S.floors<houseCap()?1:0)+(S.showOpen&&!S.show?1:0)+(stage()>=SUC_LV&&!sucOn()?1:0);
@@ -4809,12 +4819,12 @@ function boardMetrics(){
 }
 const fURL={};
 function flowerURL(k,st){const id=`${k}_${st}`;if(fURL[id])return fURL[id];const d=ART.vector[id];if(!d)return'';
-  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent((CEL?celify(d[4]):d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
+  return fURL[id]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="9 1 46 46" width="92" height="92"'));}
 function personURL(id){const k='p_'+id;if(fURL[k])return fURL[k];const d=artDef(id);if(!d)return'';
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent((CEL?celify(d[4]):d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 3 36 36" width="108" height="108"'));}
 const crewFace=(r,px)=>`<span class="face" style="width:${px}px;height:${px}px;background:${IC[r.role].c}"><img src="${personURL('crew_'+r.role+'_front_0|'+lookOf(r))}" alt=""></span>`;
 function catURL(id){const k='cat_'+id;if(fURL[k])return fURL[k];const d=ART.vector['cat_'+id+'_sit'];if(!d)return'';
-  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent((CEL?celify(d[4]):d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
+  return fURL[k]='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(styled(d[4]).replace('viewBox="0 0 64 64" width="256" height="256"','viewBox="14 16 38 38" width="114" height="114"'));}
 const flowerImg=(k,px)=>`<img class="fi" src="${flowerURL(k,3)}" alt="" style="width:${px}px;height:${px}px">`;
 const cropPill=(k,txt,noImg)=>`<span class="crop" style="background:${CROPS[k].color}">${noImg?'':flowerImg(k,20)}${txt??CROPS[k].name}</span>`;
 const plantPic=(k,cls)=>`<img class="${cls}" src="${flowerURL(k,3)}" alt="${CROPS[k].name}">`;
