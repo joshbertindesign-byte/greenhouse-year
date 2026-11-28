@@ -2511,7 +2511,7 @@ function layout(){
   TW=64;TH=32;
   if(S&&S.phase==='home'){layoutHome();return;}
   const fs=focusMode()&&focusH===SUC_H&&sucOn(),ff=focusMode()&&focusH===FIELD_H&&fieldOpen(),fm=fs||ff||(focusMode()&&focusH>=0&&(focusH<S.floors||(focusH===SH&&hasShow()))),rx=ff?20:fm&&focusH===SH?HOUSES[SH].ox:0;
-  const pts=ff||fs?[]:[[rx+2.5,-2.7,40],[rx+7.5,-2.7,40],...(fm?[]:[[rx+2,-5.2,22]])];
+  const dk=!fm||focusH===SH||(HOUSES[focusH]&&HOUSES[focusH].s===0),pts=ff||fs||!dk?[]:[[rx+2.5,-2.7,40],[rx+7.5,-2.7,40],...(fm?[]:[[rx+2,-5.2,22]])];
   if(fs)pts.push([SUCO.ox-.4,SUCO.oy-.4,0],[SUCO.ox+9.4,SUCO.oy-.4,0],[SUCO.ox-.4,SUCO.oy+7.6,0],[SUCO.ox+9.4,SUCO.oy+7.6,0],[SUCO.ox,SUCO.oy,96]);
   else if(ff)pts.push([21.4,-.6,0],[30.6,-.6,0],[21.4,fieldY1(),0],[30.6,fieldY1(),0],[26,1,70]);else if(!fm&&fieldOpen()&&S.floors<=4)pts.push([30.6,-.6,0],[30.6,fieldY1(),0],[26,0,70]);
   if(!fm&&sucOn())pts.push([SUCO.ox-1.6,SUCO.oy+7.6,0],[SUCO.ox-1.2,SUCO.oy-.4,0]);
