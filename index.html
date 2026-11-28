@@ -808,6 +808,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 })();
 </script>
 <script src="art.js"></script>
+<script src="art_bright.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -2453,7 +2454,12 @@ function layoutHome(){
 const vecImg={},vecCan={};let vecK=0;
 // ---- art style test: "cel" turns every sprite's soft gradients into hard-edged bands and its outlines into darker,
 // slightly heavier versions of each part's own colour (never black). Classic is the shipped look.
-let CEL=false;try{CEL=localStorage.getItem('gyArt')==='cel';}catch(e){}
+let ARTSTYLE='classic';try{ARTSTYLE=localStorage.getItem('gyArt')||'classic';}catch(e){}
+let CEL=ARTSTYLE==='cel';
+// "bright" swaps in hand-made sprites (art_bright.js) where they exist; everything else stays classic
+const ART_ORIG={};
+function applyBright(on){if(typeof ART_BRIGHT==='undefined')return;for(const k in ART_BRIGHT){if(!ART.vector[k])continue;if(!ART_ORIG[k])ART_ORIG[k]=ART.vector[k][4];ART.vector[k][4]=on?ART_BRIGHT[k]:ART_ORIG[k];}}
+applyBright(ARTSTYLE==='bright');
 const hexHsl=h=>{h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16),r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let H=0,S0=0;
   if(mx!==mn){const d=mx-mn;S0=l>.5?d/(2-mx-mn):d/(mx+mn);H=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;H/=6;}return[H,S0,l];};
 const hslHex=(H,S0,l)=>{const f=n=>{const k=(n+H*12)%12,a=S0*Math.min(l,1-l);return Math.round((l-a*Math.max(-1,Math.min(k-3,9-k,1)))*255).toString(16).padStart(2,'0');};return'#'+f(0)+f(8)+f(4);};
@@ -2475,7 +2481,7 @@ function celify(svg){
     return`<${tag}${at}${sl}>`;});
 }
 const svgSrc=svg=>'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(CEL?celify(svg):svg);
-function setArtStyle(on){CEL=on;try{localStorage.setItem('gyArt',on?'cel':'classic');}catch(e){}
+function setArtStyle(st){ARTSTYLE=st;CEL=st==='cel';applyBright(st==='bright');try{localStorage.setItem('gyArt',st);}catch(e){}
   for(const id in ART.vector)if(id.includes('|'))delete ART.vector[id];for(const k in vecImg)delete vecImg[k];for(const k in vecCan)delete vecCan[k];if(typeof fURL!=='undefined')for(const k in fURL)delete fURL[k];
   prepArt();hud();if(sheetOpen())renderSheet();if(S.phase==='home')renderHome();}
 function prepArt(){
@@ -4236,7 +4242,7 @@ function settingsModal(){
     ${row('stName','Nursery and grower',`${esc(nurseryName())} · ${(S.gender||'m')==='f'?'woman':'man'} grower`,'Change')}
     ${row('stTips','Tips',S.tipsOff?'Off. Turn them on to get pointers the first time you meet something new.':'On. A short pointer the first time you meet something new.',S.tipsOff?'Turn on':'Turn off')}
     ${row('stReplay','Replay tips','Shows every tip again as it comes up, including the ones you’ve seen.','Replay')}
-    ${row('stArt','Art style (test)',CEL?'Cel-shaded: hard-edged shading and darker outlines in each part\u2019s own colour.':'Classic: soft shading and thin outlines.',CEL?'Use classic':'Try cel-shaded')}
+    ${row('stArt','Art style (test)',{classic:'Classic: soft shading and thin outlines.',cel:'Cel-shaded: hard-edged shading and darker outlines in each part\u2019s own colour.',bright:'Bright: no outlines, new shapes for petunias, mums, pothos and geraniums in full bloom.'}[ARTSTYLE]||'Classic',{classic:'Try cel-shaded',cel:'Try bright',bright:'Back to classic'}[ARTSTYLE]||'Switch')}
     ${row('stDay','Daily visits',`Day ${Math.max(1,(S.daily||{}).day||0)} of 7 · ${(S.daily||{}).wk||0} of ${WEEKLY.length} weekly prizes`,'Open')}
     ${S.dev?row('stDev','Developer mode','On: unlimited cash and stars.','Turn off'):''}${''/*dev*/}
     ${row('stReset','Start over','Wipes this nursery, the homestead, your cats and stars. It can’t be undone.','Start over','bad')}
@@ -4244,7 +4250,7 @@ function settingsModal(){
     <div class="ab2"><button class="btn go" type="button" id="stX">Done</button></div>`);
   $('stX').onclick=closeModal;
   $('stName').onclick=()=>nameModal(false);
-  $('stArt').onclick=()=>{setArtStyle(!CEL);settingsModal();};
+  $('stArt').onclick=()=>{setArtStyle({classic:'cel',cel:'bright',bright:'classic'}[ARTSTYLE]||'classic');settingsModal();};
   $('stTips').onclick=()=>{S.tipsOff=S.tipsOff?0:1;if(S.tipsOff){tipCur=null;}save();settingsModal();};
   $('stReplay').onclick=()=>{S.tips={};S.tipsOff=0;tipCool=1;save();closeModal();toast('good','Tips will show again as you play');};
   $('stReset').onclick=resetModal;
