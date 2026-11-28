@@ -1927,6 +1927,22 @@ function genPopup(){
 function addTask(t){t.id=S.nid++;t.born=t.born??S.t;S.tasks.push(t);return t;}
 // a plant whose truck has pulled up is on its way out: no more watering or pest calls for it
 const leaving=pl=>!!pl&&S.trucks.some(k=>k.plot===pl.id&&(k.state==='line'||k.state==='dock'));
+// When a truck pulls up, a watering or pest job on its order moves to another bench instead (same house if possible)
+function moveCare(t){
+  const c=S.period,pl0=S.plots.find(p=>p.id===t.plot),f0=pl0?plotF(pl0):-1;
+  const ok=pl=>!pl.done&&pl.s<=c&&pl.e>=c&&pl.potted.some(Boolean)&&!leaving(pl)&&pl!==pl0;
+  if(t.type==='water'){
+    const cands=S.plots.filter(pl=>ok(pl)&&!pl.show&&!S.tasks.some(x=>x.type==='water'&&x.plot===pl.id)).sort((a,b)=>(plotF(a)===f0?0:1)-(plotF(b)===f0?0:1));
+    const pl=cands[0];if(!pl){dropTask(t);return;}
+    t.plot=pl.id;t.rows=pl.rows.slice();t.bench=pl.rows[Math.floor((pl.rows.length-1)/2)];
+  }else{
+    const opts=[];S.plots.filter(ok).forEach(pl=>pl.rows.forEach((r,k)=>{if(pl.potted[k]&&!S.tasks.some(x=>x.type==='pest'&&x.bench===r))opts.push([pl,r]);}));
+    opts.sort((a,b)=>(plotF(a[0])===f0?0:1)-(plotF(b[0])===f0?0:1));
+    if(!opts.length){dropTask(t);return;}
+    const same=opts.filter(o=>plotF(o[0])===plotF(opts[0][0])),[pl,r]=same[Math.floor(rnd()*same.length)];t.plot=pl.id;t.bench=r;
+  }
+  for(const w of [me,...staff,...(robo?[robo]:[])])if(w.task===t){w.work=0;w.path=[];plan(w);}// whoever was on it walks to the new bench
+}
 function dropTask(t){S.tasks=S.tasks.filter(x=>x!==t);S.queue=S.queue.filter(x=>x!==t);}
 const taskF=t=>t.type==='load'||t.type==='phone'?0:t.type==='tree'||t.type==='festj'?FIELD_H:t.type==='shop'||t.type==='succ'?SUC_H:t.type==='star'?t.h:t.type==='fix'?t.f:BENCH[t.bench].f;
 function workOf(t){return workOf0(t)*(t.bench!=null&&(t.type==='pot'||t.type==='water'||t.type==='pest')&&specOf(BENCH[t.bench].f)==='veg'?VEG_QUICK:1);}
@@ -2299,13 +2315,13 @@ function fire(e){
   if(e.k==='truck'){
     const k=S.trucks.find(k=>k.plot===e.plot);if(!k)return;
     k.state='line';k.arrived=S.t;k.deadline=S.t+TRUCK_WAIT;k.x=-14;
-    S.tasks.filter(t=>(t.type==='water'||t.type==='pest')&&t.plot===k.plot).forEach(dropTask);
+    S.tasks.filter(t=>(t.type==='water'||t.type==='pest')&&t.plot===k.plot).forEach(moveCare);
     const waiting=S.trucks.filter(k=>k.state==='line'||k.state==='dock').length;
     toast('load',waiting>1?`Truck arrived, ${waiting} in line`:'Truck at the dock');
     dockNext();
   }
   if(e.k==='care'){const pl=S.plots.find(p=>p.id===e.plot);if(pl&&!pl.done&&pl.potted.some(Boolean)&&prog(pl)<1.01){const kinds=SHOWC[pl.crop].care,kind=kinds[Math.floor(rnd()*kinds.length)],r=herdPick(pl.rows,r=>({x:BENCH[r].ax,y:BENCH[r].ay,f:BENCH[r].lv}));if(!S.tasks.some(t=>t.type==='care'&&t.plot===pl.id)){addTask({type:'care',care:kind,plot:pl.id,bench:r,born:S.t,due:S.t+16*(1+.25*sk('finesse'))});toast(kind,`${plural(pl.crop)} on ${benchName(r)} need ${kind==='mist'?'misting':kind==='stake'?'staking':'deadheading'}`,()=>jumpTo(SH));}}}
-  if(e.k==='thirst'){const pl=S.plots.find(p=>p.id===e.plot);if(leaving(pl))return;if(pl&&!pl.done&&pl.potted.some(Boolean)&&!pl.show&&rnd()<[0,.35,.6][upLv('boom')]){boomT[plotF(pl)]=performance.now();float(BENCH[pl.rows[0]],'Boom watered','#2a78d0');return;}if(pl&&!pl.done&&pl.potted.some(Boolean)&&!S.tasks.some(t=>t.type==='water'&&t.plot===pl.id))addTask({type:'water',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),due:S.t+18*(1+.25*upLv('hose'))*(1+.15*decB(plotF(pl),'swing'))});}
+  if(e.k==='thirst'){let pl=S.plots.find(p=>p.id===e.plot);if(leaving(pl)){const f0=plotF(pl);pl=S.plots.filter(p=>!p.done&&p.s<=S.period&&p.e>=S.period&&p.potted.some(Boolean)&&!p.show&&!leaving(p)&&!S.tasks.some(t=>t.type==='water'&&t.plot===p.id)).sort((a,b)=>(plotF(a)===f0?0:1)-(plotF(b)===f0?0:1))[0];if(!pl)return;}if(pl&&!pl.done&&pl.potted.some(Boolean)&&!pl.show&&rnd()<[0,.35,.6][upLv('boom')]){boomT[plotF(pl)]=performance.now();float(BENCH[pl.rows[0]],'Boom watered','#2a78d0');return;}if(pl&&!pl.done&&pl.potted.some(Boolean)&&!S.tasks.some(t=>t.type==='water'&&t.plot===pl.id))addTask({type:'water',plot:pl.id,bench:pl.rows[Math.floor((pl.rows.length-1)/2)],rows:pl.rows.slice(),due:S.t+18*(1+.25*upLv('hose'))*(1+.15*decB(plotF(pl),'swing'))});}
   if(e.k==='pest'){
     const opts=[];S.plots.filter(pl=>!pl.done&&pl.s<=c&&plotF(pl)===e.f&&!leaving(pl)).forEach(pl=>pl.rows.forEach((r,k)=>{if(pl.potted[k]&&!S.tasks.some(t=>t.type==='pest'&&t.bench===r))opts.push([pl,r]);}));
     if(opts.length){const [pl,r]=herdPick(opts,([,r])=>({x:BENCH[r].ax,y:BENCH[r].ay,f:BENCH[r].lv}));addTask({type:'pest',bench:r,plot:pl.id,due:S.t+24*(1+.2*sk('pesteye'))});toast('pest',`Pests on bench ${benchName(r)}`,()=>jumpTo(Math.floor(r/8)));}
