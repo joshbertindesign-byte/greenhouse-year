@@ -3483,7 +3483,7 @@ const cashTxt=v=>innerWidth<=600&&Math.abs(v)>=10000?fmtK(v):fmt(v);
 function walletPing(id,txt,col){if(window.__quiet)return;const b=$(id);if(!b)return;b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');
   const f=document.createElement('span');f.className='curf';f.style.color=col;f.textContent=txt;b.appendChild(f);setTimeout(()=>f.remove(),1100);}
 function walletSet(){if(!S)return;const c=Math.round(S.cash),st=S.stars||0;
-  if(WV.c==null){WV.c=c;WV.s=st;}
+  if(WV.c==null||WV.ts==null){WV.c=c;WV.s=st;$('hCash').textContent=cashTxt(c);$('hStars').textContent=st;}
   if(WV.tc!=null&&c-WV.tc>=50)walletPing('hCashB','+'+cashTxt(c-WV.tc),'#c9ffd6');
   if(WV.ts!=null&&st>WV.ts)walletPing('hStarB','+'+(st-WV.ts)+' ★','#fff2a8');
   WV.tc=c;WV.ts=st;$('hCashB').classList.toggle('neg',c<0);}
