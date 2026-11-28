@@ -366,6 +366,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @keyframes rowIn{0%{transform:translateY(22px);opacity:0}100%{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.sheet.slidein,.mbox.slidein,.mbox.slidein>*,.sheet.popup{animation:none}#fade{transition:none}}
 .skyr{display:grid!important;grid-template-columns:repeat(8,1fr);gap:4px;margin:4px 0 14px}.skyr i{display:flex;flex-direction:column;align-items:center;gap:4px;width:auto!important;height:auto!important;background:none!important;box-shadow:none!important}.skyr i b{display:block;width:100%;height:8px;border-radius:4px;background:#e2dccb}.skyr i.d b{background:#c9b27a}.skyr i.n b{background:var(--sun)}.skyr small{font-size:10px;color:var(--mute);white-space:nowrap}.skyr i.n small{color:var(--ink);font-weight:700}
+.wel{text-align:center}.wel h2{margin:6px 0 8px}.wel p{max-width:380px;margin:0 auto 14px}.welp{display:flex;justify-content:center;gap:4px}.welp img{width:84px;height:84px}
 .tbub p{margin:0}.tbub .tb{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
 .tbub .tb button{border:0;border-radius:10px;font:inherit;font-weight:700;padding:7px 14px;cursor:pointer}.tbub .tok{background:var(--sun);color:#2b2104;position:relative;overflow:hidden}.tbub .tok:disabled{background:#efe6c4;color:#9a8a5a;cursor:default}.tbub .tok:disabled:after{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;background:rgba(242,194,48,.55);transform-origin:left;animation:tokfill var(--rt,1.5s) linear forwards}@keyframes tokfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}.tbub .tsk{background:none;color:var(--mute);font-size:13px;font-weight:600;margin-right:auto;padding:7px 4px}
 .tbub .tarr{position:absolute;width:16px;height:16px;background:#fff;border:3px solid #f2c230;transform:rotate(45deg)}
@@ -3242,6 +3243,8 @@ function openMail(quiet){
   $('mlOk').onclick=()=>{closeModal();renderHome();};
 }
 function homeTap(e){
+  // while an info tip is up, a tap on the homestead just answers the tip; it doesn't also open whatever was tapped
+  if(tipHoldsDetail()){if(!$('tok').disabled)nextTipStep();return;}
   {const [X,Y]=P(MAIL.x,MAIL.y,32);if(Math.hypot(e.clientX-X,e.clientY-Y)<Math.max(26,40*sc)){tapMail();return;}}
   let best=null,bd=1e9;for(const L of LOTS){const [X,Y]=P(L.x+1.5,L.y+1.5,14),d=Math.hypot(e.clientX-X,e.clientY-Y);if(d<bd){bd=d;best=L;}}
   homeSel=best&&bd<TW*sc*1.6?lmMain(best.id):null;if(homeSel&&ripe(homeSel))shakeLot(homeSel);renderHome();
@@ -5124,16 +5127,8 @@ function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
   if(!d.tips){d.tips={};const vet=d.hist.length>0||d.year>1;const m=k=>d.tips[k]=1;if(vet)['place','start','pot','queue','water','pest','fix','load','goal','phone'].forEach(m);if((d.crew||[]).length)m('crew');if(Object.values(d.up||{}).some(Boolean))m('up');if(d.floors>1)m('house');if(d.show)m('show');if((d.crew||[]).some(r=>r.role==='prize'))m('prize');if(d.home&&Object.keys(d.home).length)m('home');if((d.owned||[]).length>7)m('gen');}
   if(!d.homeV){d.homeV=1;d.cats=['anna'];d.stars=d.hist.reduce((a,r)=>a+(r.stars||0)+(r.met?3:0),0);d.home={};d.catHouse=1;d.office=1;}if(d.credit>0)d.loans.push({id:'L'+(d.nid++),orig:d.credit,left:d.credit});delete d.credit;delete d.negRun;d.loanAsk=d.loanAsk||'';(d.crew||[]).forEach(r=>{r.missed=r.missed||0;r.owed=r.owed||0;});d.broken=Array.from({length:13},(_,i)=>!!(d.broken&&d.broken[i]));d.dmgT=Array.from({length:13},(_,i)=>(d.dmgT&&d.dmgT[i])||0);if(!d.cust)d.cust=Object.fromEntries(CUST.map(n=>[n,{r:clamp(d.rep??50,0,100)}]));d.rep=CUST.reduce((a,n)=>a+d.cust[n].r,0)/CUST.length;d.owned=d.owned||['petunia','vinca','geranium','begonia','pothos','mum','poinsettia'];if(!Array.isArray(d.crew)){const old=d.crew||{};d.crew=[];let i=0;for(const k in old)for(let j=0;j<old[k];j++)d.crew.push({id:'s'+(d.nid++),name:NAMES[i++%NAMES.length],role:k,home:0,n:VET,wage:ROLES[k].cost});}return d;}}catch(e){}return null;}
 function welcome(){
-  modal(`<h2>Greenhouse Year</h2><p>One greenhouse, eight benches to start, eight periods a year.</p>
-  <div class="steps">
-  <div>${svgIcon('pop',40)}<span><b>Plan:</b> between periods, offers come up one at a time. Place each on the board or bin it. Bigger orders take more benches, slower crops take more periods.</span></div>
-  <div>${svgIcon('pot',40)}<span><b>Work:</b> tap the big icons to queue jobs. A job's countdown stops once someone's on it.</span></div>
-  <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
-  <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
-  <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full upkeep and income tax on your profit, so use the head start to grow.</span></div>
-  <div>${svgIcon('bench',40)}<span><b>Year one is a learning year:</b> your only goal is to <b>stay healthy</b> by hitting ${REVIEW_NEED} of 4 review targets (profit margin, full trucks, planning, reputation trend), or the year starts over. From year two you also get a goal to <b>level up</b>. Both show in the top bar. Savings don't protect you; playing well does.</span></div>
-  <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
-  <div>${trophySVG(40)}<span><b>Goals:</b> from year two, each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
+  modal(`<div class="wel"><div class="welp">${STARTERS.map(k=>`<img src="${flowerURL(k,3)}" alt="">`).join('')}</div><h2>Welcome to Greenhouse Year</h2>
+  <p>Grow flowers, keep your customers happy and turn a backyard greenhouse into the best nursery in the state. We’ll show you the ropes as you go.</p></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
   $('wGo').onclick=()=>{S.welcomed=true;closeModal();if(!S.name)nameModal(true,()=>enterHome());else enterHome();};
 }
