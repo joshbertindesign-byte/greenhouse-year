@@ -251,6 +251,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .board .bprop{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:repeating-linear-gradient(135deg,rgba(47,155,143,.14) 0 10px,rgba(47,155,143,.06) 10px 20px);border:2px dashed #7fc3b7;border-radius:10px;color:#24433d;text-align:center;padding:10px;z-index:3}.board .bprop b{font-size:17px}
 .revc{display:flex;flex-direction:column;gap:6px;background:#f4f1e8;border:2px solid #ddd6c4;border-radius:14px;padding:12px;margin:10px 0;font-size:14px;text-align:left}.revc.ok{border-color:#b9dfc0}.revc.no{border-color:#ecc58e}.revc>b{font-size:16px}.revc>span{color:var(--mute)}
 .rvr{display:flex;align-items:center;gap:10px;background:#fff;border-radius:10px;padding:6px 10px}.rvr>i{font-style:normal;font-weight:800;width:18px;text-align:center;color:var(--mute)}.rvr.on>i{color:var(--go)}.rvr.off>i{color:var(--bad)}.rvr>span{flex:1;display:flex;flex-direction:column}.rvr small{color:var(--mute);font-size:12px}.rvr>em{font-style:normal;font-weight:700;white-space:nowrap}
+.yearc .lrn{font-size:14px;line-height:1.45;color:#4a5a50;margin:2px 2px 6px}.newt{display:inline-block;background:#e07a2a;color:#fff;border-radius:6px;padding:1px 6px;font-size:10px;letter-spacing:.08em;margin-left:4px;vertical-align:1px}
 .yearc{background:#fbf8f0;border:2px solid #e6dfcc;border-radius:16px;padding:10px 12px;margin:10px 0}.yearc>h3{margin:0 0 4px;font-size:18px}.yearc>.cap{display:block;margin:8px 2px 2px}.yearc .revc,.yearc .gcard{margin:4px 0}
 .warnb{display:flex;gap:10px;align-items:flex-start;background:#fdecea;border:2px solid #f0b6ad;color:#7a1f14;border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.35}
 .mag{background:#fffdf6;border:1px solid #e8e0c8;border-radius:12px;padding:16px;font-family:Georgia,'Times New Roman',serif;color:#1d2a22}
@@ -335,6 +336,31 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tring{position:fixed;border:3px solid #f2c230;border-radius:16px;box-shadow:0 0 0 4px rgba(242,194,48,.25),0 0 18px rgba(242,194,48,.6);animation:tpulse 1s ease-in-out infinite alternate}
 @keyframes tpulse{from{transform:scale(1)}to{transform:scale(1.04)}}
 .tbub{position:fixed;pointer-events:auto;background:#fff;color:var(--ink);border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.3);border:3px solid #f2c230;font-size:15px;line-height:1.4}
+.tbub.nudge{animation:tnudge .45s}@keyframes tnudge{0%,100%{translate:0}20%{translate:-7px}40%{translate:7px}60%{translate:-5px}80%{translate:4px}}
+/* modal buttons stay in reach while the content scrolls */
+.mfoot{position:sticky;bottom:-22px;margin:10px -22px -22px;padding:10px 22px 22px;background:var(--paper);z-index:2;border-radius:0 0 22px 22px;display:flex;flex-direction:column;gap:8px}
+.mfoot>*{margin:0!important}.mfoot>.btn{width:100%}
+.mbox.scrolly .mfoot{box-shadow:0 -10px 14px -10px rgba(20,40,28,.28)}
+@media (max-width:860px){.mfoot{bottom:-16px;margin:10px -16px -16px;padding:10px 16px 16px}}
+/* pop-up orders look like an interruption from the phone, not a new planning step */
+.sheet.popup{background:#8a4a17;box-shadow:0 0 0 100vmax rgba(40,20,6,.42),0 -8px 30px rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.18);animation:popIn .5s cubic-bezier(.2,1.3,.4,1)}
+.sheet.popup .ttop{background:#5c2e0c}.sheet.popup .ttop .tw small{color:#ffd29a}
+.sheet.popup .bzl{color:rgba(255,230,200,.6)}
+.popb{display:flex;align-items:center;gap:10px;background:#fff1dc;color:#6a3510;border:2px dashed #e0903a;border-radius:14px;padding:8px 12px;margin:0 0 8px;font-size:14px;line-height:1.35}
+.popb b{color:#8a3f0c}.popb svg{flex:none}
+@keyframes popIn{0%{transform:translateX(-50%) translateY(60px) rotate(-1.2deg);opacity:0}60%{transform:translateX(-50%) translateY(-6px) rotate(.4deg);opacity:1}100%{transform:translateX(-50%) translateY(0) rotate(0)}}
+/* period and year transitions */
+#fade{position:fixed;inset:0;z-index:30;background:#05100a;opacity:0;pointer-events:none;transition:opacity .42s ease}
+#fade.on{opacity:1;pointer-events:auto}
+#fade .fl{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#e9f1ea;font:700 26px Outfit,sans-serif;letter-spacing:.04em;opacity:0;transition:opacity .3s ease .1s}
+#fade.on .fl{opacity:1}#fade .fl small{display:block;font-size:13px;font-weight:600;letter-spacing:.18em;color:#9fc0a8;margin-bottom:6px}
+.sheet.slidein{animation:sheetIn .6s cubic-bezier(.2,.85,.25,1)}
+@keyframes sheetIn{0%{transform:translateX(-50%) translateY(100%)}100%{transform:translateX(-50%) translateY(0)}}
+.mbox.slidein{animation:boxIn .55s cubic-bezier(.2,.85,.25,1)}
+.mbox.slidein>*{animation:rowIn .5s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(var(--i,0)*70ms + 150ms)}
+@keyframes boxIn{0%{transform:translateY(70px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes rowIn{0%{transform:translateY(22px);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet.slidein,.mbox.slidein,.mbox.slidein>*,.sheet.popup{animation:none}#fade{transition:none}}
 .tbub p{margin:0}.tbub .tb{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
 .tbub .tb button{border:0;border-radius:10px;font:inherit;font-weight:700;padding:7px 14px;cursor:pointer}.tbub .tok{background:var(--sun);color:#2b2104}.tbub .tsk{background:none;color:var(--mute);font-size:13px;font-weight:600;margin-right:auto;padding:7px 4px}
 .tbub .tarr{position:absolute;width:16px;height:16px;background:#fff;border:3px solid #f2c230;transform:rotate(45deg)}
@@ -715,6 +741,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 <div class="sheet" id="sheet" hidden></div>
 <div class="tut" id="tut" hidden><div class="tdim" id="td1"></div><div class="tdim" id="td2"></div><div class="tdim" id="td3"></div><div class="tdim" id="td4"></div><div class="tring" id="tring"></div><div class="tbub" id="tbub"><i class="tarr" id="tarr"></i><span class="tg" id="ttg"></span><p id="ttx"></p><div class="tb"><button type="button" class="tsk" id="tsk">Turn off tips</button><button type="button" class="tok" id="tok">Got it</button></div></div></div>
 <div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div id="fade" hidden><div class="fl"></div></div>
 <script>
 // No pinch or double-tap zoom: on a phone it throws the whole layout off.
 (function(){
@@ -1172,7 +1199,7 @@ function roboArrive(){S.robo=1;syncRobo();save();if(!window.__quiet)setTimeout((
 const roboURL=()=>spriteURL('robo_sit','14 16 38 38');
 const crop=c=>CROPS[c];
 const orderOf=pl=>S.orders.find(o=>o.id===pl.oid);
-const have=pl=>pl.alive.reduce((a,b)=>a+b,0);
+const have=pl=>pl.alive.reduce((a,b,k)=>a+(pl.potted[k]?b:0),0);
 const PEAK={petunia:[2,3],vinca:[4,5],geranium:[2,3],begonia:[3,4],pothos:[0,1,7],mum:[5,6],poinsettia:[7],fern:[2,3,4],kale:[6,7],hydrangea:[3,4]};
 // season matters: peak pays well, off-season badly
 const SEAS_PEAK=1.3,SEAS_OFF=.75;
@@ -1845,6 +1872,7 @@ function target(t){
   if(t.type==='fix'){const u=unitOf(t.f);return{x:u.ax,y:u.ay,f:lvOf(t.f),h:t.f};}
   const b=BENCH[t.bench];return{x:b.ax,y:b.ay,f:b.lv,h:b.f};
 }
+const potOK=t=>{const pl=S.plots.find(p=>p.id===t.plot);return!pl||pl.potted.some(Boolean);};
 const engaged=t=>me.task===t||staff.some(w=>w.task===t)||!!(robo&&robo.task===t);
 function complete(t){
   if(t.type==='prop'){propDone(t);dropTask(t);return;}
@@ -1880,6 +1908,7 @@ function dockNext(){
     const pl=S.plots.find(p=>p.id===k.plot);
     if(!pl||pl.done){k.state='gone';continue;}
     addTask({type:'load',plot:pl.id,truck:k.id,bay:free,born:k.arrived,due:k.deadline});
+    if(!pl.potted.some(Boolean)){const pt=S.tasks.find(t=>t.type==='pot'&&t.plot===pl.id);if(pt&&(pt.due==null||pt.due>k.deadline))pt.due=k.deadline;if(!window.__quiet)toast('bad',`${short1(orderOf(pl).cust)}'s truck is here, but the ${crop(pl.crop).name.toLowerCase()} isn't potted yet. Pot it before the truck gives up`);}
   }
 }
 function truckLeaves(k,missed){
@@ -1897,7 +1926,7 @@ function ship(pl,truckId){
   if(short>0)for(const q of S.plots){
     if(short<=0)break;if(q===pl||q.done||q.crop!==pl.crop||!q.potted.some(Boolean)||prog(q)<1)continue;
     let sur=have(q)-orderOf(q).qty;
-    for(let k=q.rows.length-1;k>=0&&sur>0&&short>0;k--){const n=Math.min(sur,short,q.alive[k]);q.alive[k]-=n;sur-=n;short-=n;borrowed+=n;}
+    for(let k=q.rows.length-1;k>=0&&sur>0&&short>0;k--){if(!q.potted[k])continue;const n=Math.min(sur,short,q.alive[k]);q.alive[k]-=n;sur-=n;short-=n;borrowed+=n;}
   }
   if(borrowed){pl.alive[0]+=borrowed;float(BENCH[pl.rows[0]],`+${borrowed} from other benches`,'#2e7d4a');}
   if(short>0&&short<=2&&catOn('otis')&&!pl.show){pl.alive[0]+=short;float(BENCH[pl.rows[0]],`Otis snuck ${short} on board`,'#6c737b');short=0;}
@@ -1958,7 +1987,7 @@ function staffPick(w){
   const home=w.rec?w.rec.home:0;
   if(w.rec&&w.rec.away===ckey())return;
   if(w.role==='prize'){const d=ATT[clamp(w.rec.att||1,1,5)];const t=S.tasks.filter(t=>t.type!=='load'&&taskF(t)===SH&&S.t-t.born>=d&&!S.queue.includes(t)&&!engaged(t)).sort((a,b)=>(a.type==='care'?0:1)-(b.type==='care'?0:1)||(a.due??999)-(b.due??999))[0];if(t)assign(w,t);return;}
-  const away=S.busyUntil&&S.t<S.busyUntil,t=S.tasks.filter(t=>roleTakes(w.role,t)&&(t.type==='load'||taskF(t)===home)&&(away||!S.queue.includes(t))&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'))
+  const away=S.busyUntil&&S.t<S.busyUntil,t=S.tasks.filter(t=>roleTakes(w.role,t)&&(t.type==='load'||taskF(t)===home)&&(away||!S.queue.includes(t))&&!engaged(t)&&(t.type!=='load'||truckById(t.truck)?.state==='dock'&&potOK(t)))
     .sort((a,b)=>w.role==='load'?Math.abs(BAYS[a.bay||0].x-w.x)/3+(a.due-S.t)*.15-(Math.abs(BAYS[b.bay||0].x-w.x)/3+(b.due-S.t)*.15):(a.due??999)-(b.due??999))[0];
   if(t){if(S.queue.includes(t))S.queue=S.queue.filter(x=>x!==t);assign(w,t);}
 }
@@ -2088,7 +2117,10 @@ function gainXP(t){
 function stepWorker(w,dt,slow){
   if(w.task&&!S.tasks.includes(w.task)){w.task=null;w.work=0;w.path=[];w.leg=null;}
   if(!w.task){
-    if(w===me){if(S.busyUntil&&S.t<S.busyUntil)return;while(S.queue.length&&!S.tasks.includes(S.queue[0]))S.queue.shift();if(!S.queue.length)return;assign(w,S.queue[0]);}
+    if(w===me){if(S.busyUntil&&S.t<S.busyUntil)return;while(S.queue.length&&!S.tasks.includes(S.queue[0]))S.queue.shift();if(!S.queue.length)return;
+      // a truck can't be loaded until its order is potted: pot it first, or get on with something else meanwhile
+      let q0=S.queue[0];if(q0.type==='load'&&!potOK(q0)){const pt=S.tasks.find(t=>t.type==='pot'&&t.plot===q0.plot);if(pt&&!engaged(pt)){S.queue=[pt,...S.queue.filter(x=>x!==pt)];q0=pt;}else{q0=S.queue.find(t=>S.tasks.includes(t)&&!(t.type==='load'&&!potOK(t)));if(!q0)return;}}
+      assign(w,q0);}
     else{
       staffPick(w);
       if(!w.task){
@@ -2203,7 +2235,7 @@ function tick(dt){
   if(S.t>=PSEC){
     // after the bell, jobs still on the board run out their timers (or get done) before planning starts
     const live=S.tasks.filter(t=>engaged(t)||(t.due!=null&&S.t<t.due&&t.type!=='pot'));
-    if(!live.length||S.t>=PSEC*1.8||(S.phase==='run'&&window.__quiet&&S.t>=PSEC*1.2))endPeriod();
+    if(!live.length||S.t>=PSEC*1.8||(S.phase==='run'&&window.__quiet&&S.t>=PSEC*1.2)){if(window.__quiet||window.__noFade)endPeriod();else{const c=S.period;fadeThen(endPeriod,c>=7?`<small>YEAR ${S.year}</small>That\u2019s a wrap`:`<small>YEAR ${S.year}</small>${PN[c]} is done`);}}
     else if(!S.otShown){S.otShown=1;if(!window.__quiet)toast('good',`Time\u2019s up for ${PN[S.period].toLowerCase()}. Finish the jobs still on the board; planning starts when they\u2019re done or missed`);}
   }
 }
@@ -2886,7 +2918,7 @@ function failYear(why,rv){
   const ck=yearCk||(()=>{try{return localStorage.getItem('gy8ck');}catch(e){return null;}})();
   let d=null;try{d=ck&&JSON.parse(ck);}catch(e){}
   if(!d||d.year!==S.year){S.lost=why==='rep'?'rep':'bank';gameOver();return;}
-  let carry=null;if(why!=='rep'){try{const st0=stage(),g0=stg(st0).goal,y0=S.ys,rp0=avgRep(),m0=magScore(y0,rp0),rk0=rivalTable(S.year,m0).findIndex(x=>x.me)+1;if(goalMet(g0,y0,m0,rk0,rp0))carry={st:st0,g:g0};}catch(e){}}
+  let carry=null;if(why!=='rep'){try{const st0=stage(),g0=stg(st0).goal,y0=S.ys,rp0=avgRep(),m0=magScore(y0,rp0),rk0=rivalTable(S.year,m0).findIndex(x=>x.me)+1;if(g0.k!=='learn'&&goalMet(g0,y0,m0,rk0,rp0))carry={st:st0,g:g0};}catch(e){}}
   const yy=S.ys||{},cause=yy.rev>0?`Wages were ${Math.round((yy.crew||0)/yy.rev*100)}% of your sales and upkeep ${Math.round((yy.overhead||0)/yy.rev*100)}%.`:'';
   const y=S.year,prev=S.fail&&S.fail.year===y?S.fail:{n:0,worst:0},n=prev.n+1,short=Math.max(0,yearShort()),worst=Math.max(prev.worst,short,why==='rep'?Math.round(payroll()*4):0);
   S.failLog=(S.failLog||[]).concat([{year:y,why,period:S.period,cash:Math.round(S.cash),owed:unpaid(),floors:S.floors,crew:S.crew.length,roles:S.crew.map(r=>r.role).join(','),rev:Math.round(yy.rev||0),wages:Math.round(yy.crew||0),up:Math.round(yy.overhead||0),plugs:Math.round(yy.plugs||0),rep:Math.round(avgRep())}]);
@@ -2947,7 +2979,7 @@ function renderHome(){
   else body=`<div class="hmt"><b>Empty plot</b><span>What should go here?</span></div><div class="blist">${Object.entries(BUILDS).map(([k,B])=>{const lk=B.lm&&stage()<(B.lv||1),nr=B.lm&&!lmRoom(L.id),dis=(B.uniq&&hasBuild(k))||stars<bcost(k)||lk||nr;return`<button type="button" class="bopt${B.lm?' lm':''}" data-build="${k}"${dis?' disabled':''}><b>${B.n}</b><small>${B.does}</small><span>${B.uniq&&hasBuild(k)?'Built':lk?`Opens at level ${B.lv}`:nr?'Needs the cleared plot to the right':`★ ${bcost(k)}`}</span></button>`;}).join('')}</div>`;
   const hint=`<p class="hmh">Tap debris to clear it, an empty plot to build, or the cat house to adopt. Then start the year when you're ready.${homeBox&&(homeBox.mx||homeBox.my)?' Drag to look around and pinch to zoom.':''}</p>`,sel=!!(homeSel&&(homeSel==='mail'||L));
   P0.innerHTML=`<div class="hmtop"><div><small>YEAR ${S.year} · HOMESTEAD</small><b>${star(stars)} <span>to spend</span></b></div><button class="btn sm" type="button" id="hmSk" style="margin-left:auto">Skills${skPts()?` (${skPts()})`:''}</button><button class="btn sm" type="button" id="hmAlm">Almanac</button><button class="btn go" type="button" id="hmGo">Start year ${S.year}</button></div><div class="hmb">${hint}</div>`;
-  const pop=$('hpop');pop.hidden=!sel;pop.innerHTML=sel?`<button type="button" class="hpx" id="hpX" aria-label="Close">×</button>${body}`:'';if(sel){$('hpX').onclick=()=>{homeSel=null;renderHome();};placeHpop();}
+  const hold=!!sel&&tipHoldsDetail();if(hold&&!detailHeld){detailHeld=true;const b=$('tbub');b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}const pop=$('hpop');pop.hidden=!sel||hold;pop.innerHTML=sel?`<button type="button" class="hpx" id="hpX" aria-label="Close">×</button>${body}`:'';if(sel){$('hpX').onclick=()=>{homeSel=null;renderHome();};placeHpop();}
   $('hmGo').onclick=()=>S.year>1&&S.almSeen!==S.year?almanacModal(leaveHome):leaveHome();const hab=$('hmAlm');if(hab)hab.onclick=()=>almanacModal();const hsk=$('hmSk');if(hsk)hsk.onclick=()=>skillsModal();
   const q=(id,f)=>{const b=$(id);if(b)b.onclick=f;};
   q('chGrow',growCatHouse);q('chHat',wardrobeModal);q('rbT',()=>{S.robo=S.robo===1?2:1;syncRobo();save();renderHome();});q('mlB',tapMail);q('shkB',()=>shakeLot(L.id));q('gfSend',giftSend);q('gfScan',giftScan);q('ofGrow',growOffice);q('clrB',()=>clearLot(L.id));q('lmUp',()=>upLandmark(L.id));
@@ -3213,8 +3245,17 @@ const TIPS=[
    {el:iconOf(t=>t.type==='fix'),t:'The heater or fans broke down. Plants in this house get hurt until it’s fixed.',ok:1,done:()=>!hasT(t=>t.type==='fix'&&!S.queue.includes(t)&&!engaged(t))}]},
  {id:'load',tag:'TRUCK AT THE DOCK',when:()=>running()&&hasT(t=>t.type==='load'),steps:[
    {el:iconOf(t=>t.type==='load'),t:'A truck is waiting for an order. Tap to load it. Trucks only wait so long, and leaving empty costs reputation.',guide:1,done:()=>S.queue.some(t=>t.type==='load')||me.task&&me.task.type==='load'||!hasT(t=>t.type==='load')||staff.some(w=>w.task&&w.task.type==='load')}]},
- {id:'goal',tag:'THIS YEAR’S GOAL',when:()=>running()&&S.year===1&&S.period>=1&&!S.hist.length,steps:[
-   {el:'#hGoalB',t:'Your year at a glance. Level up: hit the goal to reach the next level and unlock upgrades, varieties, houses and crew. Health: hit 3 of the 4 review targets or the year starts over. Tap it any time for details.',ok:1}]},
+ {id:'health',tag:'YOUR LEARNING YEAR',when:()=>running()&&S.year===1&&S.period>=1&&!S.hist.length,steps:[
+   {el:'#hGoalB',t:'Year one has a single goal: stay healthy. This counts how many of your 4 health targets you\u2019re hitting right now. Hit at least 3 by year end, or the year starts over.',ok:1},
+   {el:'#hGoalB',t:'Tap it to see the four targets.',guide:1,done:()=>sheetOpen()&&tab==='book'},
+   {el:'.yearc .revc',t:'Profit margin: keep costs low next to sales. Full trucks: ship every order complete. Planning: keep your benches full and well used. Reputation trend: end the year with happier customers than you started with.',ok:1},
+   {el:'.yearc .revc',t:'Each target turns green when you\u2019re on track, and the numbers update as you play. Savings don\u2019t count here: a year is judged on how you played it.',ok:1},
+   {el:'#shX',t:'Close the ledger to get back to work. Tap the top bar any time to check in.',guide:1,done:()=>!sheetOpen()}]},
+ {id:'goal2',tag:'NEW: LEVEL UP',when:()=>inPlan()&&S.year===2&&S.period===0&&S.hist.length>0&&stg(stage()).goal.k!=='learn',steps:[
+   {el:'[data-tab="book"]',t:'Your learning year is done. From now on each year also has a goal. Open the Ledger to see this year\u2019s.',guide:1,done:()=>tab==='book'},
+   {el:'.yearc .gcard',t:'Hit this goal by year end to reach the next level and unlock what\u2019s shown here: upgrades, varieties, houses and crew.',ok:1},
+   {el:'.yearc .gcard',t:'Miss it and nothing is lost: you just try again next year. Only health can make a year start over, so keep an eye on both.',ok:1},
+   {el:'[data-tab="orders"]',t:'The top bar now shows both: goal progress, then health. Back to Orders to plan the year.',guide:1,done:()=>tab==='orders'}]},
  {id:'phone',tag:'PHONE CALL',when:()=>running()&&hasT(t=>t.type==='phone'),steps:[
    {el:()=>sel$('#railL [data-rk^="ph"]')||sel$('#bRing')||iconOf(t=>t.type==='phone')(),t:'The phone’s ringing! Tap to answer. Calls bring deals, favours and surprises. Miss it and they hang up.',ok:1,done:()=>!hasT(t=>t.type==='phone'&&!S.queue.includes(t))}]},
  {id:'star',tag:'A STAR!',when:()=>running()&&hasT(t=>t.type==='star'),steps:[
@@ -3297,7 +3338,7 @@ const TIPS=[
    {el:'.tcard.empty',t:'Plant a sapling for 1 ★. Trees take years to grow, need a few jobs a year that only you can do, and sell for big money or lots of stars.',ok:1}]},
  {id:'treejob',tag:'TREE CARE',when:()=>running()&&hasT(t=>t.type==='tree'),steps:[
    {el:()=>sel$('#railL [data-rk="fld"]')||iconOf(t=>t.type==='tree')(),t:'A tree needs you. Only your grower can do tree jobs. Tap it before the ring runs out, or the tree loses grade and value.',ok:1,done:()=>!hasT(t=>t.type==='tree'&&!S.queue.includes(t))}]},
- {id:'gifts',tag:'GIFT CARDS',when:()=>S.phase==='home'&&$('modal').hidden&&homeSel==='mail'&&!!document.querySelector('#gfSend'),steps:[
+ {id:'gifts',tag:'GIFT CARDS',pop:1,when:()=>S.phase==='home'&&$('modal').hidden&&homeSel==='mail'&&!!document.querySelector('#gfSend'),steps:[
    {el:'.gfrow',t:'Swap gift cards with friends. Show yours on your screen and they snap it with their phone: they get 2 stars and you get 1. One card every 12 hours; open up to 3.',ok:1}]},
  {id:'orchard',tag:'RIPE FRUIT',when:()=>S.phase==='home'&&$('modal').hidden&&!HJ.length&&LOTS.some(l=>ripe(l.id)),steps:[
    {el:()=>lotFocus(LOTS.find(l=>ripe(l.id))),t:'Your fruit trees are ripe. Tap them and your grower gives them a shake: there\u2019s a star or two in there every 6 hours.',ok:1,done:()=>HJ.some(j=>j.kind==='shake')}]},
@@ -3309,14 +3350,19 @@ let tipCur=null,tipStep=0,tipCool=1,tipMiss=0,tipScrolled=null;
 const safeT=f=>{try{return!!f();}catch(e){return false;}};
 const tipStepNow=()=>tipCur&&tipCur.steps[tipStep];
 const tipBlocking=()=>!!(tipStepNow()&&!$('tut').hidden);
-function endTip(mark){tipPan='';if(tipCur&&mark){S.tips=S.tips||{};S.tips[tipCur.id]=1;save();}tipCur=null;tipCool=mark?2:3;$('tut').hidden=true;}
+// a detail panel (a homestead lot, the cat house, the mailbox) waits while an info tip is up, then opens once it's dealt with
+const detailOpen=()=>S&&S.phase==='home'&&!!homeSel&&!$('hpop').hidden;
+const tipHoldsDetail=()=>{if(!tipBlocking())return false;const st=tipStepNow();if(st.guide)return false;if(typeof st.el==='string'){const e=document.querySelector(st.el);if(e&&e.closest('#hpop'))return false;}return true;};
+let detailHeld=false;
+function endTip(mark){tipPan='';if(detailHeld){detailHeld=false;setTimeout(()=>{if(S.phase==='home')renderHome();},0);}if(tipCur&&mark){S.tips=S.tips||{};S.tips[tipCur.id]=1;save();}tipCur=null;tipCool=mark?2:3;$('tut').hidden=true;}
 function nextTipStep(){tipStep++;tipMiss=0;tipScrolled=null;if(!tipCur||tipStep>=tipCur.steps.length)endTip(true);}
 function tipsTick(dt){
   const T=$('tut');
+  if(detailHeld&&!tipHoldsDetail()){detailHeld=false;if(S&&S.phase==='home')renderHome();}
   if(!S||window.__quiet||S.tipsOff){T.hidden=true;tipCur=null;return;}
   S.tips=S.tips||{};
   const mo=!$('modal').hidden;if(mo&&tipCur&&!tipCur.modal){T.hidden=true;return;}
-  if(!tipCur){if((tipCool-=dt)>0){T.hidden=true;return;}const n=TIPS.find(x=>!S.tips[x.id]&&(!mo||x.modal)&&safeT(x.when));if(!n){T.hidden=true;return;}tipCur=n;tipStep=0;tipMiss=0;tipScrolled=null;}
+  if(!tipCur){if((tipCool-=dt)>0){T.hidden=true;return;}const dp=detailOpen(),n=TIPS.find(x=>!S.tips[x.id]&&(!mo||x.modal)&&(!dp||x.pop)&&safeT(x.when));if(!n){T.hidden=true;return;}tipCur=n;tipStep=0;tipMiss=0;tipScrolled=null;}
   const st=tipStepNow();
   if(st.done&&safeT(st.done)){nextTipStep();return;}
   let r=null;try{r=typeof st.el==='function'?st.el():sel$(st.el);}catch(e){}
@@ -3387,8 +3433,9 @@ function hud(){
   $('hCash').textContent=innerWidth<=600&&Math.abs(S.cash)>=100000?fmtK(S.cash):fmt(S.cash);$('hCash').classList.toggle('neg',S.cash<0);
   $('hCred').textContent=S.crew.some(r=>r.missed)?'Payroll missed':loanLeft()>0?`Loan ${fmt(loanLeft())}`:'';
   $('hRep').textContent=Math.round(S.rep);
-  {const rv=reviewNow(),he=$('hRev');if(he){he.textContent=S.phase==='home'?'':`· ${rv.hit}/4`;he.className='hl '+(rv.pass?'ok':'no');}}
-  {const gp=goalProg(),hold=!!(S.assist&&S.assist.year===S.year);$('hGoal').textContent=hold?'On hold':gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title='Level up: '+goalText(stg(stage()).goal)+' · '+gp.txt+' — Health: hit 3 of 4 review targets';$('hGoalB').classList.toggle('met',gp.pct>=1);}
+  {const rv=reviewNow(),he=$('hRev'),lrn=stg(stage()).goal.k==='learn';if(he){he.textContent=S.phase==='home'?'':`${lrn?'':'· '}${rv.hit}/4`;he.className='hl '+(rv.pass?'ok':'no');}
+    const lb=$('hGoalB').querySelector('small');if(lb)lb.textContent=lrn?'Health':'Level up · Health';$('hGoal').hidden=lrn&&S.phase!=='home';}
+  {const gp=goalProg(),hold=!!(S.assist&&S.assist.year===S.year);$('hGoal').textContent=hold?'On hold':gp.learn?'Year 1':gp.short;$('hGoalP').style.width=Math.round(clamp(gp.pct,0,1)*100)+'%';$('hGoalB').title=gp.learn?'Learning year — Health: hit 3 of 4 review targets. '+gp.txt:'Level up: '+goalText(stg(stage()).goal)+' · '+gp.txt+' — Health: hit 3 of 4 review targets';$('hGoalB').classList.toggle('met',gp.pct>=1);}
   $('bGo').hidden=S.phase!=='plan';$('speed').hidden=S.phase!=='run';$('bGo').innerHTML=`Start<span class="lng"> ${PN[c].toLowerCase()}</span>`;
   $('bBoard').hidden=(S.phase==='plan'&&!sheetOpen())||S.phase==='home';$('bBoard').classList.toggle('open',sheetOpen());$('bRing').hidden=!(S.phase==='run'&&S.tasks.some(t=>t.type==='phone'))||railOn();$('bRing').style.top=($('hud').offsetHeight+(focusMode()?66:10))+'px';
   const n=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;$('bN').textContent=n||'';
@@ -3508,7 +3555,7 @@ function toast(k,text,onTap){
 let sel=null,ghostRow=-1,drag=null,tab='orders',boardF=0,suppressClick=false,placing=null,ordersView='offers',pv=null;
 const sheetOpen=()=>!$('sheet').hidden;
 function openSheet(t){if(window.__quiet)return;$('sheet').hidden=false;if(placing)cancelPlacing(true);sel=null;ghostRow=-1;tab=t||'orders';ordersView='offers';boardF=clamp(viewF*4,0,S.floors-1);renderSheet();hud();}
-function closeSheet(){if(placing)cancelPlacing(true);$('sheet').hidden=true;sel=null;hud();}
+function closeSheet(){if(placing)cancelPlacing(true);$('sheet').hidden=true;$('sheet').classList.remove('popup','slidein');sel=null;hud();}
 const samePiece=(a,b)=>a&&b&&(a.plot?a.plot===b.plot:a.offer===b.offer);
 const movable=pl=>!pl.done&&!pl.potted.some(Boolean)&&pl.s>=minStart();
 const topFor=(pp,row)=>{const base=Math.floor(row/8)*8;return clamp(row-Math.floor(pp.h/2),base,base+8-pp.h);};
@@ -3764,7 +3811,9 @@ function renderSheet(){
   if(sel&&sel.plot&&!S.plots.includes(sel.plot))sel=null;
   const nOff=S.phase==='run'?S.offers.filter(o=>o.popup).length:S.offers.length;
   const stat=tab==='orders'?['Booked this year',fmt(booked())]:tab==='cust'?['Reputation',Math.round(S.rep)+' average']:tab==='crew'?['Crew per period',fmt(crewCost())]:['Cash',fmt(S.cash)];
-  const tabs=`<div class="ttop"><div class="tw"><small>YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}</small><b>${PN[c]}</b></div><div class="ttabs${fieldOpen()&&sucOn()?' many':''}">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()+skPts()],['build','Upgrades',0],...(fieldOpen()?[['trees','Trees',Object.values(treesOf()).filter(treeReady).length]]:[]),...(sucOn()?[['suc','Shop',0]]:[]),['book','Ledger',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}<span class="tl">${l}</span>${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
+  const popM=!plan&&S.phase==='run'&&tab==='orders'&&(placing?!!placing.of.popup:S.offers.some(o=>o.popup));el.classList.toggle('popup',popM);
+  const popB=popM?`<div class="popb">${svgIcon('phone',30)}<span><b>Pop-up order!</b> A customer just called mid-period. The clock is paused: place it or bin it, then you\u2019re straight back to work.</span></div>`:'';
+  const tabs=`<div class="ttop"><div class="tw"><small>${popM?'POP-UP ORDER · CLOCK PAUSED':`YEAR ${S.year} · ${plan?'PLANNING':'PAUSED'}`}</small><b>${popM?'Incoming call':PN[c]}</b></div><div class="ttabs${fieldOpen()&&sucOn()?' many':''}">${[['orders','Orders',nOff],['cust','Customers',0],['crew','Crew',staffCount()+skPts()],['build','Upgrades',0],...(fieldOpen()?[['trees','Trees',Object.values(treesOf()).filter(treeReady).length]]:[]),...(sucOn()?[['suc','Shop',0]]:[]),['book','Ledger',0]].map(([k,l,n])=>`<button type="button" data-tab="${k}" class="${tab===k?'on':''}">${tico(k,18)}<span class="tl">${l}</span>${n?`<span class="nb">${n}</span>`:''}</button>`).join('')}</div><span class="sp"></span>${stat[0]!=='Cash'?`<div class="st st2"><small>${stat[0]}</small><b>${stat[1]}</b></div>`:''}<div class="st cash"><small>Cash</small><b class="${S.cash<0?'neg':''}">${fmt(S.cash)}</b></div>${plan?`<button class="go" type="button" id="goB">Start<span class="lng"> ${PN[c].toLowerCase()}</span></button>`:'<button class="tx" type="button" id="shX" aria-label="Close">×</button>'}</div>`;
   let body='',dock='';
   if(tab==='orders'){
     const lossPill=`<span class="pill">Extra for losses <span class="s2">${[0,.1,.2].map(b=>`<button type="button" data-buf="${b}" class="${S.buf===b?'on':''}">${b*100}%</button>`).join('')}</span></span>`;
@@ -3780,11 +3829,11 @@ function renderSheet(){
     const ft=S.floors>1||hasShow()?houseMap(boardF,h=>`data-bf="${h}"`,'House',true):'';
     const coach=!S.coached&&placing?`<div class="coach" id="coach"><span>${HOVER?'Move across':'Tap or slide on'} the board to try spots. Each square is one bench for one period.</span><button type="button" id="coachX">Got it</button></div>`:'';
     if(isPhone()){
-      body=(hof?pbarHTML(hof,peek,left):`<div class="hc empty" style="margin-bottom:8px"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`)
+      body=popB+(hof?pbarHTML(hof,peek,left):`<div class="hc empty" style="margin-bottom:8px"><b>${plan?'That’s every offer for this period.':'No pop-up orders waiting.'}</b><span>${plan?'Adjust the board, then start the period.':'Close this to get back to work.'}</span></div>`)
         +(drawer&&hof?`<div class="drw">${handHTML(hof,true)}${nxt}${stHTML}<div>${lossPill}</div>${legend}</div>`:'')
         +`<div class="bp">${coach}${ft?`<div class="bh">${ft}</div>`:''}<div class="bwrap"><div class="board" id="board"></div></div></div>`;
       dock=hof?`<div class="dock"><div class="dro" id="ro">${dockRO()}</div><button class="bin2" type="button" id="binB" aria-label="Bin this offer">${tico('bin',18)}</button>${mgrOn()&&plan&&holdable(hof)?`<button class="bin2 hold" type="button" id="holdB" aria-label="Hold this offer"${(S.held||[]).length>=HOLD_MAX?' disabled':''}>Hold</button>`:''}<button class="place" type="button" id="pvGo"${okNow?'':' disabled'}>Place</button></div>`:'';
-    }else body=`<div class="olay"><div class="ocol">${stHTML}${leftCol}</div><div class="bp">${coach}<div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
+    }else body=`<div class="olay"><div class="ocol">${popB}${stHTML}${leftCol}</div><div class="bp">${coach}<div class="bh"><b>Benches</b>${ft}<span style="flex:1"></span>${lossPill}</div><div class="bwrap"><div class="board" id="board"></div>${legend}</div></div></div>`;
   }else if(tab==='cust'){
     const log=(S.repLog||[]).slice(-7).reverse();
     body=`<div class="bhead"><h2>Your customers<small>Full, on-time trucks win them over. Shorts, missed trucks and broken promises cost you. You'll be asked first before you knowingly drop someone to a lower tier. Between periods you can send one thank-you gift and make one site visit per customer each year; a visit takes your grower away for the first part of the next period. ${mgrOn()?'Your office manager can make amends with customers who\u2019ve turned wary or lost.':`An office manager can make amends with customers who\u2019ve turned wary or lost.`}</small></h2></div>
@@ -4120,7 +4169,7 @@ function nameModal(first,after){
   $('nmGo').onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go();};
 }
 const STAGES=[
-  {n:'Backyard grower',c:'#8a6a3a',goal:{k:'rev',n:6000}},
+  {n:'Backyard grower',c:'#8a6a3a',goal:{k:'learn'}},// year one is a learning year: health is the only goal
   {n:'Hobby grower',c:'#7a7a34',goal:{k:'rev',n:10000}},
   {n:'Market grower',c:'#6f8f3a',goal:{k:'crops',n:4}},
   {n:'Market favourite',c:'#4f8f3a',goal:{k:'stars',n:2}},
@@ -4132,13 +4181,13 @@ const STAGES=[
   // from level 10 the goals get much bigger, and some must be hit two or three years running
   {n:'Commercial nursery',c:'#7652d0',goal:{k:'spec',n:1}},
   {n:'Contract grower',c:'#8a4fc8',goal:{k:'cust',n:4}},
-  {n:'Major supplier',c:'#a84aa8',goal:{k:'rep',n:72,yrs:2}},
+  {n:'Major supplier',c:'#a84aa8',goal:{k:'rep',n:70}},
   {n:'Premier nursery',c:'#c0407a',goal:{k:'rev',n:180000}},
   {n:'Award winner',c:'#c8402f',goal:{k:'stars',n:5,yrs:2}},
-  {n:'Industry leader',c:'#d0582a',goal:{k:'houses',n:8}},
-  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'spec',n:2}},
+  {n:'Industry leader',c:'#d0582a',goal:{k:'rev',n:250000}},
+  {n:'Big Country\u2019s best',c:'#d07a1a',goal:{k:'rep',n:80}},
   {n:'State champion',c:'#c98a00',goal:{k:'rev',n:240000,yrs:2}},
-  {n:'National name',c:'#b8860b',goal:{k:'rank',n:2,yrs:2}},
+  {n:'National name',c:'#b8860b',goal:{k:'rank',n:4}},
   {n:'Legend',c:'#9a7206',goal:{k:'stars',n:7,yrs:2}},
   {n:'Hall of fame',c:'#7a5c00',goal:{k:'rank',n:1,yrs:3}}];
 const GATE_UP={bays:[3,6,10],pots:[1,7,15],soil:[1,5,13],hose:[1,3,13],bugs:[1,9],heat:[3,11],vents:[3,9],boom:[5,11],potter:[5,11],fork:[7,13],lights:[7,15],roll:[9,15]};
@@ -4305,10 +4354,12 @@ function magScore(y,rep,e){
   return{score,parts,fill,prof,nv,stars:starsOf(score,e),ed:e==null?edIx():e};
 }
 const RIV_LATE=.6;// rivals keep getting better after year 14
+// the best rivals bunch up below the ceiling instead of all sitting on it, so 2nd and 3rd place can actually be won
+const RIV_SOFT=88,RIV_SQ=.45;
 function rivalTable(year,me){
   const h=i=>{const n=Math.sin((year*7.13+i*3.71)*12.9898)*43758.5453;return n-Math.floor(n);};
   const e=me.ed==null?edIx():me.ed,E=ED(e);
-  const L=(EDR[e]||RIVALS).map((name,i)=>{const base=38+i*5.6+E.riv,sc=Math.round(clamp(base+Math.min(year,14)*1.1+Math.max(0,year-14)*RIV_LATE+(h(i+e*11)-.5)*14,20,98));return{name,score:sc,stars:starsOf(sc,e)};});
+  const L=(EDR[e]||RIVALS).map((name,i)=>{const base=38+i*5.6+E.riv,raw=base+Math.min(year,14)*1.1+Math.max(0,year-14)*RIV_LATE+(h(i+e*11)-.5)*14,sc=Math.round(clamp(raw>RIV_SOFT?RIV_SOFT+(raw-RIV_SOFT)*RIV_SQ:raw,20,98));return{name,score:sc,stars:starsOf(sc,e)};});
   L.push({name:nurseryName(),score:me.score,stars:me.stars,me:true});
   L.sort((a,b)=>b.score-a.score||(a.me?-1:1));
   return L;
@@ -4318,9 +4369,9 @@ function rivalTable(year,me){
 // score and how reputation moved. Hit at least REVIEW_NEED of the four targets for your level or the year starts over.
 // Targets come from the test agents: roughly what an average player beats about 85% of the time at that level.
 const REVIEW_NEED=3;
-const REVIEW=[[1,2,{m:.35,full:.80,plan:73,rep:-6}],[3,4,{m:.23,full:.79,plan:82,rep:-3}],[5,6,{m:.03,full:.77,plan:81,rep:-2}],[7,8,{m:.05,full:.84,plan:83,rep:0}],
-  [9,10,{m:.10,full:.86,plan:90,rep:3}],[11,12,{m:.30,full:.86,plan:90,rep:0}],[13,14,{m:.40,full:.92,plan:90,rep:4}],[15,16,{m:.45,full:.95,plan:90,rep:6}],
-  [17,18,{m:.40,full:.96,plan:90,rep:7}],[19,20,{m:.35,full:.96,plan:90,rep:7}]];
+const REVIEW=[[1,2,{m:.33,full:.80,plan:71,rep:-5}],[3,4,{m:.18,full:.70,plan:82,rep:-4}],[5,6,{m:.02,full:.75,plan:80,rep:-4}],[7,8,{m:.03,full:.80,plan:81,rep:-3}],
+  [9,10,{m:.10,full:.82,plan:88,rep:-2}],[11,12,{m:.23,full:.85,plan:90,rep:-4}],[13,14,{m:.38,full:.92,plan:90,rep:0}],[15,16,{m:.38,full:.94,plan:90,rep:1}],
+  [17,18,{m:.32,full:.95,plan:90,rep:2}],[19,20,{m:.30,full:.95,plan:90,rep:2}]];
 const reviewT=(st=stage())=>(REVIEW.find(([a,b])=>st>=a&&st<=b)||REVIEW[REVIEW.length-1])[2];
 const pctS=v=>Math.round(v*100)+'%',sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(Math.round(v));
 function reviewNow(y,st){
@@ -4340,11 +4391,12 @@ function reviewHTML(title,rv,live){
 }
 function goalText(g){return goalText0(g)+(g.yrs>1?`, ${['','','two','three','four'][g.yrs]} years in a row`:'');}
 const loyalN=()=>CUST.filter(n=>custR(n)>=TIERS[3].min).length;
-function goalText0(g){const n=g.n;return{houses:`Run ${n} greenhouses`,spec:n>1?`Run ${n} specialty houses`:'Run a specialty house',crops:`Ship ${n} different varieties in one year`,cust:`Have ${n} customers at Loyal or better`,full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?'Be ranked #1 in your magazine':`Make the top ${n} in your magazine`}[g.k];}
+function goalText0(g){const n=g.n;return{learn:'Finish your first year healthy',houses:`Run ${n} greenhouses`,spec:n>1?`Run ${n} specialty houses`:'Run a specialty house',crops:`Ship ${n} different varieties in one year`,cust:`Have ${n} customers at Loyal or better`,full:`Ship ${n} full trucks in one year`,profit:`Earn ${fmt(n)} operating profit in one year`,rev:`Sell ${fmt(n)} in one year`,stars:`Earn ${n} magazine stars (each step up the ladder counts as one)`,rep:`End the year with ${n}+ average reputation`,rank:n===1?`Be ranked #1 in ${EDS[EDS.length-1].n}`:`Make the top ${n} in ${EDS[EDS.length-1].n}`}[g.k];}
 const kk=n=>{const a=Math.abs(n);return a>=1000?(a/1000).toFixed(a>=10000?0:1).replace(/\.0$/,'')+'k':String(Math.round(a));};
 const kk2=(a,b)=>`${a<0?'−':''}$${kk(a)}/${kk(b)}`;
 function goalProg(){
   const g=stg(stage()).goal,y=S.ys;
+  if(g.k==='learn'){const rv=reviewNow();return{cur:rv.hit,n:REVIEW_NEED,txt:`${rv.hit} of 4 health targets on track`,short:`${rv.hit}/4`,pct:rv.hit/4,learn:true};}
   if(g.k==='houses')return{cur:S.floors,n:g.n,txt:`${S.floors} of ${g.n} greenhouses`,short:`${S.floors}/${g.n}`,pct:S.floors/g.n};
   if(g.k==='spec'){const c=specHouses('veg').length+specHouses('prop').length;return{cur:c,n:g.n,txt:`${c} of ${g.n} specialty houses`,short:`${c}/${g.n}`,pct:c/g.n};}
   if(g.k==='crops'){const c=(y.cr||[]).length;return{cur:c,n:g.n,txt:`${c} of ${g.n} varieties shipped`,short:`${c}/${g.n}`,pct:c/g.n};}
@@ -4355,10 +4407,11 @@ function goalProg(){
   if(g.k==='rep'){const r=Math.round(avgRep());return{cur:r,n:g.n,txt:`Reputation ${r} of ${g.n}`,short:`${r}/${g.n}`,pct:r/g.n};}
   const m=magScore(y,avgRep());
   if(g.k==='stars'){const e=edIx(),need=clamp(g.n-e,1,5),cur=Math.min(5,m.stars)+e;return{cur,n:g.n,txt:`On pace for ${m.stars} \u2605 in ${ED().n}${e?` (counts as ${cur})`:''}, need ${g.n}`,short:`${'★'.repeat(m.stars)}${e?'+'+e:''}`,pct:g.n-e<=1?1:m.score/ED().at[need],star:true};}
+  if(edIx()<EDS.length-1)return{cur:99,n:g.n,txt:`Reach ${EDS[EDS.length-1].n} first`,short:'—',pct:.05};
   const t=rivalTable(S.year,m),rk=t.findIndex(x=>x.me)+1;return{cur:rk,n:g.n,txt:`On pace for #${rk}${g.n>1?` (need top ${g.n})`:''}`,short:`#${rk}`,pct:rk<=g.n?1:clamp(1-(rk-g.n)/8,.05,.9)};
 }
 const fmtK=n=>Math.abs(n)>=1000?(n<0?'-':'')+'$'+(Math.abs(n)/1000).toFixed(Math.abs(n)>=10000?0:1)+'k':fmt(n);
-function goalMet(g,y,m,rk,rep){if(g.k==='houses')return S.floors>=g.n;if(g.k==='spec')return specHouses('veg').length+specHouses('prop').length>=g.n;if(g.k==='crops')return(y.cr||[]).length>=g.n;if(g.k==='cust')return loyalN()>=g.n;return g.k==='full'?y.full>=g.n:g.k==='profit'?m.prof>=g.n:g.k==='rev'?y.rev>=g.n:g.k==='stars'?m.stars+(m.ed||0)>=g.n:g.k==='rep'?rep>=g.n:rk<=g.n;}
+function goalMet(g,y,m,rk,rep){if(g.k==='learn')return true;if(g.k==='houses')return S.floors>=g.n;if(g.k==='spec')return specHouses('veg').length+specHouses('prop').length>=g.n;if(g.k==='crops')return(y.cr||[]).length>=g.n;if(g.k==='cust')return loyalN()>=g.n;return g.k==='full'?y.full>=g.n:g.k==='profit'?m.prof>=g.n:g.k==='rev'?y.rev>=g.n:g.k==='stars'?m.stars+(m.ed||0)>=g.n:g.k==='rep'?rep>=g.n:rk<=g.n&&(m.ed||0)>=EDS.length-1;}
 const RIBBONS=[{k:'rosette',n:'Best in Show',prize:25000,need:'4+ entries of 3+ varieties, average 96+, no entry under 90'},{k:'gold',n:'Gold ribbon',prize:12000,need:'3+ entries, average 92+, no entry under 80'},{k:'silver',n:'Silver ribbon',prize:6000,need:'3+ entries, average 86+'},{k:'bronze',n:'Bronze ribbon',prize:3000,need:'2+ entries, average 78+'},{k:'hm',n:'Honorable mention',prize:1000,need:'Any entries, average 70+'}];
 function judgeRibbon(es){
   es=es||[];const n=es.length;if(!n)return -1;const avg=es.reduce((a,e)=>a+e.score,0)/n,lo=Math.min(...es.map(e=>e.score)),vr=new Set(es.map(e=>e.crop)).size;
@@ -4462,7 +4515,7 @@ function ribbonHTML(r){
 function yearGoalModal(R0){
   if(S.lost){gameOver();return;}
   const r=R0.rec,st=stage(),red=S.redYears>0;
-  modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal met! You're now a ${stg(st).n.toLowerCase()}</h2><p>${esc(r.goal)}: done.</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
+  modal(`${R0.showNew?`<div class="newshow">${ribbonSVG('rosette',48)}<span><b>Showcase house unlocked!</b> Your first five-star year opens a prize-flower house. Build it from the Upgrades tab.</span></div>`:''}<div class="gres ${R0.met?'ok':'no'}">${R0.met?`<div class="burst">${stageBadge(st,72)}</div><h2>${R0.from===1?'Learning year passed!':'Goal met!'} You're now a ${stg(st).n.toLowerCase()}</h2><p>${R0.from===1?'You stayed healthy all year. From now on, each year also has a goal to level up.':`${esc(r.goal)}: done.`}</p>${R0.unlocked.length?`<small class="cap">NOW UNLOCKED</small><div class="rws big">${R0.unlocked.map(rewardTile).join('')}</div>`:''}`
     :r.gRun&&r.gRun.n>0?`<div class="burst">${stageBadge(st,72)}</div><h2>Goal hit: ${r.gRun.n} of ${r.gRun.of} years</h2><p>${esc(r.goal)}. Hit it again next year to move up. Miss a year and the count starts over.</p>`
     :r.assisted?`<div class="burst">${stageBadge(st,72)}</div><h2>Year ${r.year} done, with help</h2><p>You got through on a ${fmt(r.assisted)} stipend after ${r.tries-1} tries, so the goal waits for next year: ${esc(r.goal)}.</p>`
     :`<div class="burst">${stageBadge(st,72)}</div><h2>Goal not met this year</h2><p>${esc(r.goal)}. Same goal next year: keep going until you hit it.${stg(st).goal.yrs>1?' Years in a row start counting again.':''}</p>`}</div>
@@ -4472,7 +4525,7 @@ function yearGoalModal(R0){
     ${lostCount()>=CUST.length-2?`<div class="warnb">${tico('cust',18)}<span><b>Only ${CUST.length-lostCount()} customer${CUST.length-lostCount()===1?'':'s'} still buy from you.</b> Lose them all and the year starts over.</span></div>`:''}
     ${r.tax?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: −${fmt(r.tax)}</b> On ${fmt(r.op)} operating profit. Next year crew wages rise ${Math.round(WAGE_INFL*100)}% with the cost of living.</span></div>`:''}
     ${taxOn(S.year+1)?taxBoxHTML(S.year+1):S.year===TAX_Y?`<div class="taxb over">${svgIcon('cash',40)}<span><b>Your startup tax break is over</b> From year ${TAX_Y+1}, upkeep is full price: ${fmt(upkeepFull())} a period instead of ${fmt(Math.round(upkeepFull()*(1-TAX_CUT)))}. The break saved you ${fmt(S.hist.reduce((a,h)=>a+(h.taxSaved||0),0)||0)} in all. From now on you also pay income tax on each year's operating profit, and crew wages rise ${Math.round(WAGE_INFL*100)}% a year.</span></div>`:''}
-    <div class="yearc"><h3>Year ${S.year+1}</h3><small class="cap">STAY HEALTHY · HIT 3 OF 4 OR THE YEAR STARTS OVER</small>${reviewHTML('Review targets',reviewNow(null,st),false)}<small class="cap">LEVEL UP</small>${goalCardHTML(st,false,true)}</div>
+    <div class="yearc"><h3>Year ${S.year+1}</h3><small class="cap">STAY HEALTHY · HIT 3 OF 4 OR THE YEAR STARTS OVER</small>${reviewHTML('Review targets',reviewNow(null,st),false)}<small class="cap">LEVEL UP${S.year===1?' <span class="newt">NEW</span>':''}</small>${S.year===1?'<p class="lrn">Your learning year is done. From now on each year also has a goal: hit it to reach the next level and unlock more. Miss it and you simply try again next year.</p>':''}${goalCardHTML(st,false,true)}</div>
     <button class="btn go" id="nyBtn" type="button">Go to the homestead</button>`);
   $('mbox').scrollTop=0;
   $('nyBtn').onclick=()=>{const go=()=>{nextYear();closeModal();enterHome();},amt=bonusAsk(R0);if(amt)bonusModal(R0,amt,go);else go();};
@@ -4509,7 +4562,7 @@ function ledgerHTML(){
   if(taxOn())warn.unshift(taxBoxHTML());
   else warn.unshift(`<div class="taxb over">${svgIcon('cash',40)}<span><b>Income tax: about ${fmt(taxDue())} so far this year</b> Paid at year end on operating profit: nothing on the first ${fmt(ITAX[0][0])}, then ${ITAX.slice(1).map(([hi,r],i)=>`${Math.round(r*100)}%${hi<Infinity?` up to ${fmt(hi)}`:' above that'}`).join(', ')}. Crew wages rise ${Math.round(WAGE_INFL*100)}% each new year.</span></div>`);
   return`<div class="bhead"><h2>${esc(nurseryName())} <button type="button" class="rnm" id="giftB">Gift cards</button><button type="button" class="rnm" data-alm="1">Almanac</button><small>Each year has two parts. Level up: hit the year's goal to reach the next level and unlock more upgrades, varieties, houses and crew (miss it and you try again next year). Stay healthy: hit 3 of the 4 review targets, or the year starts over. A year also starts over if you end it below zero or every customer writes you off; you keep your grower's experience, and a goal you hit on a failed try still counts. Operating profit is sales minus plugs, crew, upkeep, buy-ins and interest; building, upgrades and genetics don't count against it.</small></h2></div>
-    <div class="yearc"><h3>Year ${S.year}</h3>${S.phase!=='home'?`<small class="cap">STAY HEALTHY · HIT 3 OF 4 OR THE YEAR STARTS OVER</small>${reviewHTML('Year review',reviewNow(),true)}`:''}<small class="cap">LEVEL UP</small>${goalCardHTML(st,true)}</div>${warn.join('')}
+    <div class="yearc"><h3>Year ${S.year}</h3>${S.phase!=='home'?`<small class="cap">STAY HEALTHY · HIT 3 OF 4 OR THE YEAR STARTS OVER</small>${reviewHTML('Year review',reviewNow(),true)}`:''}${stg(st).goal.k==='learn'?`<small class="cap">LEVEL UP · STARTS IN YEAR 2</small><p class="lrn">Year one is a learning year: staying healthy is your only goal. Pass the review and you reach level 2, and from year two each year also has a goal to level up.</p>`:`<small class="cap">LEVEL UP</small>${goalCardHTML(st,true)}`}</div>${warn.join('')}
     <h3 class="lh3">The road ahead</h3>
     <div class="road">${STAGES.map((S0,i)=>{const n=i+1,cls=n<st?'done':n===st?'cur':'';return`<div class="rs ${cls}">${stageBadge(n,34)}<b>${S0.n}</b><small>${n<st?'Done':goalText(S0.goal)}</small><div class="ri">${rewardsOf(n+1).slice(0,6).map(r=>r.t==='up'?svgIcon(UPS[r.k].icon,22):r.t==='spec'?svgIcon(r.k==='veg'?'olr':'prop',22):r.t==='gen'?`<img src="${flowerURL(r.k,3)}" alt="">`:r.t==='crew'?svgIcon('crew',22):r.t==='house'?svgIcon('floor',22):r.t==='trophy'?trophySVG(22):svgIcon('cash',22)).join('')}</div></div>`;}).join('')}</div>
     <h3 class="lh3">Magazine ratings</h3><p class="edrow">${EDS.map((E,i)=>`<span class="${i===edIx()?'on':''}" style="--ec:${E.c}">${E.n}</span>`).join('<i>\u203a</i>')}</p>${profitChart()}${ledgerTable()}`;
@@ -4826,7 +4879,13 @@ let speed=1;const BASE_PACE=1.48;// 20% slower clock than the old 1.85
 $('speed').addEventListener('click',e=>{let b=e.target.closest('[data-s]');if(!b)return;if(matchMedia('(max-width:600px)').matches&&b.classList.contains('on'))b=$('speed').querySelector(`[data-s="${speed===1?2:1}"]`);speed=+b.dataset.s;$('speed').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));});
 
 // ---------------- modal, save ----------------
-function modal(html){$('mbox').innerHTML=html;$('modal').hidden=false;}
+const isBtnRow=e=>!!e&&(e.tagName==='BUTTON'||e.classList.contains('ab2')||e.classList.contains('row2'));
+function modal(html){const M=$('mbox');M.innerHTML=html;M.classList.remove('slidein');$('modal').hidden=false;
+  // the last buttons (OK, Close, Continue...) go in a footer that sticks to the bottom while the rest scrolls
+  let host=M;for(let d=0;d<2&&host.lastElementChild&&!isBtnRow(host.lastElementChild)&&host.lastElementChild.tagName==='DIV'&&isBtnRow(host.lastElementChild.lastElementChild);d++)host=host.lastElementChild;
+  const tail=[];for(let e=host.lastElementChild;isBtnRow(e);e=e.previousElementSibling)tail.unshift(e);
+  if(tail.length&&tail.length<=4){const f=document.createElement('div');f.className='mfoot';tail.forEach(e=>f.appendChild(e));M.appendChild(f);}
+  requestAnimationFrame(()=>M.classList.toggle('scrolly',M.scrollHeight>M.clientHeight+4));}
 function closeModal(){$('modal').hidden=true;}
 function save(){if(window.__resetting)return;try{localStorage.setItem('gy8',JSON.stringify(S));}catch(e){}}
 function load(){try{let d=JSON.parse(localStorage.getItem('gy8')||'null');
@@ -4848,18 +4907,30 @@ function welcome(){
   <div>${svgIcon('load',40)}<span><b>Ship:</b> each order gets its own truck. They line up at one dock and only wait so long.</span></div>
   <div>${svgIcon('floor',40)}<span><b>Grow:</b> you start with three varieties. Buy genetics for more, hire crew and build more houses.</span></div>
   <div>${svgIcon('cash',40)}<span><b>Tax break:</b> as a new business, your upkeep is half price for your first ${TAX_Y} years. From year ${TAX_Y+1} you pay full upkeep and income tax on your profit, so use the head start to grow.</span></div>
-  <div>${svgIcon('bench',40)}<span><b>Two things each year:</b> <b>level up</b> by hitting the year's goal, and <b>stay healthy</b> by hitting ${REVIEW_NEED} of 4 review targets (profit margin, full trucks, planning, reputation trend) or the year starts over. Both show in the top bar. Savings don't protect you; playing well does.</span></div>
+  <div>${svgIcon('bench',40)}<span><b>Year one is a learning year:</b> your only goal is to <b>stay healthy</b> by hitting ${REVIEW_NEED} of 4 review targets (profit margin, full trucks, planning, reputation trend), or the year starts over. From year two you also get a goal to <b>level up</b>. Both show in the top bar. Savings don't protect you; playing well does.</span></div>
   <div>${svgIcon('star',40)}<span><b>Homestead:</b> between years you head home to spend stars on clearing land, building and adopting cats.</span></div>
-  <div>${trophySVG(40)}<span><b>Goals:</b> each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
+  <div>${trophySVG(40)}<span><b>Goals:</b> from year two, each year has a goal. Hit it to reach the next level and unlock new upgrades, varieties, houses and crew. At year end a magazine rates the best nurseries out of five stars. Five stars moves you up the ladder, from Gardener Quarterly to Greenhouse Monthly, Pro Growers Magazine and Prize Growers.</span></div></div>
   <button class="btn go" id="wGo" type="button">Let's go</button>`);
   $('wGo').onclick=()=>{S.welcomed=true;closeModal();if(!S.name)nameModal(true,()=>enterHome());else enterHome();};
 }
 
 // ---------------- loop ----------------
 let lastT=performance.now(),uiT=0;
+// fade to black between periods and at year end, then the planning sheet or year-end screen slides in
+let fading=0;
+function fadeThen(fn,label){
+  if(fading)return;fading=1;const F=$('fade');F.querySelector('.fl').innerHTML=label||'';F.hidden=false;void F.offsetWidth;F.classList.add('on');
+  setTimeout(()=>{
+    try{fn();}catch(e){console.error(e);}
+    const sh=$('sheet'),mb=$('mbox'),mOn=!$('modal').hidden;
+    if(mOn){[...mb.children].forEach((e,i)=>e.style.setProperty('--i',Math.min(i,10)));mb.classList.remove('slidein');void mb.offsetWidth;mb.classList.add('slidein');mb.scrollTop=0;}
+    else if(!sh.hidden){sh.classList.remove('slidein');void sh.offsetWidth;sh.classList.add('slidein');}
+    setTimeout(()=>{F.classList.remove('on');setTimeout(()=>{F.hidden=true;fading=0;},450);},120);
+  },520);
+}
 function frame(now){
   const dt=Math.min(.1,(now-lastT)/1000);lastT=now;
-  const paused=sheetOpen()||!$('modal').hidden||tipBlocking();
+  const paused=sheetOpen()||!$('modal').hidden||tipBlocking()||fading;
   if(S.phase==='run'&&!paused){
     try{simStep(dt*speed*BASE_PACE);}catch(e){console.error(e);} // one bad step shouldn't freeze the game
     if((uiT+=dt)>.15){uiT=0;hud();}
